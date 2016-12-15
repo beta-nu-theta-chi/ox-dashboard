@@ -3,6 +3,7 @@ import django.utils.timezone
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
+from oauth2client.contrib.django_util.models import CredentialsField
 
 
 class Semester(models.Model):
@@ -242,6 +243,12 @@ class ScholarshipReport(models.Model):
                                   self.semester.year)
 
 
+class Calendar(models.Model):
+    name = models.CharField(max_length=256)
+    storage = CredentialsField(null=True)
+    cal_id = models.CharField(max_length=256)
+
+
 class Event(models.Model):
     name = models.CharField(max_length=200, default="Event")
     date = models.DateField(default=django.utils.timezone.now)
@@ -254,6 +261,9 @@ class Event(models.Model):
     )
     notes = models.TextField(blank=True, null=True)
     minutes = models.URLField(blank=True, null=True)
+
+    calendar = models.ForeignKey(Calendar, null=True)
+    cal_event_id = models.CharField(max_length=256, null=True)
 
     class Meta:
         abstract = True
@@ -345,3 +355,5 @@ class Supplies(models.Model):
 
     def __str__(self):
         return self.what.encode('utf8')
+
+

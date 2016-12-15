@@ -52,6 +52,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'dashboard',
     'cas',
+    'oauth2client.contrib.django_util',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -162,3 +163,7 @@ LOGGING = {
         },
     },
 }
+
+GOOGLE_OAUTH2_CLIENT_ID = os.environ.get('GOOGLE_OAUTH2_CLIENT_ID', None)
+GOOGLE_OAUTH2_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH2_CLIENT_SECRET', None)
+GOOGLE_OAUTH2_SCOPES = ('https://www.googleapis.com/auth/calendar',)
