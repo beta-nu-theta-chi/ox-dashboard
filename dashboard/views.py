@@ -9,7 +9,8 @@ from django.views.generic import *
 from django.views.generic.edit import UpdateView, DeleteView
 
 from .utils import verify_position, get_semester, verify_brother,\
-        get_season, get_year, forms_is_valid, get_season_from, ec, non_ec
+        get_season, get_year, forms_is_valid, get_season_from, ec, non_ec,\
+        oauth_redirect
 from datetime import datetime
 from .forms import *
 
@@ -1911,3 +1912,15 @@ def supplies_finish(request):
 
     context = {'form': form}
     return render(request, 'finish-supplies.html', context)
+
+
+def calendar_redirect(request):
+    redirect_url = request.get_host() + "/oauth/callback"
+    return HttpResponseRedirect(oauth_redirect(redirect_url))
+
+
+def calendar_complete(request):
+    """Should be /oauth/callback"""
+    # TODO: This should show a form asking for a calendar id and name
+    #  On post, it should complete the callback and add the calendar
+    pass

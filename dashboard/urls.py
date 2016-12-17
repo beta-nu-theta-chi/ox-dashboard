@@ -153,4 +153,6 @@ urlpatterns = [
     url(r'^detail-manager/supplies-request/$', views.supplies_request, name='supplies_request'),
     url(r'^detail-manager/supplies-list/$', views.supplies_list, name='supplies_list'),
     url(r'^detail-manager/supplies-finish/$', views.supplies_finish, name='supplies_finish'),
+    url(r'^calendar/add$', views.calendar_redirect, name='calendar_redirect'),
+    url(r'oauth/callback$', views.calendar_complete, name='calendar_complete'),
 ]

@@ -3,8 +3,12 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.core.handlers.wsgi import WSGIRequest
+from django.conf import settings
 
-from .models import *
+#from .models import *
+from .models import Semester, Position
+
+from oauth2client.client import OAuth2WebServerFlow
 
 # EC Positions
 ec = ['President', 'Vice President', 'Vice President of Health and Safety', 'Secretary', 'Treasurer', 'Marshal',
@@ -119,3 +123,27 @@ def verify_detail_manager(user):
 def verify_brother(brother, user):
     """ Verify user is the same as brother """
     return user.brother.id == brother.id
+
+
+def add_event(calendar, name, description, start, end):
+    """Adds an event with name, description, start, end to calendar"""
+    pass
+
+
+def oauth_redirect(redirect_url):
+    """Gets the redirect url for a google oauth login"""
+    oauth_id = settings.GOOGLE_OAUTH2_CLIENT_ID
+    oauth_secret = settings.GOOGLE_OAUTH2_CLIENT_SECRET
+    scopes = settings.GOOGLE_OAUTH2_SCOPES
+    o = OAuth2WebServerFlow(oauth_id, oauth_secret, scopes, redirect_url)
+    return o.step1_get_authorize_url()
+
+
+def oauth_complete(code):
+    """Completes a google oauth login, returning the credentials"""
+    oauth_id = settings.GOOGLE_OAUTH2_CLIENT_ID
+    oauth_secret = settings.GOOGLE_OAUTH2_CLIENT_SECRET
+    scopes = settings.GOOGLE_OAUTH2_SCOPES
+    o = OAuth2WebServerFlow(oauth_id, oauth_secret, scopes)
+    c = o.step2_exchange(code)
+    return c
