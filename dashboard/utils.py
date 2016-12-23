@@ -11,6 +11,9 @@ ec = ['President', 'Vice President', 'Vice President of Health and Safety', 'Sec
       'Recruitment Chair', 'Scholarship Chair']
 # Positions not on EC that have importance on the dashboard
 non_ec = ['Service Chair', 'Philanthropy Chair', 'Detail Manager']
+# Operational Committee positions
+operational_committees = ['Alumni Relations', 'Membership Development', 'Scholarship', 'Unassigned']
+
 
 # Toggle dependant on whether you want position verification
 # if os.environ.get('DEBUG'):
@@ -119,3 +122,41 @@ def verify_detail_manager(user):
 def verify_brother(brother, user):
     """ Verify user is the same as brother """
     return user.brother.id == brother.id
+
+
+def verify_operational_committee(committee, positions):
+    def verify_decorator(f):
+        def error(request):
+            messages.error(request, "%s committee access denied" % operational_committees[int(committee)])
+            return HttpResponseRedirect(reverse('dashboard:home'))
+
+        def wrapper(*args, **kwargs):
+            request = None
+            for a in args:
+                if type(a) == WSGIRequest:
+                    request = a
+                    break
+
+            try:
+                operational_comm = request.user.brother.operational_committee
+            except AttributeError:
+                return error(request)
+            # TODO: check for scholarship chair status/ec status
+            if operational_comm == committee:
+                return f(*args, **kwargs)
+            else:
+                for pos in positions:
+                    try:
+                        uid = request.user.brother.id
+                        # TODO: allow multiple brothers to hold a position
+                        if (
+                                        pos == 'ec' and
+                                    Position.objects.filter(brother__id=uid)[0].ec
+                        ) or Position.objects.filter(title=pos)[0].brother.id == uid:
+                            return f(*args, **kwargs)
+                    except AttributeError:
+                        return error(request)
+
+                return error(request)
+        return wrapper
+    return verify_decorator

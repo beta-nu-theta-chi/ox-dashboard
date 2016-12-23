@@ -9,7 +9,8 @@ from django.views.generic import *
 from django.views.generic.edit import UpdateView, DeleteView
 
 from .utils import verify_position, get_semester, verify_brother,\
-        get_season, get_year, forms_is_valid, get_season_from, ec, non_ec
+        get_season, get_year, forms_is_valid, get_season_from, ec,\
+        non_ec, verify_operational_committee
 from datetime import datetime
 from .forms import *
 
@@ -1223,12 +1224,24 @@ def scholarship_c(request):
     return render(request, "scholarship-chair.html", context)
 
 
-@verify_position(['Scholarship Chair', 'President'])
+@verify_operational_committee('2', ['Scholarship Chair', 'President'])
+def scholarship_comm(request):
+    """ Renders the Scholarship Committee page listing study table attendance """
+    events = StudyTableEvent.objects.filter(semester=get_semester()).order_by("date")
+
+    context = {
+        'events': events,
+    }
+    return render(request, "scholarship-committee.html", context)
+
+
+@verify_operational_committee('2',['Scholarship Chair', 'President'])
 def study_table_event(request, event_id):
     """ Renders the scholarship chair way of view StudyTables """
     event = StudyTableEvent.objects.get(pk=event_id)
     brothers = Brother.objects.exclude(brother_status='2')
     brother_form_list = []
+    user_status = request.path_info[1:18] == 'scholarship-chair'
 
     for brother in brothers:
         if event.attendees_brothers.filter(id=brother.id):
@@ -1252,12 +1265,16 @@ def study_table_event(request, event_id):
                 if instance['present'] is False:
                     event.attendees_brothers.remove(brothers[counter])
                     event.save()
-            return HttpResponseRedirect(reverse('dashboard:scholarship_c'))
+            if user_status:
+                return HttpResponseRedirect(reverse('dashboard:scholarship_c_event', kwargs={'event_id': event_id}))
+            else:
+                return HttpResponseRedirect(reverse('dashboard:scholarship_comm_event', kwargs={'event_id': event_id}))
 
     context = {
         'type': 'attendance',
         'brother_form_list': brother_form_list,
         'event': event,
+        'user_status': user_status
     }
     return render(request, "studytable-event.html", context)
 

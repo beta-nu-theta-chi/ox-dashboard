@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block dropdown %}
+    <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+           aria-expanded="false">Scholarship Committee <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+            <li><a href={% url 'dashboard:scholarship_comm' %}>Study Table Attendance</a></li>
+        </ul>
+    </li>
+{% endblock %}
+
+{% block content %}
+    <!-- Main component for a primary marketing message or call to action -->
+    <div class="jumbotron">
+        <h1>Scholarship Committee</h1>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Study Tables</div>
+        <div class="panel-body">
+            <table class="table table-condensed">
+                <thead style="font-weight:bold;">
+                <tr>
+                    <td>Date:</td>
+                    <td>Time:</td>
+                </tr>
+                </thead>
+                <tbody>
+                {% for event in events %}
+                    <tr>
+                        <td><a href={% url 'dashboard:scholarship_comm_event' event.id %}>{{ event.date }}</a></td>
+                        <td>{{ event.start_time }}
+                            {% if event.end_time %}
+                                <br>{{ event.end_time }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

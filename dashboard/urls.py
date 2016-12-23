@@ -153,4 +153,8 @@ urlpatterns = [
     url(r'^detail-manager/supplies-request/$', views.supplies_request, name='supplies_request'),
     url(r'^detail-manager/supplies-list/$', views.supplies_list, name='supplies_list'),
     url(r'^detail-manager/supplies-finish/$', views.supplies_finish, name='supplies_finish'),
+
+    # Committees
+    url(r'^scholarship-committee/$', views.scholarship_comm, name="scholarship_comm"),
+    url(r'^scholarship-committee/event/(?P<event_id>[0-9]+)/$', views.study_table_event, name="scholarship_comm_event"),
 ]

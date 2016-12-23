@@ -41,7 +41,9 @@
                         </tbody>
                     </table>
                     {% if type == 'attendance' or type == 'ec-view' %}
-                        <a class="btn btn-default" href={% url 'dashboard:scholarship_c_event_edit' event.id %} role="button">Edit event</a>
+                    	{% if user_status %}
+                        	<a class="btn btn-default" href={% url 'dashboard:scholarship_c_event_edit' event.id %} role="button">Edit event</a>
+                        {% endif %}
                     {% endif %}
                 </div>
                 <div class=" col-lg-2 "></div>
