@@ -1266,9 +1266,9 @@ def study_table_event(request, event_id):
                     event.attendees_brothers.remove(brothers[counter])
                     event.save()
             if user_status:
-                return HttpResponseRedirect(reverse('dashboard:scholarship_c_event', kwargs={'event_id': event_id}))
+                return HttpResponseRedirect(reverse('dashboard:scholarship_c'))
             else:
-                return HttpResponseRedirect(reverse('dashboard:scholarship_comm_event', kwargs={'event_id': event_id}))
+                return HttpResponseRedirect(reverse('dashboard:scholarship_comm'))
 
     context = {
         'type': 'attendance',
