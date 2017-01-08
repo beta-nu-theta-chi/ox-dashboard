@@ -411,7 +411,7 @@ class ExcuseDelete(DeleteView):
         return super(ExcuseDelete, self).get(request, *args, **kwargs)
 
     model = Excuse
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'delete_form.html'
     success_url = reverse_lazy('dashboard:brother')
 
 
@@ -424,7 +424,14 @@ class ExcuseEdit(UpdateView):
             return HttpResponseRedirect(reverse('dashboard:home'))
         return super(ExcuseEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(ExcuseEdit, self).get_context_data(**kwargs)
+        context['model_name'] = "Excuse"
+
+        return context
+
     model = Excuse
+    template_name = 'update_form.html'
     success_url = reverse_lazy('dashboard:brother')
     fields = ['description']
 
@@ -437,7 +444,14 @@ class BrotherEdit(UpdateView):
             return HttpResponseRedirect(reverse('dashboard:home'))
         return super(BrotherEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(BrotherEdit, self).get_context_data(**kwargs)
+        context['model_name'] = "Brother"
+
+        return context
+
     model = Brother
+    template_name = 'update_form.html'
     success_url = reverse_lazy('dashboard:brother')
     fields = ['first_name', 'last_name', 'roster_number', 'semester_joined', 'school_status', 'brother_status',
               'major', 'minor', 't_shirt_size', 'case_ID', 'birthday', 'hometown', 'phone_number',
@@ -517,7 +531,7 @@ class ServiceSubmissionDelete(DeleteView):
             return HttpResponseRedirect(reverse('dashboard:home'))
         return super(ServiceSubmissionDelete, self).get(request, *args, **kwargs)
 
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'delete_form.html'
     model = ServiceSubmission
     success_url = reverse_lazy('dashboard:brother')
 
@@ -531,7 +545,14 @@ class ServiceSubmissionEdit(UpdateView):
             return HttpResponseRedirect(reverse('dashboard:home'))
         return super(ServiceSubmissionEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(ServiceSubmissionEdit, self).get_context_data(**kwargs)
+        context['model_name'] = "Service Submission"
+
+        return context
+
     model = ServiceSubmission
+    template_name = 'update_form.html'
     success_url = reverse_lazy('dashboard:brother')
     fields = ['name', 'date', 'description', 'hours', 'status']
 
@@ -619,7 +640,7 @@ class CommitteeMeetingDelete(DeleteView):
         return super(CommitteeMeetingDelete, self).get(request, *args, **kwargs)
 
     model = CommitteeMeetingEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'delete_form.html'
     success_url = reverse_lazy('dashboard:vice_president')
 
 
@@ -628,7 +649,14 @@ class CommitteeMeetingEdit(UpdateView):
     def get(self, request, *args, **kwargs):
         return super(CommitteeMeetingEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(CommitteeMeetingEdit, self).get_context_data(**kwargs)
+        context['model_name'] = "Committee Meeting"
+
+        return context
+
     model = CommitteeMeetingEvent
+    template_name = 'update_form.html'
     success_url = reverse_lazy('dashboard:vice_president')
     fields = ['date', 'start_time', 'semester', 'committee', 'minutes']
 
@@ -682,7 +710,14 @@ class HealthAndSafteyEdit(UpdateView):
     def get(self, request, *args, **kwargs):
         return super(HealthAndSafteyEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(HealthAndSafteyEdit, self).get_context_data(**kwargs)
+        context['model_name'] = "Helath and Safety Event"
+
+        return context
+
     model = HealthAndSafteyEvent
+    template_name = 'update_form.html'
     success_url = reverse_lazy('dashboard:vphs')
     fields = ['name', 'date', 'start_time', 'end_time', 'notes', 'minutes']
 
@@ -693,7 +728,7 @@ class HealthAndSafteyDelete(DeleteView):
         return super(HealthAndSafteyDelete, self).get(request, *args, **kwargs)
 
     model = HealthAndSafteyEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'delete_form.html'
     success_url = reverse_lazy('dashboard:vphs')
 
 
@@ -947,7 +982,14 @@ class SecretaryBrotherEdit(UpdateView):
     def get(self, request, *args, **kwargs):
         return super(SecretaryBrotherEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(SecretaryBrotherEdit, self).get_context_data(**kwargs)
+        context['model_name'] = "Brother"
+
+        return context
+
     model = Brother
+    template_name = 'update_form.html'
     success_url = reverse_lazy('dashboard:secretary_brother_list')
     fields = ['first_name', 'last_name', 'roster_number', 'semester_joined', 'school_status', 'brother_status',
               'major', 'minor', 't_shirt_size', 'case_ID', 'birthday', 'hometown', 'phone_number',
@@ -961,7 +1003,7 @@ class SecretaryBrotherDelete(DeleteView):
         return super(SecretaryBrotherDelete, self).get(request, *args, **kwargs)
 
     model = Brother
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'delete_form.html'
     success_url = reverse_lazy('dashboard:secretary')
 
 
@@ -1004,7 +1046,14 @@ class ChapterEventEdit(UpdateView):
     def get(self, request, *args, **kwargs):
         return super(ChapterEventEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(ChapterEventEdit, self).get_context_data(**kwargs)
+        context['model_name'] = "Chapter Event"
+
+        return context
+
     model = ChapterEvent
+    template_name = 'update_form.html'
     success_url = reverse_lazy('dashboard:secretary')
     fields = ['name', 'mandatory', 'date', 'start_time', 'end_time', 'minutes', 'notes']
 
@@ -1015,7 +1064,7 @@ class ChapterEventDelete(DeleteView):
         return super(ChapterEventDelete, self).get(request, *args, **kwargs)
 
     model = ChapterEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'delete_form.html'
     success_url = reverse_lazy('dashboard:secretary')
 
 
@@ -1083,7 +1132,14 @@ class PositionEdit(UpdateView):
     def get(self, request, *args, **kwargs):
         return super(PositionEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(PositionEdit, self).get_context_data(**kwargs)
+        context['model_name'] = "Position"
+
+        return context
+
     model = Position
+    template_name = 'update_form.html'
     success_url = reverse_lazy('dashboard:secretary_positions')
     fields = ['brother']
 
@@ -1094,7 +1150,7 @@ class PositionDelete(DeleteView):
         return super(PositionDelete, self).get(request, *args, **kwargs)
 
     model = Position
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'delete_form.html'
     success_url = reverse_lazy('dashboard:secretary_positions')
 
 
@@ -1181,7 +1237,14 @@ class CandidateEdit(UpdateView):
     def get(self, request, *args, **kwargs):
         return super(CandidateEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(CandidateEdit, self).get_context_data(**kwargs)
+        context['model_name'] = "Candidate"
+
+        return context
+
     model = Brother
+    template_name = 'update_form.html'
     success_url = reverse_lazy('dashboard:marshal')
     fields = [
         'first_name', 'last_name', 'roster_number', 'semester_joined',
@@ -1198,7 +1261,7 @@ class CandidateDelete(DeleteView):
         return super(CandidateDelete, self).get(request, *args, **kwargs)
 
     model = Brother
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'delete_form.html'
     success_url = reverse_lazy('dashboard:marshal')
 
 
@@ -1307,7 +1370,7 @@ class StudyEventDelete(DeleteView):
         return super(StudyEventDelete, self).get(request, *args, **kwargs)
 
     model = StudyTableEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'delete_form.html'
     success_url = reverse_lazy('dashboard:scholarship_c')
 
 
@@ -1316,7 +1379,13 @@ class StudyEventEdit(UpdateView):
     def get(self, request, *args, **kwargs):
         return super(StudyEventEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(StudyEventEdit, self).get_context_data(**kwargs)
+        context['model_name'] = "Study Tables Event"
+
+        return context
     model = StudyTableEvent
+    template_name = 'update_form.html'
     success_url = reverse_lazy('dashboard:scholarship_c')
     fields = ['date', 'start_time', 'end_time', 'notes']
 
@@ -1378,7 +1447,14 @@ class ScholarshipReportEdit(UpdateView):
     def get(self, request, *args, **kwargs):
         return super(ScholarshipReportEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(ScholarshipReportEdit, self).get_context_data(**kwargs)
+        context['model_name'] = "Scholarship Plan"
+
+        return context
+
     model = ScholarshipReport
+    template_name = 'update_form.html'
     success_url = reverse_lazy('dashboard:scholarship_c')
     fields = ['cumulative_gpa', 'past_semester_gpa', 'scholarship_plan', 'active']
 
@@ -1488,7 +1564,7 @@ class PnmDelete(DeleteView):
         return super(PnmDelete, self).get(request, *args, **kwargs)
 
     model = PotentialNewMember
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'delete_form.html'
     success_url = reverse_lazy('dashboard:recruitment_c')
 
 
@@ -1497,7 +1573,14 @@ class PnmEdit(UpdateView):
     def get(self, request, *args, **kwargs):
         return super(PnmEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(PnmEdit, self).get_context_data(**kwargs)
+        context['model_name'] = "Potential New Member"
+
+        return context
+
     model = PotentialNewMember
+    template_name = 'update_form.html'
     success_url = reverse_lazy('dashboard:recruitment_c')
     fields = ['first_name', 'last_name', 'case_ID', 'phone_number', 'primary_contact', 'secondary_contact',
               'tertiary_contact', 'notes']
@@ -1602,7 +1685,7 @@ class RecruitmentEventDelete(DeleteView):
         return super(RecruitmentEventDelete, self).get(request, *args, **kwargs)
 
     model = RecruitmentEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'delete_form.html'
     success_url = reverse_lazy('dashboard:recruitment_c')
 
 
@@ -1611,7 +1694,14 @@ class RecruitmentEventEdit(UpdateView):
     def get(self, request, *args, **kwargs):
         return super(RecruitmentEventEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(RecruitmentEventEdit, self).get_context_data(**kwargs)
+        context['model_name'] = "Recruitment Event"
+
+        return context
+
     model = RecruitmentEvent
+    template_name = 'update_form.html'
     success_url = reverse_lazy('dashboard:recruitment_c')
     fields = ['name', 'rush', 'date', 'start_time', 'end_time', 'notes']
 
@@ -1694,7 +1784,7 @@ class ServiceEventDelete(DeleteView):
         return super(ServiceEventDelete, self).get(request, *args, **kwargs)
 
     model = ServiceEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'delete_form.html'
     success_url = reverse_lazy('dashboard:service_c')
 
 
@@ -1703,7 +1793,14 @@ class ServiceEventEdit(UpdateView):
     def get(self, request, *args, **kwargs):
         return super(ServiceEventEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(ServiceEventEdit, self).get_context_data(**kwargs)
+        context['model_name'] = "Service Event"
+
+        return context
+
     model = ServiceEvent
+    template_name = 'update_form.html'
     success_url = reverse_lazy('dashboard:service_c')
     fields = ['name', 'date', 'start_time', 'end_time', 'notes']
 
@@ -1862,7 +1959,7 @@ class PhilanthropyEventDelete(DeleteView):
         return super(PhilanthropyEventDelete, self).get(request, *args, **kwargs)
 
     model = PhilanthropyEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'delete_form.html'
     success_url = reverse_lazy('dashboard:philanthropy_c')
 
 
@@ -1871,7 +1968,14 @@ class PhilanthropyEventEdit(UpdateView):
     def get(self, request, *args, **kwargs):
         return super(PhilanthropyEventEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(PhilanthropyEventEdit, self).get_context_data(**kwargs)
+        context['model_name'] = "Philanthropy Event"
+
+        return context
+
     model = PhilanthropyEvent
+    template_name = 'update_form.html'
     success_url = reverse_lazy('dashboard:philanthropy_c')
     fields = ['name', 'date', 'start_time', 'end_time', 'notes']
 

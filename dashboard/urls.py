@@ -107,8 +107,7 @@ urlpatterns = [
     url(r'^recruitment-chair/event/(?P<pk>\d+)/delete/$', views.RecruitmentEventDelete.as_view(),
         name="recruitment_c_event_delete"),
     url(r'^recruitment-chair/pnm/(?P<pnm_id>[0-9]+)/$', views.recruitment_c_pnm, name="recruitment_c_pnm"),
-    url(r'^recruitment-chair/pnm/(?P<pk>\d+)/edit/$', views.PnmEdit.as_view(),
-        name="recruitment_c_pnm_edit"),
+    url(r'^recruitment-chair/pnm/(?P<pk>\d+)/edit/$', views.PnmEdit.as_view(), name="recruitment_c_pnm_edit"),
     url(r'^recruitment-chair/pnm/add/$', views.recruitment_c_pnm_add, name="recruitment_c_pnm_add"),
     url(r'^recruitment-chair/pnm/(?P<pk>\d+)/delete/$', views.PnmDelete.as_view(), name="recruitment_c_pnm_delete"),
 
@@ -136,8 +135,7 @@ urlpatterns = [
     url(r'^service-chair/event/add/$', views.service_c_event_add, name="service_c_event_add"),
     url(r'^service-chair/event/(?P<pk>\d+)/delete/$', views.ServiceEventDelete.as_view(),
         name="service_c_event_delete"),
-    url(r'^service-chair/event/(?P<pk>\d+)/edit/$', views.ServiceEventEdit.as_view(),
-        name="service_c_event_edit"),
+    url(r'^service-chair/event/(?P<pk>\d+)/edit/$', views.ServiceEventEdit.as_view(), name="service_c_event_edit"),
     url(r'^service-chair/hours/$', views.service_c_hours, name='service_c_hours'),
 
     # Philanthropy Chair URL Section
