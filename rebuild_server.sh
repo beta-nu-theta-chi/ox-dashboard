@@ -10,8 +10,8 @@ then
     exit 1
 fi
 
-#rm db.sqlite3
-#python manage.py migrate
+rm db.sqlite3
+python manage.py migrate
 
 echo "Creating positions..."
 
