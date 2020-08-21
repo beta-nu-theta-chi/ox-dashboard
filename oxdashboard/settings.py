@@ -101,8 +101,12 @@ if DEBUG and _DEBUG:
 else:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join('/db/db.sqlite3'),
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'oxdashboard',
+            'USER': os.environ['DASHBOARD_USER'],
+            'PASSWORD': os.environ['DASHBOARD_PASSWORD'],
+            'HOST': 'localhost',
+            'PORT': '',
         }
     }
 
