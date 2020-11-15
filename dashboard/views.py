@@ -230,6 +230,7 @@ def classes_add(request):
     context = {
         'form': form,
         'brother': brother,
+        'title': 'Add a Class',
     }
 
     return render(request, "model-add.html", context)
@@ -243,6 +244,66 @@ class ClassesDelete(DeleteView):
     model = Classes
     template_name = 'dashboard/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:classes')
+
+
+def create_report(request):
+    brother = request.user.brother
+    positions = brother.position_set.exclude(title__in=['Adviser'])
+
+    form = ReportForm(request.POST or None)
+
+    if Position.objects.get(title='Secretary') in positions:
+        form.fields["position"].queryset = Position.objects.exclude(title__in=['Adviser'])
+    else:
+        form.fields["position"].queryset = positions
+
+    if request.method == "POST":
+        if form.is_valid():
+            instance = form.save(commit=False)
+            instance.brother = brother
+            instance.save()
+            if Position.objects.get(title='Secretary') in positions:
+                return HttpResponseRedirect(reverse('dashboard:secretary_agenda'))
+            else:
+                return HttpResponseRedirect(reverse('dashboard:brother'))
+
+    context = {
+        'form': form,
+        'brother': brother,
+        'title': 'Submit Officer Report or Communication'
+    }
+
+    return render(request, "model-add.html", context)
+
+
+class DeleteReport(DeleteView):
+    def get(self, request, *args, **kwargs):
+        report = Report.objects.get(pk=self.kwargs['pk'])
+        brother = report.brother
+        if not verify_brother(brother, request.user):
+            messages.error(request, "Brother Access Denied!")
+            return HttpResponseRedirect(reverse('dashboard:home'))
+        return super(DeleteReport, self).get(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return self.request.GET.get('next')
+
+    model = Report
+    template_name = 'dashboard/base_confirm_delete.html'
+
+
+class EditReport(UpdateView):
+    def get(self, request, *args, **kwargs):
+        report = Report.objects.get(pk=self.kwargs['pk'])
+        brother = report.brother
+        if not verify_brother(brother, request.user):
+            messages.error(request, "Brother Access Denied!")
+            return HttpResponseRedirect(reverse('dashboard:home'))
+        return super(EditReport, self).get(request, *args, **kwargs)
+
+    model = Report
+    success_url = reverse_lazy('dashboard:brother')
+    fields = ['position', 'information']
 
 
 def brother_view(request):
@@ -1489,6 +1550,24 @@ class PositionDelete(DeleteView):
     model = Position
     template_name = 'dashboard/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:secretary_positions')
+
+
+#@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+def secretary_agenda(request):
+    brothers = [Brother.objects.get(id=id)for id in Report.objects.filter(is_officer=False).order_by('brother').values_list('brother', flat=True).distinct()]
+    officers = [Position.objects.get(id=id) for id in Report.objects.filter(is_officer=True).order_by('position').values_list('position', flat=True).distinct()]
+    print(brothers)
+    if request.method == 'POST':
+        Report.objects.all().delete()
+        return HttpResponseRedirect(reverse('dashboard:secretary_agenda'))
+
+    context = {
+        'brothers': brothers,
+        'officers': officers,
+    }
+
+    return render(request, 'secretary-agenda.html', context)
+
 
 
 @verify_position(['Marshal', 'Vice President', 'President', 'Adviser'])

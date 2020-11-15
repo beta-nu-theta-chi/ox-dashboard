@@ -214,7 +214,6 @@ class Grade(models.Model):
         ]
 
 
-
 def query_positions_with_committee():
     choices = Q()
     for position in (
@@ -271,6 +270,13 @@ class Position(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Report(models.Model):
+    is_officer = models.BooleanField(default=True)
+    position = models.ForeignKey(Position, on_delete=models.CASCADE, blank=True, null=True, related_name="reports")
+    brother = models.ForeignKey(Brother, on_delete=models.CASCADE, related_name="reports")
+    information = models.TextField()
 
 
 class PotentialNewMember(models.Model):
