@@ -234,7 +234,7 @@ class Position(models.Model):
     class PositionChoices(models.TextChoices):
         PRESIDENT = 'President'
         VICE_PRESIDENT = 'Vice President'
-        VICE_PRESIDENT_OF_HEALTH_AND_SAFETY = 'Vice President of Health and Safety'
+        VICE_PRESIDENT_OF_HEALTH_AND_SAFETY = 'Vice President of Health and Safety', _('Vice President of Health and Safety')
         SECRETARY = 'Secretary'
         TREASURER = 'Treasurer'
         MARSHAL = 'Marshal'
@@ -247,6 +247,23 @@ class Position(models.Model):
         ALUMNI_RELATIONS_CHAIR = 'Alumni Relations Chair'
         MEMBERSHIP_DEVELOPMENT_CHAIR = 'Membership Development Chair'
         SOCIAL_CHAIR = 'Social Chair'
+        COMMUNITY_STANDARDS_CHAIR = 'Community Standards Chair'
+        OX_ROAST_CHAIR = 'OX Roast Chair', _('OX Roast Chair')
+        DAMAGE_CHAIR = 'Damage Chair'
+        GREEK_GAMES_CHAIR = 'Greek Games Chair'
+        HISTORIAN = 'Historian'
+        FIRST_GUARD = 'First Guard'
+        SECOND_GUARD = 'Second Guard'
+        INTERNAL_CHANGE_CHAIR = 'Internal Change Chair'
+        STANDARDS_BOARD_JUSTICE = 'Standards Board Justice'
+        EXECUTIVE_COUNCIL_MEMBER_AT_LARGE = 'Executive Council Member At Large'
+        HOUSE_MANAGER = 'House Manager'
+        RISK_MANAGER = 'Risk Manager'
+        IFC_REP = 'IFC Rep', _('IFC Rep')
+        AWARDS_CHAIR = 'Awards Chair'
+        FOOD_STEWARD = 'Food Steward'
+        ATHLETICS_CHAIR = 'Athletics Chair'
+        DASHBOARD_CHAIR = 'Dashboard Chair'
         ADVISER = 'Adviser'
 
     title = models.CharField(max_length=45, choices=PositionChoices.choices, unique=True, blank=False)

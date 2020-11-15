@@ -301,6 +301,12 @@ class EditReport(UpdateView):
             return HttpResponseRedirect(reverse('dashboard:home'))
         return super(EditReport, self).get(request, *args, **kwargs)
 
+    def get_form(self):
+        form = super().get_form()
+        form.fields["position"].queryset = Report.objects.get(pk=self.kwargs['pk']).brother.position_set.exclude(title__in=['Adviser'])
+        return form
+
+
     model = Report
     success_url = reverse_lazy('dashboard:brother')
     fields = ['position', 'information']
@@ -1552,18 +1558,43 @@ class PositionDelete(DeleteView):
     success_url = reverse_lazy('dashboard:secretary_positions')
 
 
-#@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
 def secretary_agenda(request):
-    brothers = [Brother.objects.get(id=id)for id in Report.objects.filter(is_officer=False).order_by('brother').values_list('brother', flat=True).distinct()]
-    officers = [Position.objects.get(id=id) for id in Report.objects.filter(is_officer=True).order_by('position').values_list('position', flat=True).distinct()]
-    print(brothers)
+    c_reports = Report.objects.filter(is_officer=False).order_by('brother')
+    communications = []
+    previous = Brother
+    brother = []
+    for communication in c_reports:
+        if previous == communication.brother:
+            brother.append(communication)
+        else:
+            if brother:
+                communications.append(brother)
+            brother = [communication]
+            previous = communication.brother
+    communications.append(brother)
+
+    o_reports = Report.objects.filter(is_officer=True).order_by('position')
+    reports = []
+    previous = Position
+    position = []
+    for report in o_reports:
+        if previous == report.position:
+            position.append(report)
+        else:
+            if position:
+                reports.append(position)
+            position = [report]
+            previous = report.position
+    reports.append(position)
+
     if request.method == 'POST':
         Report.objects.all().delete()
         return HttpResponseRedirect(reverse('dashboard:secretary_agenda'))
 
     context = {
-        'brothers': brothers,
-        'officers': officers,
+        'communications': communications,
+        'reports': reports,
     }
 
     return render(request, 'secretary-agenda.html', context)
