@@ -577,7 +577,7 @@ class Committee(models.Model):
     meeting_time = models.TimeField(choices=MeetingTime.choices, blank=True)
 
     def __str__(self):
-        for x, y in self.COMMITTEE_CHOICES:
+        for x, y in self.CommitteeChoices.choices:
             if x == self.committee:
                 return y + " Committee"
         return self.committee
@@ -728,4 +728,6 @@ class PhoneTreeNode(models.Model):
     notified_by = models.ForeignKey(Brother, on_delete=models.PROTECT, null=True, related_name='phone_tree_notified_by') # null is the root (ie president)
 
     def __str__(self):
+        if self.brother.position_set.filter(title='President'):
+            return self.brother.first_name + " " + self.brother.last_name
         return self.brother.first_name + " " + self.brother.last_name + " notified by " + self.notified_by.first_name + " " + self.notified_by.last_name
