@@ -24,3 +24,5 @@ admin.site.register(Classes)
 admin.site.register(Grade)
 admin.site.register(MeetABrother)
 admin.site.register(Report)
+admin.site.register(PhoneTreeNode)
+
