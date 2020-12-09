@@ -275,19 +275,20 @@ class SuppliesForm(forms.ModelForm):
 
 
 class MABEditCandidateForm(forms.Form):
-    candidate = forms.ChoiceField(queryset=Brother.objects.filter(brother_status='0'), required=True)
+    candidate = forms.ModelChoiceField(queryset=Brother.objects.filter(brother_status='0'), required=True)
 
 
 class MeetABrotherEditForm(forms.Form):
     update = forms.BooleanField(label="", required=False)
 
     def __init__(self, *args, **kwargs):
-        brother = kwargs.pop('brother', "")
-        super(MeetABrotherEditForm).__init__(*args, **kwargs)
+        brother = Brother.objects.get(pk=kwargs.pop('brother', ""))
+        exists = kwargs.pop('mab_exists', "")
+        super(MeetABrotherEditForm, self).__init__(*args, **kwargs)
 
         if brother:
             self.fields['update'].label = brother.first_name + ' ' + brother.last_name
-            self.fields['update'].initial = mab_exists
+            self.fields['update'].initial = exists
 
 
 class MeetABrotherForm(forms.Form):

@@ -1704,26 +1704,26 @@ def marshal_mab_edit_candidate(request):
 
     if request.method == 'POST':
         if form.is_valid():
-            request.session['candidate'] = form.cleaned_data['candidate']
-            return HttpResponseRedirect(reverse('step2'))
+            request.session['candidate'] = form.cleaned_data['candidate'].pk
+            return HttpResponseRedirect(reverse('dashboard:marshal_mab_edit'))
 
     context = {
         'form': form,
     }
 
-    return render(request, 'marhsal-mab-edit-candidate.html', context)
+    return render(request, 'marshal-mab-edit-candidate.html', context)
 
 
 def marshal_mab_edit(request):
-    candidate = request.session['candidate']
+    candidate = Brother.objects.get(pk=request.session.get('candidate', None))
     check_all = request.session.pop('check_all', False)
 
     mab_form_list = []
 
-    brothers = Brother.objects.all()
+    brothers = Brother.objects.filter(brother_status='1')
 
     for counter, brother in enumerate(brothers):
-        form = MeetABrotherForm(request.POST or None, prefix=counter+1, brother=brother, mab_exists=MeetABrother.objects.get(brother=brother, candidate=candidate).exists())
+        form = MeetABrotherEditForm(request.POST or None, prefix=counter+1, brother=brother.pk, mab_exists=MeetABrother.objects.filter(brother=brother, candidate=candidate).exists())
         if check_all:
             form.fields['update'].initial = True
         mab_form_list.append(form)
@@ -1734,17 +1734,18 @@ def marshal_mab_edit(request):
                 for counter, form in enumerate(mab_form_list):
                     instance = form.cleaned_data
                     if instance['update']:
-                        mab, created = MeetABrother.objects.get_or_create(candidate=candidate, brother=instance['brother'], completed=True, week=datetime.datetime(1000, 1, 1))
+                        mab, created = MeetABrother.objects.get_or_create(candidate=candidate, brother=brothers[counter], completed=True, week=datetime.datetime(1000, 1, 1))
                         if created:
                             mab.save()
                     elif not instance['update']:
                         try:
-                            MeetABrother.objects.get(candidate=candidate, brother=instance['brother'], completed=True, week=datetime.datetime(1000, 1, 1)).delete()
-                        except Like.DoesNotExist:
+                            MeetABrother.objects.get(candidate=candidate, brother=brothers[counter], completed=True, week=datetime.datetime(1000, 1, 1)).delete()
+                        except MeetABrother.DoesNotExist:
                             break
                 return HttpResponseRedirect(reverse('dashboard:marshal_mab_edit_candidate'))
         if 'check_all' in request.POST:
             request.session['check_all'] = True
+            return HttpResponseRedirect(reverse('dashboard:marshal_mab_edit'))
         if 'go_back' in request.POST:
             return HttpResponseRedirect(reverse('dashboard:marshal_mab_edit_candidate'))
 
@@ -1753,12 +1754,12 @@ def marshal_mab_edit(request):
         'mab_form_list': mab_form_list,
     }
 
-    return render(request, 'marhsal-mab-edit.html', context)
+    return render(request, 'marshal-mab-edit.html', context)
 
 
 def meet_a_brother(request):
     candidates = Brother.objects.filter(brother_status=0)
-    weeks = MeetABrother.objects.all().order_by('-week').values_list('week', flat=True).distinct
+    weeks = MeetABrother.objects.filter(week__range=(datetime.date(2000, 1, 1), datetime.datetime.now())).order_by('-week').values_list('week', flat=True).distinct
     try:
         discord = OnlineMedia.objects.get(name='Discord')
     except ObjectDoesNotExist:
