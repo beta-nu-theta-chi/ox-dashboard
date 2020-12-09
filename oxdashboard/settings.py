@@ -27,15 +27,11 @@ else:
     SECRET_KEY = "841dp9w*!q+o19&k28!r9-u^sc0mw0vc(qt_x#v*svs^e*_0*!i"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if os.environ.get('DEBUG'):
-    DEBUG = os.environ.get('DEBUG') != 'False'
-else:
-    DEBUG = True
 
-if os.environ.get('_DEBUG'):
-    _DEBUG = False
-else:
-    _DEBUG = True
+DEBUG = True
+
+
+_DEBUG = True
 
 
 if os.environ.get('DJANGO_ALLOWED_HOSTS'):

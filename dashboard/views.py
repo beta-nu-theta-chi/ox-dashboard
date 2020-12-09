@@ -1698,6 +1698,64 @@ def marshal(request):
     return render(request, 'marshal.html', context)
 
 
+def marshal_mab_edit_candidate(request):
+    initial = {'candidate': request.session.pop('candidate', None)}
+    form = MABEditCandidateForm(request.POST or None, initial=initial)
+
+    if request.method == 'POST':
+        if form.is_valid():
+            request.session['candidate'] = form.cleaned_data['candidate']
+            return HttpResponseRedirect(reverse('step2'))
+
+    context = {
+        'form': form,
+    }
+
+    return render(request, 'marhsal-mab-edit-candidate.html', context)
+
+
+def marshal_mab_edit(request):
+    candidate = request.session['candidate']
+    check_all = request.session.pop('check_all', False)
+
+    mab_form_list = []
+
+    brothers = Brother.objects.all()
+
+    for counter, brother in enumerate(brothers):
+        form = MeetABrotherForm(request.POST or None, prefix=counter+1, brother=brother, mab_exists=MeetABrother.objects.get(brother=brother, candidate=candidate).exists())
+        if check_all:
+            form.fields['update'].initial = True
+        mab_form_list.append(form)
+
+    if request.method == 'POST':
+        if 'submit' in request.POST:
+            if forms_is_valid(mab_form_list):
+                for counter, form in enumerate(mab_form_list):
+                    instance = form.cleaned_data
+                    if instance['update']:
+                        mab, created = MeetABrother.objects.get_or_create(candidate=candidate, brother=instance['brother'], completed=True, week=datetime.datetime(1000, 1, 1))
+                        if created:
+                            mab.save()
+                    elif not instance['update']:
+                        try:
+                            MeetABrother.objects.get(candidate=candidate, brother=instance['brother'], completed=True, week=datetime.datetime(1000, 1, 1)).delete()
+                        except Like.DoesNotExist:
+                            break
+                return HttpResponseRedirect(reverse('dashboard:marshal_mab_edit_candidate'))
+        if 'check_all' in request.POST:
+            request.session['check_all'] = True
+        if 'go_back' in request.POST:
+            return HttpResponseRedirect(reverse('dashboard:marshal_mab_edit_candidate'))
+
+    context = {
+        'candidate': candidate,
+        'mab_form_list': mab_form_list,
+    }
+
+    return render(request, 'marhsal-mab-edit.html', context)
+
+
 def meet_a_brother(request):
     candidates = Brother.objects.filter(brother_status=0)
     weeks = MeetABrother.objects.all().order_by('-week').values_list('week', flat=True).distinct
