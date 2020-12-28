@@ -347,30 +347,28 @@ def brother_view(request):
 
     # Event attendance value
     attendance = []
-    past_chapter_event_count = 0
-    chapter_event_attendance = 0
-    unexcused_events = 0
+    past_event_count = 0
+    event_attendance = 0
     for event in chapter_events:
         if int(event.date.strftime("%s")) > int(datetime.datetime.now().strftime("%s")):
             attendance.append('')
         elif not event.mandatory:
             attendance.append('Not Mandatory')
         else:
-            past_chapter_event_count += 1
+            past_event_count += 1
             if event.attendees_brothers.filter(id=brother.id):
                 attendance.append('Attended')
-                chapter_event_attendance += 1
+                event_attendance += 1
             elif excuses_approved.filter(event=event):
                 attendance.append('Excused')
-                chapter_event_attendance += 1
+                event_attendance += 1
             elif excuses_pending.filter(event=event):
                 attendance.append('Pending')
             else:
                 attendance.append('Unexcused')
-                unexcused_events += 1
 
-    event_attendance = zip(chapter_events, attendance)
-    chapter_attendance = "%s / %s" % (chapter_event_attendance, past_chapter_event_count)
+    chapter_event_attendance = zip(chapter_events, attendance)
+    chapter_attendance = "%s / %s" % (event_attendance, past_event_count)
 
     current_season = get_season()
     if current_season is '0':
@@ -383,10 +381,12 @@ def brother_view(request):
             .order_by("date")
         recruitment_events_next = RecruitmentEvent.objects.filter(semester__season='0', semester__year=get_year()) \
             .order_by("date")
+
     pnms = PotentialNewMember.objects.filter(Q(primary_contact=brother) |
                                              Q(secondary_contact=brother) |
                                              Q(tertiary_contact=brother)).order_by("last_name", "first_name")
     service_events = ServiceEvent.objects.filter(semester=get_semester()).order_by("date")
+
     # Service submissions
     submissions_pending = ServiceSubmission.objects.filter(brother=brother, semester=get_semester(),
                                                            status='0').order_by("date")
@@ -436,9 +436,8 @@ def brother_view(request):
 
     context = {
         'brother': brother,
-        'event_attendance': event_attendance,
+        'event_attendance': chapter_event_attendance,
         'chapter_attendance': chapter_attendance,
-        'unexcused_events': unexcused_events,
         'operational_committees': operational_committees,
         'standing_committees': standing_committees,
         'meetings': meetings,
@@ -1070,6 +1069,7 @@ def health_and_safety_event_add(request):
             }
             return render(request, "event-add.html", context)
         instance.semester = semester
+        instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
         instance.save()
         return HttpResponseRedirect(reverse('dashboard:vphs'))
 
@@ -1457,6 +1457,8 @@ def secretary_event_add(request):
                 }
                 return render(request, "event-add.html", context)
             instance.semester = semester
+            instance.save()
+            instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
             instance.save()
             return HttpResponseRedirect(reverse('dashboard:secretary'))
 
@@ -1919,6 +1921,8 @@ def scholarship_c_event_add(request):
                 return render(request, "event-add.html", context)
             instance.semester = semester
             instance.save()
+            instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
+            instance.save()
             return HttpResponseRedirect(reverse('dashboard:scholarship_c'))
 
     context = {
@@ -2010,7 +2014,7 @@ class ScholarshipReportEdit(UpdateView):
     fields = ['cumulative_gpa', 'past_semester_gpa', 'scholarship_plan', 'active']
 
 
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+#@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
 def recruitment_c(request):
     """ Renders Recruitment chair page with events for the current and following semester """
     current_season = get_season()
@@ -2204,6 +2208,8 @@ def recruitment_c_event_add(request):
                 return render(request, "recruitment-event-add.html", context)
             instance.semester = semester
             instance.save()
+            instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
+            instance.save()
             return HttpResponseRedirect(reverse('dashboard:recruitment_c'))
 
     context = {
@@ -2359,6 +2365,8 @@ def service_c_event_add(request):
                 return render(request, "event-add.html", context)
             instance.semester = semester
             instance.save()
+            instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
+            instance.save()
             return HttpResponseRedirect(reverse('dashboard:service_c'))
 
     context = {
@@ -2454,6 +2462,8 @@ def philanthropy_c_event_add(request):
                 }
                 return render(request, "event-add.html", context)
             instance.semester = semester
+            instance.save()
+            instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
             instance.save()
             return HttpResponseRedirect(reverse('dashboard:philanthropy_c'))
 

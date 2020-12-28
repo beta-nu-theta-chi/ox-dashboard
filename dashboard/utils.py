@@ -274,8 +274,37 @@ def photo_form(form_class, request):
     return form
 
 
+def brother_attendance(events):
+    # Event attendance value
+    attendance = []
+    past_event_count = 0
+    attendance_counter = 0
+    for event in recruitment_events:
+        if int(event.date.strftime("%s")) > int(datetime.datetime.now().strftime("%s")):
+            attendance.append('')
+        elif not event.rush:
+            attendance.append('Not Rush')
+        else:
+            past_event_count += 1
+            if event.attendees_brothers.filter(id=brother.id):
+                attendance.append('Attended')
+                attendance_counter += 1
+            elif excuses_approved.filter(event=event):
+                attendance.append('Excused')
+                attendance_counter += 1
+            elif excuses_pending.filter(event=event):
+                attendance.append('Pending')
+            else:
+                attendance.append('Unexcused')
+
+    event_attendance = zip(chapter_events, attendance)
+    attendance_ratio = "%s / %s" % (event_attendance, past_event_count)
+
+    return {event_attendance: event_attendance, attendance_ratio: attendance_ratio}
+
+
 def attendance_list(request, event):
-    brothers = Brother.objects.exclude(brother_status='2').order_by('last_name')
+    brothers = event.eligible_attendees.all()
     brother_form_list = []
 
     for counter, brother in enumerate(brothers):

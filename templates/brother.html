@@ -304,7 +304,7 @@
             </div>
         </div>
         <div class="panel-footer text-center">
-            Attendance (to date): {{ chapter_attendance }} - Unexcused Absences (to date): {{ unexcused_events }}
+            Attendance (to date): {{ brother.get_chapter_attendance }}
         </div>
     </div>
     <div class="panel panel-default">
@@ -346,6 +346,9 @@
                 {% endfor %}
             </div>
         </div>
+        <div class="panel-footer text-center">
+            Attendance (to date): {{ brother.get_recruitment_attendance }}
+        </div>
     </div>
     <div class="panel panel-default">
         <div class="panel-heading">Health and Safety Events</div>
@@ -367,6 +370,9 @@
                     {% endfor %}
                 </div>
         </div>
+        <div class="panel-footer text-center">
+            Attendance (to date): {{ brother.get_hs_attendance }}
+        </div>
     </div>
     <div class="panel panel-default">
         <div class="panel-heading">Philanthropy Events</div>
@@ -386,6 +392,9 @@
                 <div></div>
                 {% endfor %}
             </div>
+        </div>
+        <div class="panel-footer text-center">
+            Attendance (to date): {{ brother.get_philanthropy_attendance }}
         </div>
     </div>
     <div class="panel panel-default">
@@ -407,6 +416,9 @@
                     <div></div>
                     {% endfor %}
                 </div>
+        </div>
+        <div class="panel-footer text-center">
+            Attendance (to date): {{ brother.get_service_attendance }}
         </div>
     </div>
     <div class="panel panel-default">

@@ -141,6 +141,21 @@ class Brother(models.Model):
     def __str__(self):
         return self.first_name + " " + self.last_name
 
+    def get_chapter_attendance(self):
+        return "%s / %s" % (ChapterEvent.objects.filter(mandatory=True).filter(attendees_brothers=self).count() + ChapterEvent.objects.filter(mandatory=True).filter(pk__in=Excuse.objects.filter(brother=self).filter(status=1).values_list('event', flat=True)).count(), ChapterEvent.objects.filter(mandatory=True).filter(eligible_attendees=self).filter(date__lte=datetime.datetime.now()).count())
+
+    def get_recruitment_attendance(self):
+        return "%s / %s" % (RecruitmentEvent.objects.filter(rush=True).filter(attendees_brothers=self).count() + RecruitmentEvent.objects.filter(rush=True).filter(pk__in=Excuse.objects.filter(brother=self).filter(status=1).values_list('event', flat=True)).count(), RecruitmentEvent.objects.filter(rush=True).filter(eligible_attendees=self).filter(date__lte=datetime.datetime.now()).count())
+
+    def get_hs_attendance(self):
+        return "%s / %s" % (HealthAndSafetyEvent.objects.filter(attendees_brothers=self).count() + HealthAndSafetyEvent.objects.filter(pk__in=Excuse.objects.filter(brother=self).filter(status=1).values_list('event', flat=True)).count(), HealthAndSafetyEvent.objects.filter(eligible_attendees=self).filter(date__lte=datetime.datetime.now()).count())
+
+    def get_philanthropy_attendance(self):
+        return "%s / %s" % (PhilanthropyEvent.objects.filter(attendees_brothers=self).count() + PhilanthropyEvent.objects.filter(pk__in=Excuse.objects.filter(brother=self).filter(status=1).values_list('event', flat=True)).count(), PhilanthropyEvent.objects.filter(eligible_attendees=self).filter(date__lte=datetime.datetime.now()).count())
+
+    def get_service_attendance(self):
+        return "%s / %s" % (ServiceEvent.objects.filter(attendees_brothers=self).count() + ServiceEvent.objects.filter(pk__in=Excuse.objects.filter(brother=self).filter(status=1).values_list('event', flat=True)).count(), ServiceEvent.objects.filter(eligible_attendees=self).filter(date__lte=datetime.datetime.now()).count())
+
 
 class MeetABrother(models.Model):
     brother = models.ForeignKey(Brother, on_delete=models.CASCADE, related_name='brother_mab')
@@ -405,6 +420,12 @@ class Event(models.Model):
         T_19_30 = 19, 30, '7:30 P.M.'
         T_20 = 20, '8:00 P.M.'
         T_20_30 = 20, 30, '8:30 P.M.'
+        T_21 = 21, '9:00 P.M.'
+        T_21_30 = 21, 30, '9:30 P.M.'
+        T_22 = 22, '10:00 P.M.'
+        T_22_30 = 22, 30, '10:30 P.M.'
+        T_23 = 23, '11:00 P.M.'
+        T_23_30 = 23, 30, '11:30 P.M.'
 
     name = models.CharField(max_length=200, default="Event")
     date = models.DateField(default=django.utils.timezone.now)
@@ -412,14 +433,12 @@ class Event(models.Model):
     start_time = models.TimeField(default=datetime.time(hour=0, minute=0), choices=TimeChoices.choices)
     end_time = models.TimeField(blank=True, null=True, choices=TimeChoices.choices)
     attendees_brothers = models.ManyToManyField(Brother, blank=True)
+    eligible_attendees = models.ManyToManyField(Brother, blank=True, related_name='+')
     semester = models.ForeignKey(
         Semester, on_delete=models.CASCADE, blank=True, null=True
     )
     description = models.TextField(blank=True, null=True)
     minutes = models.URLField(blank=True, null=True)
-
-    class Meta:
-        abstract = True
 
 
 class ChapterEvent(Event):
@@ -573,6 +592,12 @@ class Committee(models.Model):
         T_19_30 = 19, 30, '7:30 P.M.'
         T_20 = 20, '8:00 P.M.'
         T_20_30 = 20, 30, '8:30 P.M.'
+        T_21 = 21, '9:00 P.M.'
+        T_21_30 = 21, 30, '9:30 P.M.'
+        T_22 = 22, '10:00 P.M.'
+        T_22_30 = 22, 30, '10:30 P.M.'
+        T_23 = 23, '11:00 P.M.'
+        T_23_30 = 23, 30, '11:30 P.M.'
 
     meeting_time = models.TimeField(choices=MeetingTime.choices, blank=True)
 
@@ -592,7 +617,7 @@ class CommitteeMeetingEvent(Event):
 
 
 class Excuse(models.Model):
-    event = models.ForeignKey(ChapterEvent, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
     brother = models.ForeignKey(Brother, on_delete=models.CASCADE)
     date_submitted = models.DateTimeField(default=django.utils.timezone.now)
     description = models.TextField(
