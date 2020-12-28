@@ -314,6 +314,8 @@ def create_recurring_meetings(instance, committee):
         event = CommitteeMeetingEvent(date=date, start_time=instance['meeting_time'], semester=semester,
                                       committee=committee_object, recurring=True)
         event.save()
+        event.eligible_attendees.set(committee.members.order_by('last_name'))
+        event.save()
 
 
 def create_node_with_children(node_brother, notified_by, brothers_notified):

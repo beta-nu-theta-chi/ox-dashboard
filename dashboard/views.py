@@ -855,11 +855,11 @@ def vice_president_committee_assignments(request):
 
     if request.method == 'POST':
         if forms_is_valid(form_list):
+            meeting_map = {}
             for counter, form in enumerate(form_list):
                 instance = form.cleaned_data
                 brother = brothers[counter]
                 brother_committees = get_standing_committees(brother) + get_operational_committees(brother)
-                print(brother_committees)
                 brother.committee_set.clear()
                 chosen_committees = instance['standing_committees'] + instance['operational_committees']
                 committee_choices = [x for x,y in form.fields['standing_committees'].choices] + [x for x,y in form.fields['operational_committees'].choices]
@@ -869,14 +869,24 @@ def vice_president_committee_assignments(request):
                         committee_object.members.add(brother)
                         committee_object.save()
                         if committee not in brother_committees:
-                            for meeting in committee_object.meetings.exclude(date__lte=datetime.datetime.now()).exclude(eligible_attendees=brother):
-                                meeting.eligible_attendees.add(brother)
-                                meeting.save()
+                            for meeting in committee_object.meetings.exclude(date__lte=datetime.datetime.now(), eligible_attendees=brother):
+                                if meeting not in meeting_map:
+                                    meeting_map[meeting] = {brother: True}
+                                else:
+                                    meeting_map[meeting][brother] = True
                     else:
                         if committee in brother_committees:
-                            for meeting in Committee.objects.get(committee=committee).meetings.exclude(date__lte=datetime.datetime.now()).filter(eligible_attendees=brother):
-                                meeting.eligible_attendees.remove(brother)
-                                meeting.save()
+                            for meeting in Committee.objects.get(committee=committee).meetings.filter(date__gt=datetime.datetime.now(), eligible_attendees=brother):
+                                if meeting not in meeting_map:
+                                    meeting_map[meeting] = {brother: False}
+                                else:
+                                    meeting_map[meeting][brother] = False
+            for meeting, brother_map in meeting_map.items():
+                add_list = [brother_face for brother_face, boo in brother_map.items() if boo is True]
+                remove_list = [brother_face for brother_face, boo in brother_map.items() if boo is False]
+                meeting.eligible_attendees.add(*add_list)
+                meeting.eligible_attendees.remove(*remove_list)
+                meeting.save()
             return HttpResponseRedirect(reverse('dashboard:committee_list'))
     context = {
         'brother_forms': brother_forms,
