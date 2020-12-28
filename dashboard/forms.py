@@ -304,6 +304,18 @@ class MeetABrotherForm(forms.Form):
             self.fields['randomize'].label = candidate
 
 
+class AddBrotherAttendanceForm(forms.Form):
+    brothers_list = Brother.objects.exclude(
+        brother_status='2'
+    ).order_by('user__last_name', 'user__first_name')
+    brothers = forms.ModelMultipleChoiceField(
+        queryset=brothers_list,
+        widget=forms.SelectMultiple,
+        label="",
+        required=False,
+    )
+
+
 class BrotherAttendanceForm(forms.Form):
     present = forms.BooleanField(label="", required=False, label_suffix='')
 

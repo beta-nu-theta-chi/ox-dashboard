@@ -274,35 +274,6 @@ def photo_form(form_class, request):
     return form
 
 
-def brother_attendance(events):
-    # Event attendance value
-    attendance = []
-    past_event_count = 0
-    attendance_counter = 0
-    for event in recruitment_events:
-        if int(event.date.strftime("%s")) > int(datetime.datetime.now().strftime("%s")):
-            attendance.append('')
-        elif not event.rush:
-            attendance.append('Not Rush')
-        else:
-            past_event_count += 1
-            if event.attendees_brothers.filter(id=brother.id):
-                attendance.append('Attended')
-                attendance_counter += 1
-            elif excuses_approved.filter(event=event):
-                attendance.append('Excused')
-                attendance_counter += 1
-            elif excuses_pending.filter(event=event):
-                attendance.append('Pending')
-            else:
-                attendance.append('Unexcused')
-
-    event_attendance = zip(chapter_events, attendance)
-    attendance_ratio = "%s / %s" % (event_attendance, past_event_count)
-
-    return {event_attendance: event_attendance, attendance_ratio: attendance_ratio}
-
-
 def attendance_list(request, event):
     brothers = event.eligible_attendees.all()
     brother_form_list = []
@@ -338,10 +309,12 @@ def create_recurring_meetings(instance, committee):
     elif semester.season == '0':
         end_date = datetime.datetime(date.year, 5, 31)
     day_count = int((end_date - start_date).days / instance['meeting_interval']) + 1
+    committee_object = Committee.objects.get(committee=committee)
     for date in (start_date + datetime.timedelta(instance['meeting_interval']) * n for n in range(day_count)):
         event = CommitteeMeetingEvent(date=date, start_time=instance['meeting_time'], semester=semester,
-                                      committee=Committee.objects.get(committee=committee), recurring=True)
+                                      committee=committee_object, recurring=True)
         event.save()
+
 
 def create_node_with_children(node_brother, notified_by, brothers_notified):
     PhoneTreeNode(brother=node_brother, notified_by=notified_by).save()

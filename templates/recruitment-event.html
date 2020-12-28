@@ -66,7 +66,11 @@
             <div class="panel-heading">Attendance</div>
             <div class="panel-body">
                 <form action="" method="post">
+                    <input class="btn btn-success" type="submit" name="add" value="Add to Attendance"><br><br>
                     {% csrf_token %}
+                    {{ form.non_field.errors }}
+                    {{ form }}
+                    <br><br>
                     <hr>
                     <h3>Brother Attendance</h3>
                     <hr>
@@ -76,6 +80,7 @@
                         {% endfor %}
                         <br>
                     {% endfor %}
+                    <input class="btn btn-success" type="submit" name="updatebrother" value="Update Brother Attendance"/>
                     <hr>
                     <h3>General Attendence</h3>
                     <hr>
@@ -85,7 +90,7 @@
                         {% endfor %}
                         <br>
                     {% endfor %}
-                    <input class="btn btn-success" type="submit" value="Update"/>
+                    <input class="btn btn-success" type="submit" name="updatepnm" value="Update General Attendance"/>
                 </form>
             </div>
         </div>

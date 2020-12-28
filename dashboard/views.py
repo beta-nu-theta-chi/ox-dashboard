@@ -858,13 +858,25 @@ def vice_president_committee_assignments(request):
             for counter, form in enumerate(form_list):
                 instance = form.cleaned_data
                 brother = brothers[counter]
+                brother_committees = get_standing_committees(brother) + get_operational_committees(brother)
+                print(brother_committees)
                 brother.committee_set.clear()
-                for standing_committee in instance['standing_committees']:
-                    Committee.objects.get(committee=standing_committee).members.add(brother)
-                    Committee.objects.get(committee=standing_committee).save()
-                for operational_committee in instance['operational_committees']:
-                    Committee.objects.get(committee=operational_committee).members.add(brother)
-                    Committee.objects.get(committee=operational_committee).save()
+                chosen_committees = instance['standing_committees'] + instance['operational_committees']
+                committee_choices = [x for x,y in form.fields['standing_committees'].choices] + [x for x,y in form.fields['operational_committees'].choices]
+                for committee in committee_choices:
+                    if committee in chosen_committees:
+                        committee_object = Committee.objects.get(committee=committee)
+                        committee_object.members.add(brother)
+                        committee_object.save()
+                        if committee not in brother_committees:
+                            for meeting in committee_object.meetings.exclude(date__lte=datetime.datetime.now()).exclude(eligible_attendees=brother):
+                                meeting.eligible_attendees.add(brother)
+                                meeting.save()
+                    else:
+                        if committee in brother_committees:
+                            for meeting in Committee.objects.get(committee=committee).meetings.exclude(date__lte=datetime.datetime.now()).filter(eligible_attendees=brother):
+                                meeting.eligible_attendees.remove(brother)
+                                meeting.save()
             return HttpResponseRedirect(reverse('dashboard:committee_list'))
     context = {
         'brother_forms': brother_forms,
@@ -942,7 +954,7 @@ class CommitteeEdit(UpdateView):
 def committee_event(request, event_id):
     event = CommitteeMeetingEvent.objects.get(pk=event_id)
 
-    brothers = event.committee.members.order_by('last_name')
+    brothers = event.eligible_attendees.all()
     brother_form_list = []
     current_brother = request.user.brother
 
@@ -957,23 +969,29 @@ def committee_event(request, event_id):
                                          brother="- %s %s" % (brother.first_name, brother.last_name))
         brother_form_list.append(new_form)
 
+    form = AddBrotherAttendanceForm(request.POST or None)
+
     if request.method == 'POST':
-        if forms_is_valid(brother_form_list):
-            for counter, form in enumerate(brother_form_list):
-                instance = form.cleaned_data
-                if instance['present'] is True:
-                    event.attendees_brothers.add(brothers[counter])
-                    event.save()
-                if instance['present'] is False:
-                    event.attendees_brothers.remove(brothers[counter])
-                    event.save()
-            return HttpResponseRedirect(reverse('dashboard:committee_event', args=[event_id]))
+        if "update" in request.POST:
+            if forms_is_valid(brother_form_list):
+                for counter, form in enumerate(brother_form_list):
+                    instance = form.cleaned_data
+                    if instance['present'] is True:
+                        event.attendees_brothers.add(brothers[counter])
+                        event.save()
+                    if instance['present'] is False:
+                        event.attendees_brothers.remove(brothers[counter])
+                        event.save()
+        if "add" in request.POST:
+            if form.is_valid():
+                event.eligible_attendees.add(current_brother)
+        return HttpResponseRedirect(reverse('dashboard:committee_event', args=[event_id]))
 
     context = {
         'type': view_type,
         'brother_form_list': brother_form_list,
         'event': event,
-
+        'form': form,
     }
 
     return render(request, "committee_event.html", context)
@@ -995,8 +1013,11 @@ def committee_event_add(request, position):
                 semester = Semester(season=get_season_from(instance.date.month),
                                     year=instance.date.year)
                 semester.save()
-            instance.committee = Position.objects.get(title=position).committee
+            committee = Position.objects.get(title=position).committee
+            instance.committee = committee
             instance.semester = semester
+            instance.save()
+            instance.eligible_attendees.set(committee.members.order_by('last_name'))
             instance.save()
             next = request.GET.get('next')
             return HttpResponseRedirect(next)
@@ -1069,6 +1090,7 @@ def health_and_safety_event_add(request):
             }
             return render(request, "event-add.html", context)
         instance.semester = semester
+        instance.save()
         instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
         instance.save()
         return HttpResponseRedirect(reverse('dashboard:vphs'))
@@ -1105,17 +1127,23 @@ def health_and_safety_event(request, event_id):
     event = HealthAndSafetyEvent.objects.get(pk=event_id)
     brothers, brother_form_list = attendance_list(request, event)
 
+    form = AddBrotherAttendanceForm(request.POST or None)
+
     if request.method == 'POST':
-        if forms_is_valid(brother_form_list):
-            for counter, form in enumerate(brother_form_list):
-                instance = form.cleaned_data
-                if instance['present'] is True:
-                    event.attendees_brothers.add(brothers[counter])
-                    event.save()
-                if instance['present'] is False:
-                    event.attendees_brothers.remove(brothers[counter])
-                    event.save()
-            return HttpResponseRedirect(reverse('dashboard:vphs'))
+        if "update" in request.POST:
+            if forms_is_valid(brother_form_list):
+                for counter, form in enumerate(brother_form_list):
+                    instance = form.cleaned_data
+                    if instance['present'] is True:
+                        event.attendees_brothers.add(brothers[counter])
+                        event.save()
+                    if instance['present'] is False:
+                        event.attendees_brothers.remove(brothers[counter])
+                        event.save()
+        if "add" in request.POST:
+            if form.is_valid():
+                event.eligible_attendees.add(current_brother)
+        return HttpResponseRedirect(reverse('dashboard:vphs'))
 
     context = {
         'type': 'attendance',
@@ -1272,18 +1300,25 @@ def secretary_event(request, event_id):
     """ Renders the attendance sheet for any event """
     event = ChapterEvent.objects.get(pk=event_id)
     brothers, brother_form_list = attendance_list(request, event)
+    current_brother = request.user.brother
+
+    form = AddBrotherAttendanceForm(request.POST or None)
 
     if request.method == 'POST':
-        if forms_is_valid(brother_form_list):
-            for counter, form in enumerate(brother_form_list):
-                instance = form.cleaned_data
-                if instance['present'] is True:
-                    event.attendees_brothers.add(brothers[counter])
-                    event.save()
-                if instance['present'] is False:
-                    event.attendees_brothers.remove(brothers[counter])
-                    event.save()
-            return HttpResponseRedirect(reverse('dashboard:secretary'))
+        if "update" in request.POST:
+            if forms_is_valid(brother_form_list):
+                for counter, form in enumerate(brother_form_list):
+                    instance = form.cleaned_data
+                    if instance['present'] is True:
+                        event.attendees_brothers.add(brothers[counter])
+                        event.save()
+                    if instance['present'] is False:
+                        event.attendees_brothers.remove(brothers[counter])
+                        event.save()
+        if "add" in request.POST:
+            if form.is_valid():
+                event.eligible_attendees.add(current_brother)
+        return HttpResponseRedirect(reverse('dashboard:secretary_event', args=[event_id]))
 
     context = {
         'type': 'attendance',
@@ -2014,7 +2049,7 @@ class ScholarshipReportEdit(UpdateView):
     fields = ['cumulative_gpa', 'past_semester_gpa', 'scholarship_plan', 'active']
 
 
-#@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
 def recruitment_c(request):
     """ Renders Recruitment chair page with events for the current and following semester """
     current_season = get_season()
@@ -2143,8 +2178,11 @@ def recruitment_c_event(request, event_id):
     pnms = PotentialNewMember.objects.all().order_by('last_name')
     pnm_form_list = []
     brothers, brother_form_list = attendance_list(request, event)
+    current_brother = request.user.brother
 
     num_actives = len(brothers)
+
+    form = AddBrotherAttendanceForm(request.POST or None)
 
     for counter, pnm in enumerate(pnms):
         new_form = PnmAttendanceForm(request.POST or None, initial={'present': event.attendees_pnms.filter(pk=pnm.id).exists()},
@@ -2153,15 +2191,7 @@ def recruitment_c_event(request, event_id):
         pnm_form_list.append(new_form)
 
     if request.method == 'POST':
-        if forms_is_valid(pnm_form_list) and forms_is_valid(brother_form_list):
-            for counter, form in enumerate(pnm_form_list):
-                instance = form.cleaned_data
-                if instance['present'] is True:
-                    event.attendees_pnms.add(pnms[counter])
-                    event.save()
-                if instance['present'] is False:
-                    event.attendees_pnms.remove(pnms[counter])
-                    event.save()
+        if "updatebrother" in request.POST:
             for counter, form in enumerate(brother_form_list):
                 instance = form.cleaned_data
                 if instance['present'] is True:
@@ -2170,7 +2200,20 @@ def recruitment_c_event(request, event_id):
                 if instance['present'] is False:
                     event.attendees_brothers.remove(brothers[counter])
                     event.save()
-            return HttpResponseRedirect(reverse('dashboard:recruitment_c_event', args=[event_id]))
+        if "updatepnm" in request.POST:
+            if forms_is_valid(pnm_form_list) and forms_is_valid(brother_form_list):
+                for counter, form in enumerate(pnm_form_list):
+                    instance = form.cleaned_data
+                    if instance['present'] is True:
+                        event.attendees_pnms.add(pnms[counter])
+                        event.save()
+                    if instance['present'] is False:
+                        event.attendees_pnms.remove(pnms[counter])
+                        event.save()
+        if "add" in request.POST:
+            if form.is_valid():
+                event.eligible_attendees.add(current_brother)
+        return HttpResponseRedirect(reverse('dashboard:recruitment_c_event', args=[event_id]))
 
     context = {
         'type': 'attendance',
@@ -2179,6 +2222,7 @@ def recruitment_c_event(request, event_id):
         'event': event,
         'media_root': settings.MEDIA_ROOT,
         'media_url': settings.MEDIA_URL,
+        'form': form,
     }
     return render(request, "recruitment-event.html", context)
 
@@ -2275,24 +2319,32 @@ def service_c_event(request, event_id):
     event = ServiceEvent.objects.get(pk=event_id)
     brothers_rsvp = event.rsvp_brothers.all()
     brothers, brother_form_list = attendance_list(request, event)
+    current_brother = request.user.brother
+
+    form = AddBrotherAttendanceForm(request.POST or None)
 
     if request.method == 'POST':
-        if forms_is_valid(brother_form_list):
-            for counter, form in enumerate(brother_form_list):
-                instance = form.cleaned_data
-                if instance['present'] is True:
-                    event.attendees_brothers.add(brothers[counter])
-                    event.save()
-                if instance['present'] is False:
-                    event.attendees_brothers.remove(brothers[counter])
-                    event.save()
-            return HttpResponseRedirect(reverse('dashboard:service_c'))
+        if "update" in request.POST:
+            if forms_is_valid(brother_form_list):
+                for counter, form in enumerate(brother_form_list):
+                    instance = form.cleaned_data
+                    if instance['present'] is True:
+                        event.attendees_brothers.add(brothers[counter])
+                        event.save()
+                    if instance['present'] is False:
+                        event.attendees_brothers.remove(brothers[counter])
+                        event.save()
+        if "add" in request.POST:
+            if form.is_valid():
+                event.eligible_attendees.add(current_brother)
+        return HttpResponseRedirect(reverse('dashboard:service_c_event', args=[event_id]))
 
     context = {
         'type': 'attendance',
         'brother_form_list': brother_form_list,
         'brothers_rsvp': brothers_rsvp,
         'event': event,
+        'form': form,
     }
 
     return render(request, 'service-event.html', context)
@@ -2428,11 +2480,33 @@ def philanthropy_c_event(request, event_id):
     """ Renders the philanthropy event view """
     event = PhilanthropyEvent.objects.get(pk=event_id)
     brothers_rsvp = event.rsvp_brothers.all()
+    brothers, brother_form_list = attendance_list(request, event)
+    current_brother = request.user.brother
+
+    form = AddBrotherAttendanceForm(request.POST or None)
+
+    if request.method == 'POST':
+        if "update" in request.POST:
+            if forms_is_valid(brother_form_list):
+                for counter, form in enumerate(brother_form_list):
+                    instance = form.cleaned_data
+                    if instance['present'] is True:
+                        event.attendees_brothers.add(brothers[counter])
+                        event.save()
+                    if instance['present'] is False:
+                        event.attendees_brothers.remove(brothers[counter])
+                        event.save()
+        if "add" in request.POST:
+            if form.is_valid():
+                event.eligible_attendees.add(current_brother)
+        return HttpResponseRedirect(reverse('dashboard:philanthropy_c_event', args=[event_id]))
 
     context = {
-        'type': 'ec-view',
+        'type': 'attendance',
+        'brother_form_list': brother_form_list,
         'brothers_rsvp': brothers_rsvp,
         'event': event,
+        'form': form,
     }
 
     return render(request, 'philanthropy-event.html', context)

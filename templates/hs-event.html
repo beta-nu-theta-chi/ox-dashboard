@@ -52,9 +52,11 @@
         <div class="panel panel-default">
             <div class="panel-heading">Attendance</div>
             <div class="panel-body">
-                <form action="" method="post">
-                    {{ form.non_field.errors }}
+                    <input class="btn btn-success" type="submit" name="add" value="Add to Attendance"><br><br>
                     {% csrf_token %}
+                    {{ form.non_field.errors }}
+                    {{ form }}
+                    <br><br>
                     {% for form in brother_form_list %}
                         {% for field in form %}
                             {{ field }}{{ field.label_tag }}
@@ -62,7 +64,7 @@
                         {% endfor %}
                         <br>
                     {% endfor %}
-                    <input type="submit" value="Update"/>
+                    <input class="btn btn-success" type="submit" name="update" value="Update"/>
                 </form>
             </div>
         </div>
