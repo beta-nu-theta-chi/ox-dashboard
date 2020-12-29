@@ -1722,6 +1722,9 @@ def marshal_mab_edit(request):
 
     brothers = Brother.objects.filter(brother_status='1')
 
+
+    arbitrary_date_before_time = datetime.datetime(1000, 1, 1)
+
     for counter, brother in enumerate(brothers):
         form = MeetABrotherEditForm(request.POST or None, prefix=counter+1, brother=brother.pk, mab_exists=MeetABrother.objects.filter(brother=brother, candidate=candidate).exists())
         if check_all:
@@ -1733,16 +1736,18 @@ def marshal_mab_edit(request):
             if forms_is_valid(mab_form_list):
                 for counter, form in enumerate(mab_form_list):
                     instance = form.cleaned_data
-                    if instance['update']:
-                        mab, created = MeetABrother.objects.get_or_create(candidate=candidate, brother=brothers[counter], completed=True, week=datetime.datetime(1000, 1, 1))
-                        if created:
+                    if instance['update'] is True: #the user checked yes on this pairing of meet a brother, meaning we need to create a new one if it doesn't yet exist
+                        mab, created = MeetABrother.objects.get_or_create(candidate=candidate, brother=brothers[counter], defaults={'completed':True, 'week':arbitrary_date_before_time})
+                        if created: #if a new meet a brother is created we need to save it
                             mab.save()
-                    elif not instance['update']:
-                        try:
-                            MeetABrother.objects.get(candidate=candidate, brother=brothers[counter], completed=True, week=datetime.datetime(1000, 1, 1)).delete()
-                        except MeetABrother.DoesNotExist:
-                            break
-                return HttpResponseRedirect(reverse('dashboard:marshal_mab_edit_candidate'))
+                    elif instance['update'] is False: #the user has not checked yes on this pairing of meet a brother
+                        # we need to delete this meet a brother if it exists
+                        try: #get the meet a brother and delete it if it finds it
+                            MeetABrother.objects.get(candidate=candidate, brother=brothers[counter]).delete()
+                        except MeetABrother.DoesNotExist: #get will return this exception if it doesn't find one so just continue if it's not found
+                            continue
+                    else:
+                        pass # instance['update'] is null
         if 'check_all' in request.POST:
             request.session['check_all'] = True
             return HttpResponseRedirect(reverse('dashboard:marshal_mab_edit'))
@@ -1758,8 +1763,10 @@ def marshal_mab_edit(request):
 
 
 def meet_a_brother(request):
+    start_date = datetime.datetime(2000, 1, 1)
     candidates = Brother.objects.filter(brother_status=0)
-    weeks = MeetABrother.objects.filter(week__range=(datetime.date(2000, 1, 1), datetime.datetime.now())).order_by('-week').values_list('week', flat=True).distinct
+
+    weeks = MeetABrother.objects.filter(week__range=(start_date, datetime.datetime.now())).order_by('-week').values_list('week', flat=True).distinct
     try:
         discord = OnlineMedia.objects.get(name='Discord')
     except ObjectDoesNotExist:
