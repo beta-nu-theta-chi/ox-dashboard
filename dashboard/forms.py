@@ -286,6 +286,7 @@ class MeetABrotherEditForm(forms.Form):
         exists = kwargs.pop('mab_exists', "")
         super(MeetABrotherEditForm, self).__init__(*args, **kwargs)
 
+        #sets the label for each form as the brother the form relates to and sets the initial for the checkbox to whether or not the meet a brother exists
         if brother:
             self.fields['update'].label = brother.first_name + ' ' + brother.last_name
             self.fields['update'].initial = exists
