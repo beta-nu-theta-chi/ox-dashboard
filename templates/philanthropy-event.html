@@ -52,26 +52,43 @@
             </div>
         </div>
     </div>
-{% if type == 'brother-view' %}
-    <div class="panel panel-default">
-        <div class="panel-heading">RSVP</div>
-        <div class="panel-body">
-            {% if type == 'brother-view' %}
-                <form method="post" action="">
-                    {% csrf_token %}
-                    {% if rsvpd %}
-                        <input class="btn btn-danger" type="submit" value="Cancel RSVP"/><br><br>
-                    {% else %}
-                        <input class="btn btn-success" type="submit" value="RSVP"/><br><br>
-                    {% endif %}
-                </form>
-            {% endif %}
-            {% for brother in brothers_rsvp %}
-                {{ brother }}<br>
-            {% endfor %}
+    {% if type == 'brother-view' %}
+        <div class="panel panel-default">
+            <div class="panel-heading">RSVP</div>
+            <div class="panel-body">
+                {% if type == 'brother-view' %}
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        {% if rsvpd %}
+                            <input class="btn btn-danger" type="submit" value="Cancel RSVP"/><br><br>
+                        {% else %}
+                            <input class="btn btn-success" type="submit" value="RSVP"/><br><br>
+                        {% endif %}
+                    </form>
+                {% endif %}
+                {% for brother in brothers_rsvp %}
+                    {{ brother }}<br>
+                {% endfor %}
+            </div>
         </div>
-    </div>
-{% endif %}
+    {% endif %}
+    {% if type == 'brother-view' %}
+        <div class="panel panel-default">
+            <div class="panel-heading">Event Excuse</div>
+            <div class="panel-body">
+                {% if error_message %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ error_message }}
+                    </div>
+                {% endif %}
+                <form action="" method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type="submit" name="excuse" value="Submit Excuse"/>
+                </form>
+            </div>
+        </div>
+    {% endif %}
 {% if type == 'attendance' %}
     <div class="panel panel-default">
         <div class="panel-heading">Brother Attendance</div>

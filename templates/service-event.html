@@ -104,4 +104,21 @@
             </div>
         </div>
     {% endif %}
+    {% if type == 'brother-view' %}
+        <div class="panel panel-default">
+            <div class="panel-heading">Event Excuse</div>
+            <div class="panel-body">
+                {% if error_message %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ error_message }}
+                    </div>
+                {% endif %}
+                <form action="" method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type="submit" name="excuse" value="Submit Excuse"/>
+                </form>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

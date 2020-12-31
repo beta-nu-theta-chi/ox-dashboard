@@ -305,16 +305,30 @@ class MeetABrotherForm(forms.Form):
             self.fields['randomize'].label = candidate
 
 
-class AddBrotherAttendanceForm(forms.Form):
-    brothers_list = Brother.objects.exclude(
-        brother_status='2'
-    ).order_by('user__last_name', 'user__first_name')
-    brothers = forms.ModelMultipleChoiceField(
+class EditBrotherAttendanceForm(forms.Form):
+    brothers_list = Brother.objects.exclude(brother_status='2').order_by('user__last_name', 'user__first_name')
+    add_brothers = forms.ModelMultipleChoiceField(
         queryset=brothers_list,
         widget=forms.SelectMultiple,
-        label="",
+        label="Add Brothers",
         required=False,
     )
+    remove_brothers = forms.ModelMultipleChoiceField(
+        queryset=brothers_list,
+        widget=forms.SelectMultiple,
+        label="Remove Brothers",
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        event_id = kwargs.pop('event', "")
+        super(EditBrotherAttendanceForm, self).__init__(*args, **kwargs)
+
+        if event_id:
+            brothers_list = Brother.objects.exclude(brother_status='2').order_by('user__last_name', 'user__first_name')
+            eligible_attendees = Event.objects.get(pk=event_id).eligible_attendees.values('pk')
+            self.fields['add_brothers'].queryset = brothers_list.exclude(id__in=eligible_attendees)
+            self.fields['remove_brothers'].queryset = brothers_list.filter(id__in=eligible_attendees)
 
 
 class BrotherAttendanceForm(forms.Form):

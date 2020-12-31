@@ -619,7 +619,7 @@ class CommitteeMeetingEvent(Event):
 class Excuse(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     brother = models.ForeignKey(Brother, on_delete=models.CASCADE)
-    date_submitted = models.DateTimeField(default=django.utils.timezone.now)
+    date_submitted = models.DateField(default=django.utils.timezone.now)
     description = models.TextField(
         "Reasoning", default="I will not be attending because"
     )
@@ -640,7 +640,7 @@ class Excuse(models.Model):
 
     def __str__(self):
         return self.brother.first_name \
-            + " " + self.brother.last_name + " - " + str(self.event)
+            + " " + self.brother.last_name + " - " + str(self.event.name)
 
 
 class Supplies(models.Model):

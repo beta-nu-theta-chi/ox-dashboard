@@ -6,7 +6,7 @@
 {% block content %}
     <!-- Main component for a primary marketing message or call to action -->
     <div class="jumbotron">
-        <h1>{{ event.name }}</h1>
+        <h1>Health and Safety Event</h1>
     </div>
     <div class="panel panel-default">
         <div class="panel-heading">Event</div>
@@ -16,6 +16,10 @@
                 <div class=" col-lg-8 ">
                     <table class="table table-event-information">
                         <tbody>
+                        <tr>
+                            <td>Name:</td>
+                            <td>{{ event.name }}</td>
+                        </tr>
                         <tr>
                             <td>Date:</td>
                             <td>{{ event.date }}</td>
@@ -76,6 +80,23 @@
                 {% for brother in attendees %}
                     {{ brother }}<br>
                 {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+    {% if type == 'brother-view' %}
+        <div class="panel panel-default">
+            <div class="panel-heading">Event Excuse</div>
+            <div class="panel-body">
+                {% if error_message %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ error_message }}
+                    </div>
+                {% endif %}
+                <form action="" method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type="submit" value="Submit Excuse"/>
+                </form>
             </div>
         </div>
     {% endif %}
