@@ -6,6 +6,7 @@
            aria-expanded="false">Recruitment Chair <span class="caret"></span></a>
         <ul class="dropdown-menu">
             <li><a href={% url 'dashboard:recruitment_c_rush_attendance' %}>Rush Attendance</a></li>
+            <li><a href={% url 'dashboard:recruitment_c_excuses' %}>Excuses Archive</a></li>
         </ul>
     </li>
 {% endblock %}
@@ -125,7 +126,7 @@
                     {% if not forloop.first %}
                         <div class="excusesgrayline"></div>
                     {% endif %}
-                    <div style="grid-column: 2"> <a href={% url 'dashboard:secretary_excuse' excuse.id %}>
+                    <div style="grid-column: 2"> <a href={% url 'dashboard:recruitment_c_excuse' excuse.id %}?next={{ request.path }}>
                         {{ excuse.brother }}
                     </a> </div>
                     <div>{{ excuse.event.name }}</div>

@@ -331,10 +331,6 @@ def brother_view(request):
 
     excuses_approved = excuses.filter(status='1').values_list('event', flat=True)
 
-    print(excuses_pending)
-
-    print(excuses_approved)
-
     operational_committees = []
     standing_committees = []
     meetings = []
@@ -535,6 +531,10 @@ def brother_chapter_event(request, event_id, view):
     event = ChapterEvent.objects.get(pk=event_id)
     form = ExcuseForm(request.POST or None)
 
+    brother = request.user.brother
+
+    excuse = Excuse.objects.filter(event=event_id, brother=brother)
+
     if request.method == 'POST':
         if form.is_valid():
             instance = form.save(commit=False)
@@ -546,7 +546,6 @@ def brother_chapter_event(request, event_id, view):
                     'error_message': "Please write a description",
                 }
                 return render(request, "chapter-event.html", context)
-            brother = request.user.brother
             instance.brother = brother
             instance.event = event
             instance.save()
@@ -556,7 +555,12 @@ def brother_chapter_event(request, event_id, view):
         'type': view,
         'form': form,
         'event': event,
+        'excuse_exists': excuse.exists(),
     }
+
+    if excuse.exists():
+        context.update({ 'excuse': excuse[0], })
+
     return render(request, "chapter-event.html", context)
 
 
@@ -567,6 +571,8 @@ def brother_service_event(request, event_id, view):
         return HttpResponseRedirect(reverse('dashboard:home'))
 
     brother = request.user.brother
+
+    excuse = Excuse.objects.filter(event=event_id, brother=brother)
     event = ServiceEvent.objects.get(pk=event_id)
     brothers_rsvp = event.rsvp_brothers.all()
     rsvp_brother = event.rsvp_brothers.filter(id=brother.id)
@@ -583,8 +589,7 @@ def brother_service_event(request, event_id, view):
                         'event': event,
                         'error_message': "Please write a description",
                     }
-                    return render(request, "chapter-event.html", context)
-                brother = request.user.brother
+                    return render(request, "service-event.html", context)
                 instance.brother = brother
                 instance.event = event
                 instance.save()
@@ -602,7 +607,11 @@ def brother_service_event(request, event_id, view):
         'rsvpd': rsvp_brother.exists(),
         'event': event,
         'form': form,
+        'excuse_exists': excuse.exists(),
     }
+
+    if excuse.exists():
+        context.update({ 'excuse': excuse[0], })
 
     return render(request, "service-event.html", context)
 
@@ -614,6 +623,8 @@ def brother_philanthropy_event(request, event_id, view):
         return HttpResponseRedirect(reverse('dashboard:home'))
 
     brother = request.user.brother
+
+    excuse = Excuse.objects.filter(event=event_id, brother=brother)
     event = PhilanthropyEvent.objects.get(pk=event_id)
     brothers_rsvp = event.rsvp_brothers.all()
     rsvp_brother = event.rsvp_brothers.filter(id=brother.id)
@@ -631,8 +642,7 @@ def brother_philanthropy_event(request, event_id, view):
                         'event': event,
                         'error_message': "Please write a description",
                     }
-                    return render(request, "chapter-event.html", context)
-                brother = request.user.brother
+                    return render(request, "philanthropy-event.html", context)
                 instance.brother = brother
                 instance.event = event
                 instance.save()
@@ -650,7 +660,11 @@ def brother_philanthropy_event(request, event_id, view):
         'rsvpd': rsvp_brother.exists(),
         'event': event,
         'form': form,
+        'excuse_exists': excuse.exists(),
     }
+
+    if excuse.exists():
+        context.update({ 'excuse': excuse[0], })
 
     return render(request, "philanthropy-event.html", context)
 
@@ -660,6 +674,10 @@ def brother_recruitment_event(request, event_id, view):
     if not request.user.is_authenticated:  # brother auth check
         messages.error(request, "Brother not logged in before viewing brother chapter events")
         return HttpResponseRedirect(reverse('dashboard:home'))
+
+    brother = request.user.brother
+
+    excuse = Excuse.objects.filter(event=event_id, brother=brother)
 
     event = RecruitmentEvent.objects.get(pk=event_id)
     attendees_pnms = event.attendees_pnms.all()
@@ -676,8 +694,7 @@ def brother_recruitment_event(request, event_id, view):
                     'event': event,
                     'error_message': "Please write a description",
                 }
-                return render(request, "chapter-event.html", context)
-            brother = request.user.brother
+                return render(request, "recruitment-event.html", context)
             instance.brother = brother
             instance.event = event
             instance.save()
@@ -688,7 +705,12 @@ def brother_recruitment_event(request, event_id, view):
         'type': view,
         'attendees_pnms': attendees_pnms,
         'event': event,
+        'excuse_exists': excuse.exists(),
     }
+
+    if excuse.exists():
+        context.update({ 'excuse': excuse[0], })
+
     return render(request, "recruitment-event.html", context)
 
 
@@ -697,6 +719,10 @@ def brother_hs_event(request, event_id, view):
     if not request.user.is_authenticated:  # brother auth check
         messages.error(request, "Brother not logged in before viewing brother Health and Safety events")
         return HttpResponseRedirect(reverse('dashboard:home'))
+
+    brother = request.user.brother
+
+    excuse = Excuse.objects.filter(event=event_id, brother=brother)
 
     event = HealthAndSafetyEvent.objects.get(pk=event_id)
 
@@ -712,8 +738,7 @@ def brother_hs_event(request, event_id, view):
                     'event': event,
                     'error_message': "Please write a description",
                 }
-                return render(request, "chapter-event.html", context)
-            brother = request.user.brother
+                return render(request, "hs-event.html", context)
             instance.brother = brother
             instance.event = event
             instance.save()
@@ -722,12 +747,18 @@ def brother_hs_event(request, event_id, view):
     context = {
         'type': view,
         'event': event,
-        'form':form,
+        'form': form,
+        'excuse_exists': excuse.exists(),
     }
+
+    if excuse.exists():
+        context.update({ 'excuse': excuse[0], })
+
     return render(request, "hs-event.html", context)
 
 
 def brother_excuse(request, excuse_id):
+
     """ Renders the brother page for one of their excuses """
     excuse = Excuse.objects.get(pk=excuse_id)
     if not request.user == excuse.brother.user:  # brother auth check
@@ -1390,8 +1421,7 @@ def staged_mass_entry_brothers(mass_entry_form):
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
 def secretary(request):
     """ Renders the secretary page giving access to excuses and ChapterEvents """
-    excluded_events = RecruitmentEvent.objects.all()
-    excuses = Excuse.objects.filter(event__semester=get_semester(), status='0').exclude(event__in=excluded_events).order_by("date_submitted", "event__date")
+    excuses = Excuse.objects.filter(event__semester=get_semester(), status='0').exclude(event__in=RecruitmentEvent.objects.all()).order_by("date_submitted", "event__date")
     events = ChapterEvent.objects.filter(semester=get_semester()).order_by("start_time").order_by("date")
     brothers = []
 
@@ -1494,8 +1524,8 @@ def secretary_event(request, event_id):
     return render(request, "chapter-event.html", context)
 
 
-@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
-def secretary_excuse(request, excuse_id):
+@verify_position(['Recruitment Chair', 'Secretary', 'Vice President', 'President', 'Adviser'])
+def excuse(request, excuse_id):
     """ Renders Excuse response form """
     excuse = get_object_or_404(Excuse, pk=excuse_id)
     form = ExcuseResponseForm(request.POST or None)
@@ -1511,7 +1541,7 @@ def secretary_excuse(request, excuse_id):
                     'error_message': "Response message required for denial"
                 }
                 return render(request, "excuse.html", context)
-            if instance.status == '3' and excuse.event.chapterevent.mandatory:
+            if instance.status == '3' and excuse.event.mandatory:
                 context = {
                     'type': 'response',
                     'excuse': excuse,
@@ -1523,7 +1553,7 @@ def secretary_excuse(request, excuse_id):
                 excuse.status = instance.status
                 excuse.response_message = instance.response_message
                 excuse.save()
-                return HttpResponseRedirect(reverse('dashboard:secretary'))
+                return HttpResponseRedirect(request.GET.get('next'))
 
     context = {
         'type': 'response',
@@ -1543,12 +1573,13 @@ def excuse_quick_accept(request, excuse_id):
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
 def secretary_all_excuses(request):
     """ Renders Excuse """
-    excuses = Excuse.objects.order_by('brother__last_name', 'event__date')
+    excuses = Excuse.objects.exclude(status='0').exclude(event__in=RecruitmentEvent.objects.all()).order_by('brother__last_name', 'event__date')
 
     context = {
-        'excuses': excuses
+        'excuses': excuses,
+        'position': 'Secretary',
     }
-    return render(request, 'secretary_excuses.html', context)
+    return render(request, 'excuses_archive.html', context)
 
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
@@ -2284,6 +2315,18 @@ def recruitment_c_excuse(request, excuse_id):
         'form': form,
     }
     return render(request, "excuse.html", context)
+
+
+@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+def recruitment_c_all_excuses(request):
+    """ Renders Excuse """
+    excuses = Excuse.objects.exclude(status='0').filter(event__in=RecruitmentEvent.objects.all()).order_by('brother__last_name', 'event__date')
+
+    context = {
+        'excuses': excuses,
+        'position': 'Recruitment Chair',
+    }
+    return render(request, 'excuses_archive.html', context)
 
 
 def all_pnm_csv(request):

@@ -142,19 +142,19 @@ class Brother(models.Model):
         return self.first_name + " " + self.last_name
 
     def get_chapter_attendance(self):
-        return "%s / %s" % (ChapterEvent.objects.filter(mandatory=True).filter(attendees_brothers=self).count() + ChapterEvent.objects.filter(mandatory=True).filter(pk__in=Excuse.objects.filter(brother=self).filter(status=1).values_list('event', flat=True)).count(), ChapterEvent.objects.filter(mandatory=True).filter(eligible_attendees=self).filter(date__lte=datetime.datetime.now()).count())
+        return "%s / %s" % (ChapterEvent.objects.filter(mandatory=True, attendees_brothers=self).count() + ChapterEvent.objects.filter(mandatory=True, excuse__status=1).count(), ChapterEvent.objects.filter(mandatory=True, eligible_attendees=self, date__lte=datetime.datetime.now()).count())
 
     def get_recruitment_attendance(self):
-        return "%s / %s" % (RecruitmentEvent.objects.filter(rush=True).filter(attendees_brothers=self).count() + RecruitmentEvent.objects.filter(rush=True).filter(pk__in=Excuse.objects.filter(brother=self).filter(status=1).values_list('event', flat=True)).count(), RecruitmentEvent.objects.filter(rush=True).filter(eligible_attendees=self).filter(date__lte=datetime.datetime.now()).count())
+        return "%s / %s" % (RecruitmentEvent.objects.filter(mandatory=True, attendees_brothers=self).count() + RecruitmentEvent.objects.filter(mandatory=True, excuse__status=1).count(), RecruitmentEvent.objects.filter(mandatory=True, eligible_attendees=self, date__lte=datetime.datetime.now()).count())
 
     def get_hs_attendance(self):
-        return "%s / %s" % (HealthAndSafetyEvent.objects.filter(attendees_brothers=self).count() + HealthAndSafetyEvent.objects.filter(pk__in=Excuse.objects.filter(brother=self).filter(status=1).values_list('event', flat=True)).count(), HealthAndSafetyEvent.objects.filter(eligible_attendees=self).filter(date__lte=datetime.datetime.now()).count())
+        return "%s / %s" % (HealthAndSafetyEvent.objects.filter(mandatory=True, attendees_brothers=self).count() + HealthAndSafetyEvent.objects.filter(mandatory=True, excuse__status=1).count(), HealthAndSafetyEvent.objects.filter(mandatory=True, eligible_attendees=self, date__lte=datetime.datetime.now()).count())
 
     def get_philanthropy_attendance(self):
-        return "%s / %s" % (PhilanthropyEvent.objects.filter(attendees_brothers=self).count() + PhilanthropyEvent.objects.filter(pk__in=Excuse.objects.filter(brother=self).filter(status=1).values_list('event', flat=True)).count(), PhilanthropyEvent.objects.filter(eligible_attendees=self).filter(date__lte=datetime.datetime.now()).count())
+        return "%s / %s" % (PhilanthropyEvent.objects.filter(mandatory=True, attendees_brothers=self).count() + PhilanthropyEvent.objects.filter(mandatory=True, excuse__status=1).count(), PhilanthropyEvent.objects.filter(mandatory=True, eligible_attendees=self, date__lte=datetime.datetime.now()).count())
 
     def get_service_attendance(self):
-        return "%s / %s" % (ServiceEvent.objects.filter(attendees_brothers=self).count() + ServiceEvent.objects.filter(pk__in=Excuse.objects.filter(brother=self).filter(status=1).values_list('event', flat=True)).count(), ServiceEvent.objects.filter(eligible_attendees=self).filter(date__lte=datetime.datetime.now()).count())
+        return "%s / %s" % (ServiceEvent.objects.filter(mandatory=True, attendees_brothers=self).count() + ServiceEvent.objects.filter(mandatory=True, excuse__status=1).count(), ServiceEvent.objects.filter(mandatory=True, eligible_attendees=self, date__lte=datetime.datetime.now()).count())
 
 
 class MeetABrother(models.Model):
@@ -394,6 +394,10 @@ class ScholarshipReport(models.Model):
                                   self.semester.year)
 
 
+def all_actives_and_candidates():
+    return Brother.objects.filter(brother_status__in=['0', '1'])
+
+
 class Event(models.Model):
     class TimeChoices(datetime.time, models.Choices):
         T_9 = 9, '9:00 A.M.'
@@ -433,16 +437,16 @@ class Event(models.Model):
     start_time = models.TimeField(default=datetime.time(hour=0, minute=0), choices=TimeChoices.choices)
     end_time = models.TimeField(blank=True, null=True, choices=TimeChoices.choices)
     attendees_brothers = models.ManyToManyField(Brother, blank=True)
-    eligible_attendees = models.ManyToManyField(Brother, blank=True, related_name='+')
+    eligible_attendees = models.ManyToManyField(Brother, blank=True, related_name='+', default=all_actives_and_candidates)
     semester = models.ForeignKey(
         Semester, on_delete=models.CASCADE, blank=True, null=True
     )
     description = models.TextField(blank=True, null=True)
     minutes = models.URLField(blank=True, null=True)
+    mandatory = models.BooleanField(default=True)
 
 
 class ChapterEvent(Event):
-    mandatory = models.BooleanField(default=True)
 
     def __str__(self):
         return "Chapter Event - " + str(self.date)

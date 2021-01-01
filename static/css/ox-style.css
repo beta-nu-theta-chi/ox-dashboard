@@ -152,6 +152,7 @@ textarea {
 .modellabel {
     grid-column: 3/4;
     text-align: right;
+    font-weight: bold;
 }
 
 .field {
