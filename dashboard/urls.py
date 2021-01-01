@@ -142,7 +142,7 @@ urlpatterns = [
         name="recruitment_c_event_edit"),
     url(r'^recruitment-chair/event/(?P<pk>\d+)/delete/$', views.RecruitmentEventDelete.as_view(),
         name="recruitment_c_event_delete"),
-    url(r'^recruitment-chair/excuse/(?P<excuse_id>[0-9]+)/$', views.recruitment_c_excuse, name="recruitment_c_excuse"),
+    url(r'^recruitment-chair/excuse/(?P<excuse_id>[0-9]+)/$', views.excuse, name="recruitment_c_excuse"),
     url(r'^recruitment-chair/excuses', views.recruitment_c_all_excuses, name="recruitment_c_excuses"),
     url(r'^recruitment-chair/pnm/(?P<pnm_id>[0-9]+)/$', views.recruitment_c_pnm, name="recruitment_c_pnm"),
     url(r'^recruitment-chair/pnm/(?P<pk>\d+)/edit/$', views.PnmEdit.as_view(),

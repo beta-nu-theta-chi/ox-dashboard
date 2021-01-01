@@ -141,6 +141,7 @@ class Brother(models.Model):
     def __str__(self):
         return self.first_name + " " + self.last_name
 
+    # returns the brother's attendance fraction for the associated event
     def get_chapter_attendance(self):
         return "%s / %s" % (ChapterEvent.objects.filter(mandatory=True, attendees_brothers=self).count() + ChapterEvent.objects.filter(mandatory=True, excuse__status=1).count(), ChapterEvent.objects.filter(mandatory=True, eligible_attendees=self, date__lte=datetime.datetime.now()).count())
 
@@ -393,7 +394,7 @@ class ScholarshipReport(models.Model):
                                   self.semester.get_season_display(),
                                   self.semester.year)
 
-
+# method used to set the default for event.eligible_brothers
 def all_actives_and_candidates():
     return Brother.objects.filter(brother_status__in=['0', '1'])
 

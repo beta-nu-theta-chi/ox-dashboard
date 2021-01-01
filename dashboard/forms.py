@@ -305,14 +305,20 @@ class MeetABrotherForm(forms.Form):
             self.fields['randomize'].label = candidate
 
 
+""" Form for adding or removing brothers from an event's eligible_attendees list
+    Accepts event_id to get the current list of eligible_attendees
+    
+"""
 class EditBrotherAttendanceForm(forms.Form):
     brothers_list = Brother.objects.exclude(brother_status='2').order_by('user__last_name', 'user__first_name')
+    # the default for the queryset is all non-alumni
     add_brothers = forms.ModelMultipleChoiceField(
         queryset=brothers_list,
         widget=forms.SelectMultiple,
         label="Add Brothers",
         required=False,
     )
+
     remove_brothers = forms.ModelMultipleChoiceField(
         queryset=brothers_list,
         widget=forms.SelectMultiple,
@@ -321,9 +327,12 @@ class EditBrotherAttendanceForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
+        # gets the id of the event passed in when the form is initialized
         event_id = kwargs.pop('event', "")
         super(EditBrotherAttendanceForm, self).__init__(*args, **kwargs)
 
+        # if an event was passed in, sets queryset for add_brothers to non-alumni not in the event's eligible_attendees
+        # and queryset for remove_brothers to non-alumni that are in the event's eligible_attendees
         if event_id:
             brothers_list = Brother.objects.exclude(brother_status='2').order_by('user__last_name', 'user__first_name')
             eligible_attendees = Event.objects.get(pk=event_id).eligible_attendees.values('pk')

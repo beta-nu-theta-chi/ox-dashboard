@@ -328,6 +328,51 @@ def create_node_with_children(node_brother, notified_by, brothers_notified):
 def notifies(brother):
     return list(map(lambda node : node.brother, PhoneTreeNode.objects.filter(notified_by=brother)))
 
+
 def notified_by(brother):
     node = PhoneTreeNode.objects.filter(brother=brother)
     return node[0].notified_by if len(node) > 0 else None
+
+
+# zips a list of tuples: (event, attendance status)
+def create_attendance_list(events, excuses_pending, excuses_approved, brother):
+    attendance = []
+    for event in events:
+        if int(event.date.strftime("%s")) > int(datetime.datetime.now().strftime("%s")):
+            attendance.append('')
+        elif not event.mandatory:
+            attendance.append('Not Mandatory')
+        else:
+            if event.attendees_brothers.filter(id=brother.id):
+                attendance.append('Attended')
+            elif event.pk in excuses_approved:
+                attendance.append('Excused')
+            elif event.pk in excuses_pending:
+                attendance.append('Pending')
+            else:
+                attendance.append('Unexcused')
+
+    return zip(events, attendance)
+
+
+def update_attendance_list(brother_form_list, brothers, event):
+    for counter, form in enumerate(brother_form_list):
+        instance = form.cleaned_data
+        if instance['present'] is True:
+            event.attendees_brothers.add(brothers[counter])
+            event.save()
+        if instance['present'] is False:
+            event.attendees_brothers.remove(brothers[counter])
+            event.save()
+
+
+def update_eligible_brothers(instance, event):
+    # for each brother selected in the add brothers field, add them to eligible_attendees
+    if instance['add_brothers']:
+        event.eligible_attendees.add(instance['add_brothers'].values_list('pk', flat=True))
+    # for each brother selected in the add brothers field, remove them from eligible_attendees
+    # and the attended brothers list
+    if instance['remove_brothers']:
+        event.eligible_attendees.remove(*[o.id for o in instance['remove_brothers']])
+        event.attendees_brothers.remove(*[o.id for o in instance['remove_brothers']])
+    event.save()
