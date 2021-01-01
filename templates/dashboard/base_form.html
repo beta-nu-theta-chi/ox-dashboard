@@ -17,6 +17,7 @@
             {% endif %}
                 {{ form.non_field.errors }}
                 {% csrf_token %}
+                {% block model_info %}{% endblock %}
                 <div class="modeladd">
                     {% block model_info %}{% endblock %}
                     {% for field in form %}
