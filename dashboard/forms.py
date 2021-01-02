@@ -372,11 +372,11 @@ class MeetABrotherForm(forms.Form):
             self.fields['randomize'].label = candidate
 
 
-""" Form for adding or removing brothers from an event's eligible_attendees list
-    Accepts event_id to get the current list of eligible_attendees
-    
-"""
 class EditBrotherAttendanceForm(forms.Form):
+    """Form for adding or removing brothers from an event's eligible_attendees list
+        Accepts event_id to get the current list of eligible_attendees
+    
+    """
     brothers_list = Brother.objects.exclude(brother_status='2').order_by('user__last_name', 'user__first_name')
     # the default for the queryset is all non-alumni
     add_brothers = forms.ModelMultipleChoiceField(
