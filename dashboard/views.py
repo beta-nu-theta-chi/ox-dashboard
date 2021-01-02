@@ -1519,7 +1519,8 @@ def secretary_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            save_event(instance)
+            eligible_attendees = Brother.objects.exclude(brother_status='2').order_by('last_name')
+            save_event(instance, eligible_attendees)
             return HttpResponseRedirect(reverse('dashboard:secretary'))
 
     context = {
@@ -1972,7 +1973,7 @@ def scholarship_c_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            semester = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
+            semester, _ = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
                    year=instance.date.year)
             instance.semester = semester
             instance.save()
@@ -2259,7 +2260,7 @@ def recruitment_c_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            semester = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
+            semester, _ = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
                year=instance.date.year)
             instance.semester = semester
             instance.save()
@@ -2402,7 +2403,7 @@ def service_c_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            semester = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
+            semester, _ = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
                    year=instance.date.year)
             instance.semester = semester
             instance.save()
@@ -2503,7 +2504,7 @@ def philanthropy_c_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            semester = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
+            semester, _ = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
                    year=instance.date.year)
             instance.semester = semester
             instance.save()
