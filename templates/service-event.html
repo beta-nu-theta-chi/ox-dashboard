@@ -42,6 +42,12 @@
                                 <td>{{ event.description }}</td>
                             </tr>
                         {% endif %}
+                        {% if type == 'brother' %}
+                        <tr>
+                            <td>Attended?</td>
+                            <td>{{ attended }}</td>
+                        </tr>
+                        {% endif %}
                         </tbody>
                     </table>
                     {% if type == 'attendance' or type == 'ec-view' %}
@@ -71,25 +77,27 @@
             {% endfor %}
         </div>
     </div>
-    <div class="panel panel-default">
-        <div class="panel-heading">Event Excuse</div>
-        <div class="panel-body">
-        {% if not excuse_exists %}
-                {% if error_message %}
-                    <div class="alert alert-danger" role="alert">
-                        {{ error_message }}
-                    </div>
-                {% endif %}
-                <form action="" method="post">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <input type="submit" name="excuse" value="Submit Excuse"/>
-                </form>
-        {% else %}
-            <a class="btn btn-success" href={% url 'dashboard:brother_excuse' excuse.pk %} role="button">Review Submitted Excuse</a>
-        {% endif %}
+    {% if not attended %}
+        <div class="panel panel-default">
+            <div class="panel-heading">Event Excuse</div>
+            <div class="panel-body">
+            {% if not excuse_exists %}
+                    {% if error_message %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error_message }}
+                        </div>
+                    {% endif %}
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <input type="submit" name="excuse" value="Submit Excuse"/>
+                    </form>
+            {% else %}
+                <a class="btn btn-success" href={% url 'dashboard:brother_excuse' excuse.pk %} role="button">Review Submitted Excuse</a>
+            {% endif %}
+            </div>
         </div>
-    </div>
+    {% endif %}
 {% endif %}
     {% if type == 'attendance' %}
         <div class="panel panel-default">

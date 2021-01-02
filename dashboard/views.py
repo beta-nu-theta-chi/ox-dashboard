@@ -469,6 +469,8 @@ def brother_chapter_event(request, event_id, view):
         'form': form,
         'event': event,
         'excuse_exists': excuse.exists(),
+        'brother': brother,
+        'attended': event.attendees_brothers.filter(pk=brother.pk).exists()
     }
 
     # if an excuse has been submitted, add the excuse to the context
@@ -512,6 +514,7 @@ def brother_service_event(request, event_id, view):
         'event': event,
         'form': form,
         'excuse_exists': excuse.exists(),
+        'attended': event.attendees_brothers.filter(pk=brother.pk).exists()
     }
 
     # if an excuse has been submitted, add the excuse to the context
@@ -558,6 +561,7 @@ def brother_philanthropy_event(request, event_id, view):
         'event': event,
         'form': form,
         'excuse_exists': excuse.exists(),
+        'attended': event.attendees_brothers.filter(pk=brother.pk).exists()
     }
 
     # if an excuse has been submitted, add the excuse to the context
@@ -596,6 +600,7 @@ def brother_recruitment_event(request, event_id, view):
         'attendees_pnms': attendees_pnms,
         'event': event,
         'excuse_exists': excuse.exists(),
+        'attended': event.attendees_brothers.filter(pk=brother.pk).exists()
     }
 
     # if an excuse has been submitted, add the excuse to the context
@@ -632,6 +637,8 @@ def brother_hs_event(request, event_id, view):
         'event': event,
         'form': form,
         'excuse_exists': excuse.exists(),
+        'brother': brother,
+        'attended': event.attendees_brothers.filter(pk=brother.pk).exists()
     }
 
     # if an excuse has been submitted, add the excuse to the context

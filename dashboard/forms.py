@@ -194,8 +194,9 @@ class StudyTableEventForm(forms.ModelForm):
     def clean(self):
         start_time = self.cleaned_data.get('start_time', None)
         end_time = self.cleaned_data.get('end_time', None)
-        if end_time < start_time:
-            self._errors['end_time'] = self.error_class(['End time before start time'])
+        if end_time is not None:
+            if end_time < start_time:
+                self._errors['end_time'] = self.error_class(['End time before start time'])
         return self.cleaned_data
 
 
@@ -219,8 +220,9 @@ class HealthAndSafetyEventForm(forms.ModelForm):
     def clean(self):
         start_time = self.cleaned_data.get('start_time', None)
         end_time = self.cleaned_data.get('end_time', None)
-        if end_time < start_time:
-            self._errors['end_time'] = self.error_class(['End time before start time'])
+        if end_time is not None:
+            if end_time < start_time:
+                self._errors['end_time'] = self.error_class(['End time before start time'])
         return self.cleaned_data
 
 
@@ -238,8 +240,9 @@ class ChapterEventForm(forms.ModelForm):
     def clean(self):
         start_time = self.cleaned_data.get('start_time', None)
         end_time = self.cleaned_data.get('end_time', None)
-        if end_time < start_time:
-            self._errors['end_time'] = self.error_class(['End time before start time'])
+        if end_time is not None:
+            if end_time < start_time:
+                self._errors['end_time'] = self.error_class(['End time before start time'])
         return self.cleaned_data
 
 
@@ -268,8 +271,9 @@ class RecruitmentEventForm(forms.ModelForm):
     def clean(self):
         start_time = self.cleaned_data.get('start_time', None)
         end_time = self.cleaned_data.get('end_time', None)
-        if end_time < start_time:
-            self._errors['end_time'] = self.error_class(['End time before start time'])
+        if end_time is not None:
+            if end_time < start_time:
+                self._errors['end_time'] = self.error_class(['End time before start time'])
         return self.cleaned_data
 
 
@@ -293,8 +297,9 @@ class ServiceEventForm(forms.ModelForm):
     def clean(self):
         start_time = self.cleaned_data.get('start_time', None)
         end_time = self.cleaned_data.get('end_time', None)
-        if end_time < start_time:
-            self._errors['end_time'] = self.error_class(['End time before start time'])
+        if end_time is not None:
+            if end_time < start_time:
+                self._errors['end_time'] = self.error_class(['End time before start time'])
         return self.cleaned_data
 
 
@@ -309,8 +314,9 @@ class ServiceSubmissionForm(forms.ModelForm):
     def clean(self):
         start_time = self.cleaned_data.get('start_time', None)
         end_time = self.cleaned_data.get('end_time', None)
-        if end_time < start_time:
-            self._errors['end_time'] = self.error_class(['End time before start time'])
+        if end_time is not None:
+            if end_time < start_time:
+                self._errors['end_time'] = self.error_class(['End time before start time'])
         return self.cleaned_data
 
 

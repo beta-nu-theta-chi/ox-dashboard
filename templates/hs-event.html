@@ -42,6 +42,12 @@
                                 <td>{{ event.description }}</td>
                             </tr>
                         {% endif %}
+                        {% if type == 'brother' %}
+                        <tr>
+                            <td>Attended?</td>
+                            <td>{{ attended }}</td>
+                        </tr>
+                        {% endif %}
                         </tbody>
                     </table>
                     {% if type == 'attendance' or type == 'ec-view' %}
@@ -56,6 +62,7 @@
         <div class="panel panel-default">
             <div class="panel-heading">Attendance</div>
             <div class="panel-body">
+                <form action="" method="post">
                     <input class="btn btn-success" type="submit" name="add" value="Add to Attendance"><br><br>
                     {% csrf_token %}
                     {{ form.non_field.errors }}
@@ -104,7 +111,7 @@
             </div>
         </div>
     {% endif %}
-    {% if type == 'brother-view' %}
+    {% if type == 'brother-view' and not attended %}
         <div class="panel panel-default">
             <div class="panel-heading">Event Excuse</div>
             <div class="panel-body">

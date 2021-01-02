@@ -275,6 +275,11 @@ def photo_form(form_class, request):
 
 
 def attendance_list(request, event):
+    """Creates a list of forms, 1 for each brother in eligible_attendees. Each form has 1 field, being a
+    checkbox field to determine the attendance of the brother at the event with a label set to the brother's name
+    prefix=counter ensures that in the html, the forms have different id's
+
+    """
     brothers = event.eligible_attendees.all()
     brother_form_list = []
 
@@ -336,6 +341,11 @@ def notified_by(brother):
 
 # zips a list of tuples: (event, attendance status)
 def create_attendance_list(events, excuses_pending, excuses_approved, brother):
+    """ zips together a list of tuples where the first element is each event and the second is the brother's
+        status regarding the event. If the event hasn't occurred, the status is blank, if it's not a mandatory
+        event it's 'not mandatory'
+
+    """
     attendance = []
     for event in events:
         if int(event.date.strftime("%s")) > int(datetime.datetime.now().strftime("%s")):
@@ -361,6 +371,10 @@ def update_attendance_list(brother_form_list, brothers, event):
         if instance['present'] is True:
             event.attendees_brothers.add(brothers[counter])
             event.save()
+            excuses = Excuse.objects.filter(brother=brothers[counter], event=event)
+            if excuses.exists():
+                for excuse in excuses:
+                    excuse.delete()
         if instance['present'] is False:
             event.attendees_brothers.remove(brothers[counter])
             event.save()
@@ -379,7 +393,7 @@ def update_eligible_brothers(instance, event):
 
 
 def save_event(instance, eligible_attendees):
-    semester = Semester.get_or_create(season=get_season_from(instance.date.month),
+    semester, created = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
                                       year=instance.date.year)
     instance.semester = semester
     instance.save()

@@ -74,7 +74,7 @@ def create_superbrother(user):
     new_brother.save()
 
 def create_positions():
-    for title in ALL_POSITIONS:
+    for title, _ in Position.PositionChoices.choices:
         new_position = Position()
         new_position.title = title
         new_position.save()

@@ -52,6 +52,12 @@
                                 <td>{{ event.description }}</td>
                             </tr>
                         {% endif %}
+                        {% if type == 'brother' %}
+                        <tr>
+                            <td>Attended?</td>
+                            <td>{{ attended }}</td>
+                        </tr>
+                        {% endif %}
                         </tbody>
                     </table>
                     {% if type == 'attendance' or type == 'ec-view' %}
@@ -113,7 +119,7 @@
             </div>
         </div>
     {% endif %}
-    {% if type == 'brother-view' %}
+    {% if type == 'brother-view' and not attended %}
         <div class="panel panel-default">
             <div class="panel-heading">Event Excuse</div>
             <div class="panel-body">
