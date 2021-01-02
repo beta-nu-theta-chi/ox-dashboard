@@ -459,14 +459,6 @@ def brother_chapter_event(request, event_id, view):
     if request.method == 'POST':
         if form.is_valid():
             instance = form.save(commit=False)
-            if instance.description == "I will not be attending because":
-                context = {
-                    'type': 'brother-view',
-                    'form': form,
-                    'event': event,
-                    'error_message': "Please write a description",
-                }
-                return render(request, "chapter-event.html", context)
             instance.brother = brother
             instance.event = event
             instance.save()
@@ -503,14 +495,6 @@ def brother_service_event(request, event_id, view):
         if 'excuse' in request.POST:
             if form.is_valid():
                 instance = form.save(commit=False)
-                if instance.description == "I will not be attending because":
-                    context = {
-                        'type': 'brother-view',
-                        'form': form,
-                        'event': event,
-                        'error_message': "Please write a description",
-                    }
-                    return render(request, "service-event.html", context)
                 instance.brother = brother
                 instance.event = event
                 instance.save()
@@ -556,14 +540,6 @@ def brother_philanthropy_event(request, event_id, view):
         if 'excuse' in request.POST:
             if form.is_valid():
                 instance = form.save(commit=False)
-                if instance.description == "I will not be attending because":
-                    context = {
-                        'type': 'brother-view',
-                        'form': form,
-                        'event': event,
-                        'error_message': "Please write a description",
-                    }
-                    return render(request, "philanthropy-event.html", context)
                 instance.brother = brother
                 instance.event = event
                 instance.save()
@@ -609,14 +585,6 @@ def brother_recruitment_event(request, event_id, view):
     if request.method == 'POST':
         if form.is_valid():
             instance = form.save(commit=False)
-            if instance.description == "I will not be attending because":
-                context = {
-                    'type': 'brother-view',
-                    'form': form,
-                    'event': event,
-                    'error_message': "Please write a description",
-                }
-                return render(request, "recruitment-event.html", context)
             instance.brother = brother
             instance.event = event
             instance.save()
@@ -654,14 +622,6 @@ def brother_hs_event(request, event_id, view):
     if request.method == 'POST':
         if form.is_valid():
             instance = form.save(commit=False)
-            if instance.description == "I will not be attending because":
-                context = {
-                    'type': 'brother-view',
-                    'form': form,
-                    'event': event,
-                    'error_message': "Please write a description",
-                }
-                return render(request, "hs-event.html", context)
             instance.brother = brother
             instance.event = event
             instance.save()
@@ -1120,21 +1080,10 @@ def committee_event_add(request, position):
     if request.method == 'POST':
         if form.is_valid():
             instance = form.save(commit=False)
-
-            try:
-                semester = Semester.objects.filter(season=get_season_from(instance.date.month),
-                                                   year=instance.date.year)[0]
-            except IndexError:
-                semester = Semester(season=get_season_from(instance.date.month),
-                                    year=instance.date.year)
-                semester.save()
             committee = Position.objects.get(title=position).committee
+            eligible_attendees(committee.members.order_by('last_name'))
             instance.committee = committee
-            instance.semester = semester
-            instance.save()
-            # you must save the instance into the database as a row in the table before you can set the manytomany field
-            instance.eligible_attendees.set(committee.members.order_by('last_name'))
-            instance.save()
+            save_event(instance, eligible_attendees)
             next = request.GET.get('next')
             return HttpResponseRedirect(next)
 
@@ -1191,24 +1140,8 @@ def health_and_safety_event_add(request):
     if form.is_valid():
         # TODO: add google calendar event adding
         instance = form.save(commit=False)
-        try:
-            semester = Semester.objects.filter(season=get_season_from(instance.date.month),
-                                               year=instance.date.year)[0]
-        except IndexError:
-            semester = Semester(season=get_season_from(instance.date.month),
-                                year=instance.date.year)
-            semester.save()
-        if instance.end_time is not None and instance.end_time < instance.start_time:
-            context = {
-                'position': 'Vice President of Health and Safety',
-                'form': form,
-                'error_message': "Start time after end time!",
-            }
-            return render(request, "event-add.html", context)
-        instance.semester = semester
-        instance.save()
-        instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
-        instance.save()
+        eligible_attendees = Brother.objects.exclude(brother_status='2').order_by('last_name')
+        save_event(instance, eligible_attendees)
         return HttpResponseRedirect(reverse('dashboard:vphs'))
 
     context = {
@@ -1278,10 +1211,12 @@ def cleaned_brother_data(line):
 
     return stripped_data[0:3]
 
+
 def can_brother_be_added(first_name, last_name, caseid):
     data = [first_name, last_name, caseid]
 
     return all(value != "" for value in data) and not Brother.objects.filter(case_ID=caseid).exists()
+
 
 def create_brother_if_possible(semester, brother_status, first_name, last_name, caseid):
     if User.objects.filter(username=caseid).exists():
@@ -1306,6 +1241,7 @@ def create_brother_if_possible(semester, brother_status, first_name, last_name, 
         new_brother.brother_status = brother_status
         new_brother.save()
 
+
 def create_mass_entry_brothers(request, mass_entry_form):
     if mass_entry_form.is_valid():
         data = mass_entry_form.cleaned_data
@@ -1318,6 +1254,7 @@ def create_mass_entry_brothers(request, mass_entry_form):
 
     else:
         messages.error(request, "Mass entry form invalid")
+
 
 def staged_mass_entry_brothers(mass_entry_form):
     brothers = []
@@ -1338,6 +1275,7 @@ def staged_mass_entry_brothers(mass_entry_form):
             })
 
     return brothers
+
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
 def secretary(request):
@@ -1437,32 +1375,15 @@ def secretary_event(request, event_id):
 def excuse(request, excuse_id):
     """ Renders Excuse response form """
     excuse = get_object_or_404(Excuse, pk=excuse_id)
-    form = ExcuseResponseForm(request.POST or None)
+    form = ExcuseResponseForm(request.POST or None, excuse=excuse)
 
     if request.method == 'POST':
         if form.is_valid():
             instance = form.save(commit=False)
-            if instance.status == '2' and instance.response_message == '':
-                context = {
-                    'type': 'response',
-                    'excuse': excuse,
-                    'form': form,
-                    'error_message': "Response message required for denial"
-                }
-                return render(request, "excuse.html", context)
-            if instance.status == '3' and excuse.event.mandatory:
-                context = {
-                    'type': 'response',
-                    'excuse': excuse,
-                    'form': form,
-                    'error_message': "Event is mandatory cannot mark excuse not mandatory"
-                }
-                return render(request, "excuse.html", context)
-            else:
-                excuse.status = instance.status
-                excuse.response_message = instance.response_message
-                excuse.save()
-                return HttpResponseRedirect(request.GET.get('next'))
+            excuse.status = instance.status
+            excuse.response_message = instance.response_message
+            excuse.save()
+            return HttpResponseRedirect(request.GET.get('next'))
 
     context = {
         'type': 'response',
@@ -1591,24 +1512,7 @@ def secretary_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            try:
-                semester = Semester.objects.filter(season=get_season_from(instance.date.month),
-                                                   year=instance.date.year)[0]
-            except IndexError:
-                semester = Semester(season=get_season_from(instance.date.month),
-                                    year=instance.date.year)
-                semester.save()
-            if instance.end_time is not None and instance.end_time < instance.start_time:
-                context = {
-                    'position': 'Secretary',
-                    'form': form,
-                    'error_message': "Start time after end time!",
-                }
-                return render(request, "event-add.html", context)
-            instance.semester = semester
-            instance.save()
-            instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
-            instance.save()
+            save_event(instance)
             return HttpResponseRedirect(reverse('dashboard:secretary'))
 
     context = {
@@ -2059,20 +1963,8 @@ def scholarship_c_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            try:
-                semester = Semester.objects.filter(season=get_season_from(instance.date.month),
-                                                   year=instance.date.year)[0]
-            except IndexError:
-                semester = Semester(season=get_season_from(instance.date.month),
-                                    year=instance.date.year)
-                semester.save()
-            if instance.end_time is not None and instance.end_time < instance.start_time:
-                context = {
-                    'position': 'Scholarship Chair',
-                    'form': form,
-                    'error_message': "Start time after end time!",
-                }
-                return render(request, "event-add.html", context)
+            semester = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
+                   year=instance.date.year)
             instance.semester = semester
             instance.save()
             instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
@@ -2358,20 +2250,8 @@ def recruitment_c_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            try:
-                semester = Semester.objects.filter(season=get_season_from(instance.date.month),
-                                                   year=instance.date.year)[0]
-            except IndexError:
-                semester = Semester(season=get_season_from(instance.date.month),
-                                    year=instance.date.year)
-                semester.save()
-            if instance.end_time is not None and instance.end_time < instance.start_time:
-                context = {
-                    'position': 'Recruitment Chair',
-                    'form': form,
-                    'error_message': "Start time after end time!",
-                }
-                return render(request, "recruitment-event-add.html", context)
+            semester = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
+               year=instance.date.year)
             instance.semester = semester
             instance.save()
             instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
@@ -2513,20 +2393,8 @@ def service_c_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            try:
-                semester = Semester.objects.filter(season=get_season_from(instance.date.month),
-                                                   year=instance.date.year)[0]
-            except IndexError:
-                semester = Semester(season=get_season_from(instance.date.month),
-                                    year=instance.date.year)
-                semester.save()
-            if instance.end_time is not None and instance.end_time < instance.start_time:
-                context = {
-                    'position': 'Service Chair',
-                    'form': form,
-                    'error_message': "Start time after end time!",
-                }
-                return render(request, "event-add.html", context)
+            semester = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
+                   year=instance.date.year)
             instance.semester = semester
             instance.save()
             instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
@@ -2626,20 +2494,8 @@ def philanthropy_c_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            try:
-                semester = Semester.objects.filter(season=get_season_from(instance.date.month),
-                                                   year=instance.date.year)[0]
-            except IndexError:
-                semester = Semester(season=get_season_from(instance.date.month),
-                                    year=instance.date.year)
-                semester.save()
-            if instance.end_time is not None and instance.end_time < instance.start_time:
-                context = {
-                    'position': 'Philanthropy Chair',
-                    'form': form,
-                    'error_message': "Start time after end time!",
-                }
-                return render(request, "event-add.html", context)
+            semester = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
+                   year=instance.date.year)
             instance.semester = semester
             instance.save()
             instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))

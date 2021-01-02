@@ -148,11 +148,30 @@ class ExcuseForm(forms.ModelForm):
         model = Excuse
         fields = ['description']
 
+    def clean(self):
+        description = self.cleaned_data.get('description', None)
+        if description == "I will not be attending because" or description in EMPTY_VALUES:
+            self._errors['description'] = self.error_class(['"Please write a description"'])
+
 
 class ExcuseResponseForm(forms.ModelForm):
+    excuse = None
+
     class Meta:
         model = Excuse
         fields = ['status', 'response_message']
+
+    def __init__(self, *args, **kwargs):
+        self.excuse = kwargs.pop('excuse', None)
+        super(ExcuseResponseForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        status = self.cleaned_data.get('status', None)
+        response = self.cleaned_data.get('response_message', None)
+        if status == "2" and response in EMPTY_VALUES:
+            self._errors['status'] = self.error_class(["Response message required for denial"])
+        if status == "3" and self.excuse.event.mandatory:
+            self._errors['status'] = self.error_class(["Event is mandatory cannot mark excuse not mandatory"])
 
 
 class PotentialNewMemberForm(forms.ModelForm):
@@ -172,6 +191,13 @@ class StudyTableEventForm(forms.ModelForm):
             'date': SelectDateWidget(),
         }
 
+    def clean(self):
+        start_time = self.cleaned_data.get('start_time', None)
+        end_time = self.cleaned_data.get('end_time', None)
+        if end_time < start_time:
+            self._errors['end_time'] = self.error_class(['End time before start time'])
+        return self.cleaned_data
+
 
 class ScholarshipEventForm(forms.ModelForm):
     class Meta:
@@ -190,6 +216,13 @@ class HealthAndSafetyEventForm(forms.ModelForm):
             'date': SelectDateWidget(),
         }
 
+    def clean(self):
+        start_time = self.cleaned_data.get('start_time', None)
+        end_time = self.cleaned_data.get('end_time', None)
+        if end_time < start_time:
+            self._errors['end_time'] = self.error_class(['End time before start time'])
+        return self.cleaned_data
+
 
 class ChapterEventForm(forms.ModelForm):
     class Meta:
@@ -201,6 +234,13 @@ class ChapterEventForm(forms.ModelForm):
         widgets = {
             'date': SelectDateWidget(),
         }
+
+    def clean(self):
+        start_time = self.cleaned_data.get('start_time', None)
+        end_time = self.cleaned_data.get('end_time', None)
+        if end_time < start_time:
+            self._errors['end_time'] = self.error_class(['End time before start time'])
+        return self.cleaned_data
 
 
 class CandidateEditForm(forms.ModelForm):
@@ -225,6 +265,13 @@ class RecruitmentEventForm(forms.ModelForm):
             'date': SelectDateWidget(),
         }
 
+    def clean(self):
+        start_time = self.cleaned_data.get('start_time', None)
+        end_time = self.cleaned_data.get('end_time', None)
+        if end_time < start_time:
+            self._errors['end_time'] = self.error_class(['End time before start time'])
+        return self.cleaned_data
+
 
 class PhilanthropyEventForm(forms.ModelForm):
     class Meta:
@@ -243,6 +290,13 @@ class ServiceEventForm(forms.ModelForm):
             'date': SelectDateWidget(),
         }
 
+    def clean(self):
+        start_time = self.cleaned_data.get('start_time', None)
+        end_time = self.cleaned_data.get('end_time', None)
+        if end_time < start_time:
+            self._errors['end_time'] = self.error_class(['End time before start time'])
+        return self.cleaned_data
+
 
 class ServiceSubmissionForm(forms.ModelForm):
     class Meta:
@@ -251,6 +305,13 @@ class ServiceSubmissionForm(forms.ModelForm):
         widgets = {
             'date': SelectDateWidget(),
         }
+
+    def clean(self):
+        start_time = self.cleaned_data.get('start_time', None)
+        end_time = self.cleaned_data.get('end_time', None)
+        if end_time < start_time:
+            self._errors['end_time'] = self.error_class(['End time before start time'])
+        return self.cleaned_data
 
 
 class ServiceSubmissionResponseForm(forms.ModelForm):

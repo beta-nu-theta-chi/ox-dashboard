@@ -81,7 +81,15 @@
                     {% endif %}
                     <form action="" method="post">
                         {% csrf_token %}
-                        {{ form.as_p }}
+                        <table style="vertical-align:middle" class="table table-responsive">
+                            {% for field in form %}
+                                <tr>
+                                    <td>{{ field.label_tag }}</td>
+                                    <td>{{ field }}</td>
+                                    <td>{{ field.errors }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
                         <input type="submit" value="Submit"/>
                     </form>
                 </div>

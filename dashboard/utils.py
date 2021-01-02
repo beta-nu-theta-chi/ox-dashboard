@@ -376,3 +376,13 @@ def update_eligible_brothers(instance, event):
         event.eligible_attendees.remove(*[o.id for o in instance['remove_brothers']])
         event.attendees_brothers.remove(*[o.id for o in instance['remove_brothers']])
     event.save()
+
+
+def save_event(instance, eligible_attendees):
+    semester = Semester.get_or_create(season=get_season_from(instance.date.month),
+                                      year=instance.date.year)
+    instance.semester = semester
+    instance.save()
+    # you must save the instance into the database as a row in the table before you can set the manytomany field
+    instance.eligible_attendees.set(eligible_attendees)
+    instance.save()
