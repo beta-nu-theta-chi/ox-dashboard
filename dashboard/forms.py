@@ -183,67 +183,77 @@ class PotentialNewMemberForm(forms.ModelForm):
         ]
 
 
-class StudyTableEventForm(forms.ModelForm):
+class EventForm(forms.ModelForm):
     class Meta:
+        model = Event
+        fields = ['name', 'mandatory', 'date', 'start_time', 'end_time', 'description']
+        widgets = {
+            'date': SelectDateWidget()
+        }
+
+    def clean(self):
+        start_time = self.cleaned_data.get('start_time', None)
+        end_time = self.cleaned_data.get('end_time', None)
+        if end_time is not None and end_time < start_time:
+            self._errors['end_time'] = self.error_class(['End time before start time'])
+        return self.cleaned_data
+
+
+class StudyTableEventForm(EventForm):
+    class Meta(EventForm.Meta):
         model = StudyTableEvent
-        fields = ['date', 'start_time', 'end_time', 'description']
-        widgets = {
-            'date': SelectDateWidget(),
-        }
-
-    def clean(self):
-        start_time = self.cleaned_data.get('start_time', None)
-        end_time = self.cleaned_data.get('end_time', None)
-        if end_time is not None:
-            if end_time < start_time:
-                self._errors['end_time'] = self.error_class(['End time before start time'])
-        return self.cleaned_data
 
 
-class ScholarshipEventForm(forms.ModelForm):
-    class Meta:
+class ScholarshipEventForm(EventForm):
+    class Meta(EventForm.Meta):
         model = ScholarshipEvent
-        fields = ['name', 'date', 'start_time', 'end_time', 'description']
-        widgets = {
-            'date': SelectDateWidget(),
-        }
 
 
-class HealthAndSafetyEventForm(forms.ModelForm):
-    class Meta:
+class HealthAndSafetyEventForm(EventForm):
+    class Meta(EventForm.Meta):
         model = HealthAndSafetyEvent
-        fields = ['name', 'date', 'start_time', 'end_time', 'description']
-        widgets = {
-            'date': SelectDateWidget(),
-        }
-
-    def clean(self):
-        start_time = self.cleaned_data.get('start_time', None)
-        end_time = self.cleaned_data.get('end_time', None)
-        if end_time is not None:
-            if end_time < start_time:
-                self._errors['end_time'] = self.error_class(['End time before start time'])
-        return self.cleaned_data
 
 
-class ChapterEventForm(forms.ModelForm):
-    class Meta:
+class ChapterEventForm(EventForm):
+    class Meta(EventForm.Meta):
         model = ChapterEvent
-        fields = [
-            'name', 'mandatory', 'date', 'start_time', 'end_time', 'minutes',
-            'description',
-        ]
+        fields = EventForm.Meta.fields + ['minutes']
+
+
+class RecruitmentEventForm(EventForm):
+    class Meta(EventForm.Meta):
+        model = RecruitmentEvent
+        fields = ['name', 'mandatory', 'rush', 'date', 'start_time', 'end_time', 'picture', 'location', 'description']
+
+
+class PhilanthropyEventForm(EventForm):
+    class Meta(EventForm.Meta):
+        model = PhilanthropyEvent
+
+
+class ServiceEventForm(EventForm):
+    class Meta(EventForm.Meta):
+        model = ServiceEvent
+
+
+class CommitteeMeetingForm(EventForm):
+    class Meta(EventForm.Meta):
+        model = CommitteeMeetingEvent
+
+
+class ServiceSubmissionForm(forms.ModelForm):
+    class Meta:
+        model = ServiceSubmission
+        fields = ['name', 'date', 'hours', 'description']
         widgets = {
             'date': SelectDateWidget(),
         }
 
-    def clean(self):
-        start_time = self.cleaned_data.get('start_time', None)
-        end_time = self.cleaned_data.get('end_time', None)
-        if end_time is not None:
-            if end_time < start_time:
-                self._errors['end_time'] = self.error_class(['End time before start time'])
-        return self.cleaned_data
+
+class ServiceSubmissionResponseForm(forms.ModelForm):
+    class Meta:
+        model = ServiceSubmission
+        fields = ['status']
 
 
 class CandidateEditForm(forms.ModelForm):
@@ -257,81 +267,6 @@ class CandidateEditForm(forms.ModelForm):
         ]
         widgets = {
             'birthday': SelectDateWidget(years=YEAR_RANGE),
-        }
-
-
-class RecruitmentEventForm(forms.ModelForm):
-    class Meta:
-        model = RecruitmentEvent
-        fields = ['name', 'rush', 'date', 'start_time', 'end_time', 'picture', 'location', 'description']
-        widgets = {
-            'date': SelectDateWidget(),
-        }
-
-    def clean(self):
-        start_time = self.cleaned_data.get('start_time', None)
-        end_time = self.cleaned_data.get('end_time', None)
-        if end_time is not None:
-            if end_time < start_time:
-                self._errors['end_time'] = self.error_class(['End time before start time'])
-        return self.cleaned_data
-
-
-class PhilanthropyEventForm(forms.ModelForm):
-    class Meta:
-        model = PhilanthropyEvent
-        fields = ['name', 'date', 'start_time', 'end_time']
-        widgets = {
-            'date': SelectDateWidget(),
-        }
-
-
-class ServiceEventForm(forms.ModelForm):
-    class Meta:
-        model = ServiceEvent
-        fields = ['name', 'date', 'start_time', 'end_time', 'description']
-        widgets = {
-            'date': SelectDateWidget(),
-        }
-
-    def clean(self):
-        start_time = self.cleaned_data.get('start_time', None)
-        end_time = self.cleaned_data.get('end_time', None)
-        if end_time is not None:
-            if end_time < start_time:
-                self._errors['end_time'] = self.error_class(['End time before start time'])
-        return self.cleaned_data
-
-
-class ServiceSubmissionForm(forms.ModelForm):
-    class Meta:
-        model = ServiceSubmission
-        fields = ['name', 'date', 'hours', 'description']
-        widgets = {
-            'date': SelectDateWidget(),
-        }
-
-    def clean(self):
-        start_time = self.cleaned_data.get('start_time', None)
-        end_time = self.cleaned_data.get('end_time', None)
-        if end_time is not None:
-            if end_time < start_time:
-                self._errors['end_time'] = self.error_class(['End time before start time'])
-        return self.cleaned_data
-
-
-class ServiceSubmissionResponseForm(forms.ModelForm):
-    class Meta:
-        model = ServiceSubmission
-        fields = ['status']
-
-
-class CommitteeMeetingForm(forms.ModelForm):
-    class Meta:
-        model = CommitteeMeetingEvent
-        fields = ['date', 'start_time', 'end_time', 'minutes']
-        widgets = {
-            'date': SelectDateWidget(),
         }
 
 

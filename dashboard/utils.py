@@ -339,11 +339,26 @@ def notified_by(brother):
     return node[0].notified_by if len(node) > 0 else None
 
 
-# zips a list of tuples: (event, attendance status)
 def create_attendance_list(events, excuses_pending, excuses_approved, brother):
-    """ zips together a list of tuples where the first element is each event and the second is the brother's
-        status regarding the event. If the event hasn't occurred, the status is blank, if it's not a mandatory
-        event it's 'not mandatory'
+    """zips together a list of tuples where the first element is each event and the second is the brother's
+    status regarding the event. If the event hasn't occurred, the status is blank, if it's not a mandatory
+    event it's 'not mandatory'
+
+    :param list[Event] events:
+        a list of events you want to create this attendance list for
+
+    :param list[Event] excuses_pending:
+        a list of events that the brother has excuses created for that are currently pending
+
+    :param list[Event] excuses_approved:
+        a list of events that the brother has excuses created for that are approved
+
+    :param Brother brother:
+        which brother the excuses are for
+
+    :returns:
+        a zipped list of events and its corresponding attendance
+    :rtype: list[Event, str]
 
     """
     attendance = []
@@ -365,12 +380,25 @@ def create_attendance_list(events, excuses_pending, excuses_approved, brother):
     return zip(events, attendance)
 
 
-def update_attendance_list(brother_form_list, brothers, event):
+def mark_attendance_list(brother_form_list, brothers, event):
+    """Mark the attendance for the given brothers at the given event
+
+    :param list[BrotherAttendanceForm] brother_form_list:
+        a list of forms which holds the marked attendance for the brother it's associated with
+
+    :param list[Brother] brothers:
+        a list of brothers, values must correspond to the same order as it was used to create the brother_form_list
+
+    :param Event event:
+        the event that has its attendance being marked
+
+    """
     for counter, form in enumerate(brother_form_list):
         instance = form.cleaned_data
         if instance['present'] is True:
             event.attendees_brothers.add(brothers[counter])
             event.save()
+            # if a brother is marked present, deletes any of the excuses associated with this brother and this event
             excuses = Excuse.objects.filter(brother=brothers[counter], event=event)
             if excuses.exists():
                 for excuse in excuses:

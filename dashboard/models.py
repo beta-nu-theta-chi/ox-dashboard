@@ -142,22 +142,26 @@ class Brother(models.Model):
         return self.first_name + " " + self.last_name
 
     # returns the brother's attendance fraction for the associated event
+    def get_attendance(self, event_type):
+        return "%s / %s" % (
+        event_type.objects.filter(mandatory=True, attendees_brothers=self).count() + event_type.objects.filter(
+            mandatory=True, excuse__status=1).count(),
+        event_type.objects.filter(mandatory=True, eligible_attendees=self, date__lte=datetime.datetime.now()).count())
 
     def get_chapter_attendance(self):
-        return "%s / %s" % (ChapterEvent.objects.filter(mandatory=True, attendees_brothers=self).count() + ChapterEvent.objects.filter(mandatory=True, excuse__status=1).count(), ChapterEvent.objects.filter(mandatory=True, eligible_attendees=self, date__lte=datetime.datetime.now()).count())
+        return self.get_attendance(ChapterEvent)
 
     def get_recruitment_attendance(self):
-        return "%s / %s" % (RecruitmentEvent.objects.filter(mandatory=True, attendees_brothers=self).count() + RecruitmentEvent.objects.filter(mandatory=True, excuse__status=1).count(), RecruitmentEvent.objects.filter(mandatory=True, eligible_attendees=self, date__lte=datetime.datetime.now()).count())
+        return self.get_attendance(RecruitmentEvent)
 
     def get_hs_attendance(self):
-        return "%s / %s" % (HealthAndSafetyEvent.objects.filter(mandatory=True, attendees_brothers=self).count() + HealthAndSafetyEvent.objects.filter(mandatory=True, excuse__status=1).count(), HealthAndSafetyEvent.objects.filter(mandatory=True, eligible_attendees=self, date__lte=datetime.datetime.now()).count())
+        return self.get_attendance(HealthAndSafetyEvent)
 
     def get_philanthropy_attendance(self):
-        return "%s / %s" % (PhilanthropyEvent.objects.filter(mandatory=True, attendees_brothers=self).count() + PhilanthropyEvent.objects.filter(mandatory=True, excuse__status=1).count(), PhilanthropyEvent.objects.filter(mandatory=True, eligible_attendees=self, date__lte=datetime.datetime.now()).count())
+        return self.get_attendance(PhilanthropyEvent)
 
     def get_service_attendance(self):
-        return "%s / %s" % (ServiceEvent.objects.filter(mandatory=True, attendees_brothers=self).count() + ServiceEvent.objects.filter(mandatory=True, excuse__status=1).count(), ServiceEvent.objects.filter(mandatory=True, eligible_attendees=self, date__lte=datetime.datetime.now()).count())
-
+        return self.get_attendance(ServiceEvent)
 
 class MeetABrother(models.Model):
     brother = models.ForeignKey(Brother, on_delete=models.CASCADE, related_name='brother_mab')

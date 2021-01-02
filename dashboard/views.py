@@ -1062,7 +1062,7 @@ def committee_event(request, event_id):
     if request.method == 'POST':
         if "update" in request.POST:
             if forms_is_valid(brother_form_list):
-                update_attendance_list(brother_form_list, brothers, event)
+                mark_attendance_list(brother_form_list, brothers, event)
         if "edit" in request.POST:
             if form.is_valid():
                 instance = form.cleaned_data
@@ -1183,12 +1183,12 @@ def health_and_safety_event(request, event_id):
     event = Event.objects.get(pk=event_id)
     brothers, brother_form_list = attendance_list(request, event)
 
-    form = EditBrotherAttendanceForm(request.POST or None)
+    form = EditBrotherAttendanceForm(request.POST or None, event=event_id)
 
     if request.method == 'POST':
         if "update" in request.POST:
             if forms_is_valid(brother_form_list):
-                update_attendance_list(brother_form_list, brothers, event)
+                mark_attendance_list(brother_form_list, brothers, event)
         if "edit" in request.POST:
             if form.is_valid():
                 instance = form.cleaned_data
@@ -1362,7 +1362,7 @@ def secretary_event(request, event_id):
     if request.method == 'POST':
         if "update" in request.POST:
             if forms_is_valid(brother_form_list):
-                update_attendance_list(brother_form_list, brothers, event)
+                mark_attendance_list(brother_form_list, brothers, event)
         if "edit" in request.POST:
             if form.is_valid():
                 instance = form.cleaned_data
@@ -2228,10 +2228,10 @@ def recruitment_c_event(request, event_id):
     if request.method == 'POST':
         if "updatebrother" in request.POST:
             if forms_is_valid(brother_form_list):
-                update_attendance_list(brother_form_list, brothers, event)
+                mark_attendance_list(brother_form_list, brothers, event)
         if "updatepnm" in request.POST:
             if forms_is_valid(pnm_form_list):
-                update_attendance_list(pnm_form_list, pnms, event)
+                mark_attendance_list(pnm_form_list, pnms, event)
         if "edit" in request.POST:
             if form.is_valid():
                 instance = form.cleaned_data
@@ -2334,7 +2334,7 @@ def service_c_event(request, event_id):
 
     if request.method == 'POST':
         if "update" in request.POST:
-            update_attendance_list(brother_form_list, brothers, event)
+            mark_attendance_list(brother_form_list, brothers, event)
         if "edit" in request.POST:
             if form.is_valid():
                 instance = form.cleaned_data
@@ -2476,7 +2476,7 @@ def philanthropy_c_event(request, event_id):
     if request.method == 'POST':
         if "update" in request.POST:
             if forms_is_valid(brother_form_list):
-                update_attendance_list(brother_form_list, brothers, event)
+                mark_attendance_list(brother_form_list, brothers, event)
         if "edit" in request.POST:
             if form.is_valid():
                 instance = form.cleaned_data
