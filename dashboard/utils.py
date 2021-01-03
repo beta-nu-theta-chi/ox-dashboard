@@ -411,7 +411,7 @@ def mark_attendance_list(brother_form_list, brothers, event):
 def update_eligible_brothers(instance, event):
     # for each brother selected in the add brothers field, add them to eligible_attendees
     if instance['add_brothers']:
-        event.eligible_attendees.add(instance['add_brothers'].values_list('pk', flat=True))
+        event.eligible_attendees.add(*instance['add_brothers'].values_list('pk', flat=True))
     # for each brother selected in the add brothers field, remove them from eligible_attendees
     # and the attended brothers list
     if instance['remove_brothers']:

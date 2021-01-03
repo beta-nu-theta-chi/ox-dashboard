@@ -2257,7 +2257,6 @@ def recruitment_c_event_add(request):
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
             eligible_attendees = Brother.objects.exclude(brother_status='2').order_by('last_name')
-            save_event(instance, eligible_attendees)
             return HttpResponseRedirect(reverse('dashboard:recruitment_c'))
 
     context = {
