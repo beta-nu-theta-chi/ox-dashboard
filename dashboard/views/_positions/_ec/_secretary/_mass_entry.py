@@ -1,3 +1,5 @@
+from dashboard.models import import Brother, User
+
 def cleaned_brother_data(line):
     stripped_data = [data.strip() for data in line.strip().split(",")]
 
