@@ -15,9 +15,9 @@ from django.core.mail import send_mail
 from django.core.exceptions import ObjectDoesNotExist
 
 
-from .utils import *
+from dashboard.utils import *
 from datetime import datetime
-from .forms import *
+from dashboard.forms import *
 
 
 class LoginView(View):
@@ -1784,7 +1784,7 @@ def marshal_mab_edit(request):
 
     brothers = Brother.objects.filter(brother_status='1')
 
-    
+
     arbitrary_date_before_time = datetime.datetime(1000, 1, 1)
 
     for counter, brother in enumerate(brothers):
