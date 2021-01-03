@@ -155,12 +155,6 @@ urlpatterns = [
     # Scholarship Chair URL Section
     url(r'^scholarship-chair/$', views.scholarship_c, name="scholarship_c"),
     url(r'^scholarship-chair/gpa/$', views.scholarship_c_gpa, name="scholarship_c_gpa"),
-    url(r'^scholarship-chair/event/(?P<event_id>[0-9]+)/$', views.study_table_event, name="scholarship_c_event"),
-    url(r'^scholarship-chair/event/add/$', views.scholarship_c_event_add, name="scholarship_c_event_add"),
-    url(r'^scholarship-chair/event/(?P<pk>\d+)/edit/$', views.StudyEventEdit.as_view(),
-        name="scholarship_c_event_edit"),
-    url(r'^scholarship-chair/event/(?P<pk>\d+)/delete/$', views.StudyEventDelete.as_view(),
-        name="scholarship_c_event_delete"),
     url(r'^scholarship-chair/plan/(?P<plan_id>[0-9]+)/$', views.scholarship_c_plan, name="scholarship_c_plan"),
     url(r'^scholarship-chair/plan/(?P<pk>\d+)/edit/$', views.ScholarshipReportEdit.as_view(),
         name="scholarship_c_plan_edit"),

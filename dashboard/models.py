@@ -500,11 +500,6 @@ class ScholarshipEvent(Event):
         return "Scholarship Event - " + str(self.date)
 
 
-class StudyTableEvent(Event):
-    def __str__(self):
-        return "Study Tables - %s" % self.date
-
-
 def get_standing_committees(brother):
     committees = []
     for committee in brother.committee_set.all():

@@ -199,11 +199,6 @@ class EventForm(forms.ModelForm):
         return self.cleaned_data
 
 
-class StudyTableEventForm(EventForm):
-    class Meta(EventForm.Meta):
-        model = StudyTableEvent
-
-
 class ScholarshipEventForm(EventForm):
     class Meta(EventForm.Meta):
         model = ScholarshipEvent
