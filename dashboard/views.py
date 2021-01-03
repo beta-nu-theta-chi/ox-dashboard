@@ -1973,12 +1973,8 @@ def scholarship_c_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            semester, _ = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
-                   year=instance.date.year)
-            instance.semester = semester
-            instance.save()
-            instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
-            instance.save()
+            eligible_attendees = Brother.objects.exclude(brother_status='2').order_by('last_name')
+            save_event(instance, eligible_attendees)
             return HttpResponseRedirect(reverse('dashboard:scholarship_c'))
 
     context = {
@@ -2260,12 +2256,8 @@ def recruitment_c_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            semester, _ = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
-               year=instance.date.year)
-            instance.semester = semester
-            instance.save()
-            instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
-            instance.save()
+            eligible_attendees = Brother.objects.exclude(brother_status='2').order_by('last_name')
+            save_event(instance, eligible_attendees)
             return HttpResponseRedirect(reverse('dashboard:recruitment_c'))
 
     context = {
@@ -2403,12 +2395,8 @@ def service_c_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            semester, _ = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
-                   year=instance.date.year)
-            instance.semester = semester
-            instance.save()
-            instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
-            instance.save()
+            eligible_attendees = Brother.objects.exclude(brother_status='2').order_by('last_name')
+            save_event(instance, eligible_attendees)
             return HttpResponseRedirect(reverse('dashboard:service_c'))
 
     context = {
@@ -2504,12 +2492,8 @@ def philanthropy_c_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            semester, _ = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
-                   year=instance.date.year)
-            instance.semester = semester
-            instance.save()
-            instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
-            instance.save()
+            eligible_attendees = Brother.objects.exclude(brother_status='2').order_by('last_name')
+            save_event(instance, eligible_attendees)
             return HttpResponseRedirect(reverse('dashboard:philanthropy_c'))
 
     context = {
