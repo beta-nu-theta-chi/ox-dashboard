@@ -8,7 +8,7 @@ import datetime
 from dashboard.forms import BrotherMassEntryForm
 from dashboard.models import Brother, User
 
-def cleaned_brother_data(line):
+def __cleaned_brother_data(line):
     stripped_data = [data.strip() for data in line.strip().split(",")]
 
     for i in range(len(stripped_data), 3):
@@ -17,13 +17,13 @@ def cleaned_brother_data(line):
     return stripped_data[0:3]
 
 
-def can_brother_be_added(first_name, last_name, caseid):
+def __can_brother_be_added(first_name, last_name, caseid):
     data = [first_name, last_name, caseid]
 
     return all(value != "" for value in data) and not Brother.objects.filter(case_ID=caseid).exists()
 
 
-def create_brother_if_possible(semester, brother_status, first_name, last_name, caseid):
+def __create_brother_if_possible(semester, brother_status, first_name, last_name, caseid):
     if User.objects.filter(username=caseid).exists():
         user = User.objects.get(username=caseid)
     elif caseid != "":
@@ -35,7 +35,7 @@ def create_brother_if_possible(semester, brother_status, first_name, last_name, 
                 # ie `user` is never accessed
 
     # if able to add, create the brother with the given data
-    if can_brother_be_added(first_name, last_name, caseid):
+    if __can_brother_be_added(first_name, last_name, caseid):
         new_brother = Brother()
         new_brother.user = user
         new_brother.first_name = first_name
@@ -47,7 +47,7 @@ def create_brother_if_possible(semester, brother_status, first_name, last_name, 
         new_brother.save()
 
 
-def create_mass_entry_brothers(request, mass_entry_form):
+def __create_mass_entry_brothers(request, mass_entry_form):
     if mass_entry_form.is_valid():
         data = mass_entry_form.cleaned_data
         brother_data = data["brothers"].split("\n")
@@ -55,13 +55,13 @@ def create_mass_entry_brothers(request, mass_entry_form):
         brother_status = data["brother_status"]
 
         for brother in brother_data:
-            create_brother_if_possible(semester, brother_status, *cleaned_brother_data(brother))
+            __create_brother_if_possible(semester, brother_status, *__cleaned_brother_data(brother))
 
     else:
         messages.error(request, "Mass entry form invalid")
 
 
-def staged_mass_entry_brothers(mass_entry_form):
+def __staged_mass_entry_brothers(mass_entry_form):
     brothers = []
     mass_entry_form.fields['brothers'].widget.attrs['readonly'] = True
     if mass_entry_form.is_valid():
@@ -70,13 +70,13 @@ def staged_mass_entry_brothers(mass_entry_form):
 
         for brother in brother_data:
 
-            first, last, caseid = cleaned_brother_data(brother)
+            first, last, caseid = __cleaned_brother_data(brother)
 
             brothers.append({
                 'first_name': first,
                 'last_name': last,
                 'caseid': caseid,
-                'will_be_added': can_brother_be_added(first, last, caseid)
+                'will_be_added': __can_brother_be_added(first, last, caseid)
             })
 
     return brothers
@@ -91,7 +91,7 @@ def brother_mass_entry_form(request):
         is_entry = False
 
         if "confirmation" in request.POST:
-            create_mass_entry_brothers(request, mass_entry_form)
+            __create_mass_entry_brothers(request, mass_entry_form)
             return HttpResponseRedirect(reverse('dashboard:home'))
 
         elif "goback" in request.POST:
@@ -99,7 +99,7 @@ def brother_mass_entry_form(request):
 
         # however else we got here, we need to show the staged data
         else:
-            brothers = staged_mass_entry_brothers(mass_entry_form)
+            brothers = __staged_mass_entry_brothers(mass_entry_form)
     else:
         mass_entry_form = BrotherMassEntryForm()
         is_entry = True

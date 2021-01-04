@@ -1,10 +1,11 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
+from django.views.generic.edit import UpdateView, DeleteView
 
 from dashboard.forms import PositionForm
 from dashboard.models import Position
-from dashboard.utils import all_positions
+from dashboard.utils import all_positions, verify_position
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
 def secretary_positions(request):

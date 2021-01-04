@@ -12,7 +12,8 @@ from dashboard.utils import (
     get_semester,
     mark_attendance_list,
     save_event,
-    update_eligible_brothers
+    update_eligible_brothers,
+    verify_position
 )
 
 @verify_position(['President', 'Adviser', 'Vice President', 'Vice President of Health and Safety'])

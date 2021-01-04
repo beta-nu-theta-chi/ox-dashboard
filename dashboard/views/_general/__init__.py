@@ -5,5 +5,6 @@ from dashboard.views._general._committee_list import *
 from dashboard.views._general._contact_info import *
 from dashboard.views._general._emergency_contact import *
 from dashboard.views._general._meet_a_brother import *
+from dashboard.views._general._minecraft import *
 from dashboard.views._general._phone_tree import *
 from dashboard.views._general._report import *

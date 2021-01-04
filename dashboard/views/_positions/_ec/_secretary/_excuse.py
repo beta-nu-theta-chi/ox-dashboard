@@ -4,6 +4,7 @@ from django.urls import reverse, reverse_lazy
 
 from dashboard.forms import ExcuseResponseForm
 from dashboard.models import Excuse, RecruitmentEvent
+from dashboard.utils import verify_position
 
 @verify_position(['Recruitment Chair', 'Secretary', 'Vice President', 'President', 'Adviser'])
 def excuse(request, excuse_id):

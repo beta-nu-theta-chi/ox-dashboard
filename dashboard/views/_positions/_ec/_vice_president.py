@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -9,12 +10,13 @@ from dashboard.models import (
     Committee,
     CommitteeMeetingEvent,
 )
-from dashboard.forms import CommitteeForm
+from dashboard.forms import CommitteeForm, InHouseForm
 from dashboard.utils import (
     forms_is_valid,
     get_operational_committees,
     get_semester,
     get_standing_committees,
+    verify_position
 )
 
 @verify_position(['Vice President', 'President', 'Adviser'])
@@ -106,3 +108,23 @@ def vice_president_committee_assignments(request):
     }
 
     return render(request, 'committee-assignment.html', context)
+
+@verify_position(['Vice President', 'President', 'Adviser'])
+@transaction.atomic
+def in_house(request):
+    """Allows the VP to select who's living in the house"""
+
+    form = InHouseForm(request.POST or None)
+
+    if request.method == 'POST':
+        if form.is_valid():
+            InHouseForm.brothers.update(in_house=False)
+            for c in ['in_house']:
+                brothers = form.cleaned_data[c]
+                for b in brothers:
+                    b.in_house = True
+                    b.save()
+        return HttpResponseRedirect(reverse('dashboard:vice_president_in_house'))
+
+    context = {'form': form}
+    return render(request, 'in_house.html', context)

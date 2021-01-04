@@ -18,11 +18,11 @@ from dashboard.models import (
 )
 from dashboard.utils import (
     create_recurring_meetings,
-    eligible_attendees,
     forms_is_valid,
     mark_attendance_list,
     save_event,
     update_eligible_brothers,
+    verify_position,
 )
 
 class CommitteeDelete(DeleteView):
@@ -110,7 +110,7 @@ def committee_event_add(request, position):
         if form.is_valid():
             instance = form.save(commit=False)
             committee = Position.objects.get(title=position).committee
-            eligible_attendees(committee.members.order_by('last_name'))
+            eligible_attendees = committee.members.order_by('last_name')
             instance.committee = committee
             save_event(instance, eligible_attendees)
             next = request.GET.get('next')

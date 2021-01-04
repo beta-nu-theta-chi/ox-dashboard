@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
+from django.views.generic.edit import UpdateView, DeleteView
 
 from  dashboard.models import (
     ChapterEvent,

@@ -1,6 +1,7 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
+from django.views.generic.edit import UpdateView, DeleteView
 
 from dashboard.forms import ChapterEventForm, EditBrotherAttendanceForm
 from dashboard.models import ChapterEvent, Event, Semester
@@ -10,6 +11,7 @@ from dashboard.utils import (
     mark_attendance_list,
     save_event,
     update_eligible_brothers,
+    verify_position,
 )
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])

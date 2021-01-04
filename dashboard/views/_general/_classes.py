@@ -1,6 +1,7 @@
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import render
+from django.views.generic.edit import DeleteView
 
 from dashboard.models import (
     Position,
@@ -9,6 +10,7 @@ from dashboard.models import (
     Grade
 )
 from dashboard.forms import ClassTakenForm
+from dashboard.utils import verify_position
 
 def classes(request, department=None, number=None, brother=None):
     if request.user.brother in Position.objects.get(title='Scholarship Chair').brothers.all():

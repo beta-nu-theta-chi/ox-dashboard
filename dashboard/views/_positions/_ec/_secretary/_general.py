@@ -3,7 +3,7 @@ from django.shortcuts import render
 from dashboard.views._positions._ec._secretary._mass_entry import brother_mass_entry_form
 
 from dashboard.models import ChapterEvent, Excuse, RecruitmentEvent
-from dashboard.utils import get_semester
+from dashboard.utils import get_semester, verify_position
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
 def secretary(request):

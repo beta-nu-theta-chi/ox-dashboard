@@ -1,9 +1,11 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
+from django.views.generic.edit import UpdateView, DeleteView
 
 from dashboard.forms import BrotherForm, BrotherEditForm
 from dashboard.models import Brother, User
+from dashboard.utils import verify_position
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
 def secretary_brother_list(request):
