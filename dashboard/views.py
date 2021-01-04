@@ -191,7 +191,7 @@ def classes(request, department=None, number=None, brother=None):
             department = ('department', form.get('department'))
             brother = ('brother', form.get('brother'))
             number = ('number', form.get('class_number'))
-            kwargs = dict((arg for arg in [department, number, brother] if arg[1] is not ""))
+            kwargs = dict((arg for arg in [department, number, brother] if arg[1] != ""))
 
             return HttpResponseRedirect(reverse('dashboard:classes', kwargs=kwargs))
         elif 'unadd_self' in request.POST:
@@ -348,7 +348,7 @@ def brother_view(request):
     hs_attendance = create_attendance_list(hs_events, excuses_pending, excuses_approved, brother)
 
     current_season = get_season()
-    if current_season is '0':
+    if current_season == '0':
         recruitment_events = RecruitmentEvent.objects.filter(semester__season='0', semester__year=get_year()) \
             .order_by("date")
         recruitment_events_next = RecruitmentEvent.objects.filter(semester__season='2', semester__year=get_year()) \
@@ -879,7 +879,7 @@ def media_add(request):
 @verify_position(['President', 'Adviser'])
 def president(request):
     """ Renders the President page and all relevant information """
-    return render(request, 'president.html', {})
+    return render(request, 'president.html', {'semester_picker': SelectSemester()})
 
 
 @verify_position(['Vice President', 'President', 'Adviser'])
@@ -2076,7 +2076,7 @@ def recruitment_c(request):
     excuses = Excuse.objects.filter(event__semester=get_semester(), status='0',
         event__in=events).order_by("date_submitted", "event__date")
     current_season = get_season()
-    if current_season is '0':
+    if current_season == '0':
         semester_events = RecruitmentEvent.objects.filter(semester__season='0', semester__year=get_year())
         semester_events_next = RecruitmentEvent.objects.filter(semester__season='2', semester__year=get_year())
     else:
@@ -3112,3 +3112,22 @@ def create_phone_tree(request):
         create_node_with_children(ec_member, president, assigned_actives)
 
     return HttpResponseRedirect(reverse('dashboard:emergency_phone_tree_view'))
+
+
+@verify_position(['President', 'Adviser'])
+def cleanup_semester(request):
+
+    if request.method == 'POST':
+        form = SelectSemester(request.POST)
+
+        if form.is_valid():
+            semester = form.cleaned_data['semester']
+
+            delete_all_meet_a_brothers()
+            delete_old_events(semester)
+            create_unmade_valid_semesters()
+            create_chapter_events(semester)
+
+    # TODO: add error handling for false cases?
+
+    return HttpResponseRedirect(reverse('dashboard:home'))

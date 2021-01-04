@@ -29,6 +29,10 @@ create_positions.build_superuser(\"$1\")
 
 echo "Done creating positions"
 
+echo "Collecting Static"
+echo yes | python manage.py collectstatic
+echo "Done Collecting Static"
+
 if [[ $2 = "run" ]]
 then
     echo "Starting server..."
