@@ -246,7 +246,7 @@ class ClassesDelete(DeleteView):
         return super(ClassesDelete, self).get(request, *args, **kwargs)
 
     model = Classes
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:classes')
 
 
@@ -293,7 +293,7 @@ class DeleteReport(DeleteView):
         return self.request.GET.get('next')
 
     model = Report
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
 
 
 class EditReport(UpdateView):
@@ -310,8 +310,8 @@ class EditReport(UpdateView):
         form.fields["position"].queryset = Report.objects.get(pk=self.kwargs['pk']).brother.position_set.exclude(title__in=['Adviser'])
         return form
 
-
     model = Report
+    template_name = "generic_forms/report_form.html"
     success_url = reverse_lazy('dashboard:brother')
     fields = ['position', 'information']
 
@@ -673,7 +673,7 @@ class ExcuseDelete(DeleteView):
         return super(ExcuseDelete, self).get(request, *args, **kwargs)
 
     model = Excuse
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:brother')
 
 
@@ -687,6 +687,7 @@ class ExcuseEdit(UpdateView):
         return super(ExcuseEdit, self).get(request, *args, **kwargs)
 
     model = Excuse
+    template_name = "generic_forms/excuse_form.html"
     success_url = reverse_lazy('dashboard:brother')
     fields = ['description']
 
@@ -699,7 +700,15 @@ class BrotherEdit(UpdateView):
             return HttpResponseRedirect(reverse('dashboard:home'))
         return super(BrotherEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        # Adds the model name to the context
+        context['model'] = self.model.human_readable_name()
+        return context
+
     model = Brother
+    template_name = "generic_forms/base_form.html"
     success_url = reverse_lazy('dashboard:brother')
     form_class = BrotherEditForm
 
@@ -776,7 +785,7 @@ class ServiceSubmissionDelete(DeleteView):
             return HttpResponseRedirect(reverse('dashboard:home'))
         return super(ServiceSubmissionDelete, self).get(request, *args, **kwargs)
 
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     model = ServiceSubmission
     success_url = reverse_lazy('dashboard:brother')
 
@@ -789,8 +798,10 @@ class ServiceSubmissionEdit(UpdateView):
             messages.error(request, "Brother Access Denied!")
             return HttpResponseRedirect(reverse('dashboard:home'))
         return super(ServiceSubmissionEdit, self).get(request, *args, **kwargs)
+    
 
     model = ServiceSubmission
+    template_name = "generic_forms/servicesubmission_form.html"
     success_url = reverse_lazy('dashboard:brother')
     form_class = ServiceSubmissionForm
 
@@ -854,7 +865,7 @@ class MediaAccountDelete(DeleteView):
         return super(MediaAccountDelete, self).get(request, *args, **kwargs)
 
     model = MediaAccount
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:brother')
 
 
@@ -1012,7 +1023,7 @@ class CommitteeDelete(DeleteView):
         return HttpResponseRedirect(reverse('dashboard:committee_list'))
 
     model = Committee
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
 
 
 class CommitteeEdit(UpdateView):
@@ -1036,6 +1047,7 @@ class CommitteeEdit(UpdateView):
         return super().form_valid(form)
 
     model = Committee
+    template_name = "generic_forms/committee_form.html"
     fields = ['meeting_day', 'meeting_time', 'meeting_interval']
 
 
@@ -1111,7 +1123,7 @@ class CommitteeEventDelete(DeleteView):
         return self.request.GET.get('next')
 
     model = CommitteeMeetingEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
 
 
 class CommitteeEventEdit(UpdateView):
@@ -1123,6 +1135,7 @@ class CommitteeEventEdit(UpdateView):
         return reverse('dashboard:committee_event', args=[int(self.request.GET.get('id'))])
 
     model = CommitteeMeetingEvent
+    template_name = "generic_forms/committeemeetingevent_form.html"
     form_class = CommitteeMeetingForm
 
 
@@ -1164,6 +1177,7 @@ class HealthAndSafetyEdit(UpdateView):
         return super(HealthAndSafetyEdit, self).get(request, *args, **kwargs)
 
     model = HealthAndSafetyEvent
+    template_name = "generic_forms/healthandsafety_event.html"
     success_url = reverse_lazy('dashboard:vphs')
     form_class = HealthAndSafetyEventForm
 
@@ -1174,7 +1188,7 @@ class HealthAndSafetyDelete(DeleteView):
         return super(HealthAndSafetyDelete, self).get(request, *args, **kwargs)
 
     model = HealthAndSafetyEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:vphs')
 
 
@@ -1496,6 +1510,7 @@ class SecretaryBrotherEdit(UpdateView):
         return super(SecretaryBrotherEdit, self).get(request, *args, **kwargs)
 
     model = Brother
+    template_name = "generic_forms/brother_form.html"
     success_url = reverse_lazy('dashboard:secretary_brother_list')
     form_class = BrotherEditForm
 
@@ -1506,7 +1521,7 @@ class SecretaryBrotherDelete(DeleteView):
         return super(SecretaryBrotherDelete, self).get(request, *args, **kwargs)
 
     model = Brother
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:secretary')
 
 
@@ -1536,6 +1551,7 @@ class ChapterEventEdit(UpdateView):
         return super(ChapterEventEdit, self).get(request, *args, **kwargs)
 
     model = ChapterEvent
+    template_name = "generic_forms/chapterevent_form.html"
     success_url = reverse_lazy('dashboard:secretary')
     form_class = ChapterEventForm
 
@@ -1546,7 +1562,7 @@ class ChapterEventDelete(DeleteView):
         return super(ChapterEventDelete, self).get(request, *args, **kwargs)
 
     model = ChapterEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:secretary')
 
 
@@ -1611,6 +1627,7 @@ class PositionEdit(UpdateView):
         return super(PositionEdit, self).get(request, *args, **kwargs)
 
     model = Position
+    template_name = "generic_forms/position_form.html"
     success_url = reverse_lazy('dashboard:secretary_positions')
     fields = ['brothers']
 
@@ -1621,7 +1638,7 @@ class PositionDelete(DeleteView):
         return super(PositionDelete, self).get(request, *args, **kwargs)
 
     model = Position
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:secretary_positions')
 
 
@@ -1895,6 +1912,7 @@ class CandidateEdit(UpdateView):
         return super(CandidateEdit, self).get(request, *args, **kwargs)
 
     model = Brother
+    template_name = "generic_forms/brother_form.html"
     success_url = reverse_lazy('dashboard:marshal')
     form_class = CandidateEditForm
 
@@ -1905,7 +1923,7 @@ class CandidateDelete(DeleteView):
         return super(CandidateDelete, self).get(request, *args, **kwargs)
 
     model = Brother
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:marshal')
 
 
@@ -1990,7 +2008,7 @@ class StudyEventDelete(DeleteView):
         return super(StudyEventDelete, self).get(request, *args, **kwargs)
 
     model = StudyTableEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:scholarship_c')
 
 
@@ -2000,6 +2018,7 @@ class StudyEventEdit(UpdateView):
         return super(StudyEventEdit, self).get(request, *args, **kwargs)
 
     model = StudyTableEvent
+    template_name = "generic_forms/studytableevent_form.html"
     success_url = reverse_lazy('dashboard:scholarship_c')
     form_class = StudyTableEventForm
 
@@ -2062,6 +2081,7 @@ class ScholarshipReportEdit(UpdateView):
         return super(ScholarshipReportEdit, self).get(request, *args, **kwargs)
 
     model = ScholarshipReport
+    template_name = "generic_forms/scholarshipreport_form.html"
     success_url = reverse_lazy('dashboard:scholarship_c')
     fields = ['cumulative_gpa', 'past_semester_gpa', 'scholarship_plan', 'active']
 
@@ -2190,7 +2210,7 @@ class PnmDelete(DeleteView):
         return super(PnmDelete, self).get(request, *args, **kwargs)
 
     model = PotentialNewMember
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:recruitment_c')
 
 
@@ -2200,6 +2220,7 @@ class PnmEdit(UpdateView):
         return super(PnmEdit, self).get(request, *args, **kwargs)
 
     model = PotentialNewMember
+    template_name = "generic_forms/potentialnewmember_form.html"
     success_url = reverse_lazy('dashboard:recruitment_c')
     form_class = PotentialNewMemberForm
 
@@ -2272,7 +2293,7 @@ class RecruitmentEventDelete(DeleteView):
         return super(RecruitmentEventDelete, self).get(request, *args, **kwargs)
 
     model = RecruitmentEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:recruitment_c')
 
 
@@ -2281,7 +2302,15 @@ class RecruitmentEventEdit(UpdateView):
     def get(self, request, *args, **kwargs):
         return super(RecruitmentEventEdit, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        # Adds the model name to the context
+        context['model'] = self.model.human_readable_name()
+        return context
+
     form_class = RecruitmentEventForm
+    template_name = "generic_forms/recruitmentevent_form.html"
     model = RecruitmentEvent
     success_url = reverse_lazy('dashboard:recruitment_c')
 
@@ -2349,7 +2378,7 @@ class ServiceEventDelete(DeleteView):
         return super(ServiceEventDelete, self).get(request, *args, **kwargs)
 
     model = ServiceEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:service_c')
 
 
@@ -2359,6 +2388,7 @@ class ServiceEventEdit(UpdateView):
         return super(ServiceEventEdit, self).get(request, *args, **kwargs)
 
     model = ServiceEvent
+    template_name = "generic_forms/serviceevent_form.html"
     success_url = reverse_lazy('dashboard:service_c')
     form_class = ServiceEventForm
 
@@ -2508,7 +2538,7 @@ class PhilanthropyEventDelete(DeleteView):
         return super(PhilanthropyEventDelete, self).get(request, *args, **kwargs)
 
     model = PhilanthropyEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:philanthropy_c')
 
 
@@ -2518,6 +2548,7 @@ class PhilanthropyEventEdit(UpdateView):
         return super(PhilanthropyEventEdit, self).get(request, *args, **kwargs)
 
     model = PhilanthropyEvent
+    template_name = "generic_forms/philanthropyevent_form.html"
     success_url = reverse_lazy('dashboard:philanthropy_c')
     form_class = PhilanthropyEventForm
 
