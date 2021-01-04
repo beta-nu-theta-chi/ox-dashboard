@@ -361,10 +361,10 @@ def create_recurring_events(begin_date, day, interval, event_creator):
     date = begin_date
     semester = get_semester(date)
 
-    # offset to the next week
+    # offset to next week if the weekday from day has already passed this week
     if date.weekday() >= day:
         date_offset = 7 + day - date.weekday()
-    # otherwise use this week
+    # otherwise use the weekday of this week matching day as the offset
     elif date.weekday() < day:
         date_offset = day - date.weekday()
 
@@ -401,7 +401,8 @@ def create_recurring_meetings(instance, committee):
     """Create recurring committee meetings for the given committee
 
     :param dict instance:
-        a dictionary that defines the day of the week in 'meeting_day' on which meetings
+        a dictionary from a cleaned form (specifically CommitteeCreateForm)
+        that defines the day of the week in 'meeting_day' on which meetings
         occur.  Additionally, the interval (or number of days between events) must be
         defined in 'meeting_interval'.  The time that the meeting should occur during the
         day shall be defined in 'meeting_time'
