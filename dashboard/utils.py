@@ -434,58 +434,6 @@ def notified_by(brother):
     node = PhoneTreeNode.objects.filter(brother=brother)
     return node[0].notified_by if len(node) > 0 else None
 
-def delete_all_meet_a_brothers():
-    """Clear the Meet A Brother Table."""
-    MeetABrother.objects.all().delete()
-
-def delete_old_events(semester):
-    """Delete all events that occur before the given semester.
-
-    :param Semester semester:
-        The reference semester to delete events before it
-
-    """
-    current_date = datetime.datetime.now()
-    start_date = semester_start_date(semester.season, semester.year)
-    old_events = Event.objects.filter(date__lt=start_date)
-
-    old_events.delete()
-
-def create_unmade_valid_semesters():
-    """Create all possible semesters from the Semester Model choice Fields."""
-    for year, _ in Semester.YEAR_CHOICES:
-        for season, _ in Semester.SEASON_CHOICES:
-            if not Semester.objects.filter(season=season, year=year).exists():
-                sem = Semester()
-                sem.year = year
-                sem.season = season
-                sem.save()
-
-def create_chapter_events(semester):
-    """Create all the chapter events for the given semester.
-
-    Chapter is at 6:30 every Sunday during the semester.  Currently, this
-    will start on the first Sunday of the first month of the given semester
-    (January for Spring, June for Summer, August for Fall)
-
-    :param Semester semester:
-        the semester to create chapter events for
-
-    """
-    sunday = 6
-
-    create_recurring_events(
-        semester_start_date(semester.season, semester.year),
-        sunday,
-        Committee.MeetingIntervals.WEEKLY,
-        lambda date, semester: ChapterEvent(
-            name="Chapter {}".format(date.date()),
-            date=date,
-            start_time=TimeChoices.T_18_30,  # 6:30 PM
-            end_time=TimeChoices.T_20_30,  # 8:30 PM
-            semester=semester,
-        ).save())
-
 def create_attendance_list(events, excuses_pending, excuses_approved, brother):
     """zips together a list of tuples where the first element is each event and the second is the brother's
     status regarding the event. If the event hasn't occurred, the status is blank, if it's not a mandatory

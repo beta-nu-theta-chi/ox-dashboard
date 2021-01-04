@@ -35,7 +35,7 @@ def classes(request, department=None, number=None, brother=None):
             department = ('department', form.get('department'))
             brother = ('brother', form.get('brother'))
             number = ('number', form.get('class_number'))
-            kwargs = dict((arg for arg in [department, number, brother] if arg[1] is not ""))
+            kwargs = dict((arg for arg in [department, number, brother] if arg[1] != ""))
 
             return HttpResponseRedirect(reverse('dashboard:classes', kwargs=kwargs))
         elif 'unadd_self' in request.POST:

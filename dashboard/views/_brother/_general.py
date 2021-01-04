@@ -62,7 +62,7 @@ def brother_view(request):
     hs_attendance = create_attendance_list(hs_events, excuses_pending, excuses_approved, brother)
 
     current_season = get_season()
-    if current_season is '0':
+    if current_season == '0':
         recruitment_events = RecruitmentEvent.objects.filter(semester__season='0', semester__year=get_year()) \
             .order_by("date")
         recruitment_events_next = RecruitmentEvent.objects.filter(semester__season='2', semester__year=get_year()) \

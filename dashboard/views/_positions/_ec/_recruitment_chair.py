@@ -40,7 +40,7 @@ def recruitment_c(request):
     excuses = Excuse.objects.filter(event__semester=get_semester(), status='0',
         event__in=events).order_by("date_submitted", "event__date")
     current_season = get_season()
-    if current_season is '0':
+    if current_season == '0':
         semester_events = RecruitmentEvent.objects.filter(semester__season='0', semester__year=get_year())
         semester_events_next = RecruitmentEvent.objects.filter(semester__season='2', semester__year=get_year())
     else:

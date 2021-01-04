@@ -5,7 +5,6 @@ from django.urls import reverse
 
 import datetime
 
-from dashboard.forms import BrotherMassEntryForm
 from dashboard.models import Brother, User
 
 def __cleaned_brother_data(line):
@@ -47,7 +46,7 @@ def __create_brother_if_possible(semester, brother_status, first_name, last_name
         new_brother.save()
 
 
-def __create_mass_entry_brothers(request, mass_entry_form):
+def create_mass_entry_brothers(request, mass_entry_form):
     if mass_entry_form.is_valid():
         data = mass_entry_form.cleaned_data
         brother_data = data["brothers"].split("\n")
@@ -61,7 +60,7 @@ def __create_mass_entry_brothers(request, mass_entry_form):
         messages.error(request, "Mass entry form invalid")
 
 
-def __staged_mass_entry_brothers(mass_entry_form):
+def staged_mass_entry_brothers(mass_entry_form):
     brothers = []
     mass_entry_form.fields['brothers'].widget.attrs['readonly'] = True
     if mass_entry_form.is_valid():
@@ -80,28 +79,3 @@ def __staged_mass_entry_brothers(mass_entry_form):
             })
 
     return brothers
-
-
-def brother_mass_entry_form(request):
-    brothers = []
-
-    if request.method == 'POST':
-        mass_entry_form = BrotherMassEntryForm(request.POST)
-        mass_entry_form.fields['brothers'].widget.attrs['readonly'] = False
-        is_entry = False
-
-        if "confirmation" in request.POST:
-            __create_mass_entry_brothers(request, mass_entry_form)
-            return HttpResponseRedirect(reverse('dashboard:home'))
-
-        elif "goback" in request.POST:
-            is_entry = True  # just want to go back to adding/editting data
-
-        # however else we got here, we need to show the staged data
-        else:
-            brothers = __staged_mass_entry_brothers(mass_entry_form)
-    else:
-        mass_entry_form = BrotherMassEntryForm()
-        is_entry = True
-
-    return mass_entry_form, is_entry, brothers
