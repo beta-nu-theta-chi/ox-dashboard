@@ -34,30 +34,21 @@ has_committee = [
 debug = False
 
 
-def get_semester():
-    semester = Semester.objects.filter(season=get_season(), year=get_year())
-    if semester.exists():
-        return semester[0]
-    else:
-        semester = Semester(season=get_season(), year=get_year())
-        semester.save()
-        return semester
+def get_semester(current_date=datetime.datetime.now()):
+    season = get_season(current_date)
+    year = current_date.year
+
+    semester, _ = Semester.objects.get_or_create(season=season, year=year)
+
+    return semester
 
 
 # get semester used for filtering throughout the views
 # based on SEASON_CHOICES in models (0,1,2) => ('Spring','Summer','Fall')
-def get_season():
+def get_season(current_date=datetime.datetime.now()):
     # return '0'
-    month = datetime.datetime.now().month
-    if debug:
-        return '0'
-    else:
-        if month <= 5:
-            return '0'
-        elif month <= 7:
-            return '1'
-        else:
-            return '2'
+    month = current_date.month
+    return get_season_from(month)
 
 
 def get_season_from(month):
@@ -292,35 +283,140 @@ def attendance_list(request, event):
     return brothers, brother_form_list
 
 
-def create_recurring_meetings(instance, committee):
-    date = datetime.datetime.now()
-    try:
-        semester = Semester.objects.filter(season=get_season_from(date.month),
-                                           year=date.year)[0]
-    except IndexError:
-        semester = Semester(season=get_season_from(date.month),
-                            year=date.year)
-        semester.save()
+def semester_end_date(season, year, treat_summer_fall_as_same=True):
+    """Calculate the last day of the semester given its season and year.
 
-    if date.weekday() >= instance['meeting_day']:
-        date_offset = 7 + instance['meeting_day'] - date.weekday()
-    elif date.weekday() < instance['meeting_day']:
-        date_offset = instance['meeting_day'] - date.weekday()
+    The last day of the semester is the 31st of its ending month
+    (May for Spring, July for Summer, December for Fall)
+
+    :param str season:
+        '0', '1', or '2' to represent Spring, Summer, or Fall respectively
+    :param int year:
+        The year of the semester to find the end date of
+    :param bool treat_summer_fall_as_same:
+        If true and summer is the season, it will be treated as though fall
+        were given rather than summer
+    :returns:
+        the end date of the semester
+    :rtype: datetime
+
+    """
+    # if spring semester, use may as the end month
+    if season == '0':
+        end_month = 5
+    elif season == '1' and not treat_summer_fall_as_same:
+        end_month = 7
+    # otherwise, we are in the summer or fall semester, so use december as end month
+    else:
+        end_month = 12
+
+    # last day of both May, July, and December is the 31st.
+    last_day_of_month = 31
+
+    return datetime.datetime(year, end_month, last_day_of_month)
+
+
+def semester_start_date(season, year):
+    """Calculate the start date of a semester given a season and year.
+
+    The Start date of a semester is the first day of the month in which is starts
+    (January for Spring, June for Summer, August for Fall)
+
+    :param str season:
+        '0', '1', or '2' to represent Spring, Summer, or Fall respectively
+    :param int year:
+        The year of the semester to find the start date of
+    :returns:
+        the start date of the semester
+    :rtype: datetime
+
+    """
+    # Find the start month for the semester season
+    start_month = {
+        '0': 1,
+        '1': 6,
+        '2': 8
+    }.get(season)
+
+    start_day_of_month = 1
+
+    return datetime.datetime(year, start_month, start_day_of_month)
+
+
+def create_recurring_events(begin_date, day, interval, event_creator):
+    """Create recurring events for the semester begin_date falls in.
+
+    :param datetime begin_date:
+        The earliest date at which an event could be scheduled.  Events are
+        schedule only during the same semester as begin_date.
+    :param int day:
+        The integer day of the week on which the recurring events happen
+    :param int interval:
+        The number of day in between each event
+    :param function event_creator:
+        A function that takes (datetime, Semester) and creates an event.  The
+        function does not need to return a value (any value returned is ignored).
+
+    """
+    date = begin_date
+    semester = get_semester(date)
+
+    # offset to next week if the weekday from day has already passed this week
+    if date.weekday() >= day:
+        date_offset = 7 + day - date.weekday()
+    # otherwise use the weekday of this week matching day as the offset
+    elif date.weekday() < day:
+        date_offset = day - date.weekday()
+
     date = date + datetime.timedelta(days=date_offset)
     start_date = date
-    end_date = date
-    if semester.season == '2':
-        end_date = datetime.datetime(date.year, 12, 31)
-    elif semester.season == '0':
-        end_date = datetime.datetime(date.year, 5, 31)
-    day_count = int((end_date - start_date).days / instance['meeting_interval']) + 1
+    end_date = semester_end_date(semester.season, date.year)
+
+    day_count = int((end_date - start_date).days / interval) + 1
+    for date in (start_date + datetime.timedelta(interval) * n for n in range(day_count)):
+        event_creator(date, semester)
+
+
+def create_committee_event(date, semester, meeting_time, committee_object):
+    """Create a single committee meeting event for the given committee
+
+    :param datetime date:
+        The date of the committee meeting
+    :param Semester semester:
+        The semester in which the event occurs
+    :param datetime.time meeting_time:
+        The time of the day at which the meeting will occur
+    :param Committee committee_object:
+        The committee for which the event belongs to
+
+    """
+    event = CommitteeMeetingEvent(date=date, start_time=meeting_time, semester=semester,
+                                  committee=committee_object, recurring=True)
+    event.save()
+    event.eligible_attendees.set(committee_object.members.order_by('last_name'))
+    event.save()
+
+
+def create_recurring_meetings(instance, committee):
+    """Create recurring committee meetings for the given committee
+
+    :param dict instance:
+        a dictionary from a cleaned form (specifically CommitteeCreateForm)
+        that defines the day of the week in 'meeting_day' on which meetings
+        occur.  Additionally, the interval (or number of days between events) must be
+        defined in 'meeting_interval'.  The time that the meeting should occur during the
+        day shall be defined in 'meeting_time'
+    :param str committee:
+        The name of the committee to create recurring meetings for
+
+    """
     committee_object = Committee.objects.get(committee=committee)
-    for date in (start_date + datetime.timedelta(instance['meeting_interval']) * n for n in range(day_count)):
-        event = CommitteeMeetingEvent(date=date, start_time=instance['meeting_time'], semester=semester,
-                                      committee=committee_object, recurring=True)
-        event.save()
-        event.eligible_attendees.set(committee_object.members.order_by('last_name'))
-        event.save()
+
+    create_recurring_events(
+        datetime.datetime.now(),
+        instance['meeting_day'],
+        instance['meeting_interval'],
+        lambda date, semester: create_committee_event(date, semester, instance['meeting_time'], committee_object))
 
 
 def create_node_with_children(node_brother, notified_by, brothers_notified):
@@ -338,6 +434,57 @@ def notified_by(brother):
     node = PhoneTreeNode.objects.filter(brother=brother)
     return node[0].notified_by if len(node) > 0 else None
 
+def delete_all_meet_a_brothers():
+    """Clear the Meet A Brother Table."""
+    MeetABrother.objects.all().delete()
+
+def delete_old_events(semester):
+    """Delete all events that occur before the given semester.
+
+    :param Semester semester:
+        The reference semester to delete events before it
+
+    """
+    current_date = datetime.datetime.now()
+    start_date = semester_start_date(semester.season, semester.year)
+    old_events = Event.objects.filter(date__lt=start_date)
+
+    old_events.delete()
+
+def create_unmade_valid_semesters():
+    """Create all possible semesters from the Semester Model choice Fields."""
+    for year, _ in Semester.YEAR_CHOICES:
+        for season, _ in Semester.SEASON_CHOICES:
+            if not Semester.objects.filter(season=season, year=year).exists():
+                sem = Semester()
+                sem.year = year
+                sem.season = season
+                sem.save()
+
+def create_chapter_events(semester):
+    """Create all the chapter events for the given semester.
+
+    Chapter is at 6:30 every Sunday during the semester.  Currently, this
+    will start on the first Sunday of the first month of the given semester
+    (January for Spring, June for Summer, August for Fall)
+
+    :param Semester semester:
+        the semester to create chapter events for
+
+    """
+    sunday = 6
+
+    create_recurring_events(
+        semester_start_date(semester.season, semester.year),
+        sunday,
+        Committee.MeetingIntervals.WEEKLY,
+        lambda date, semester: ChapterEvent(
+            name="Chapter {}".format(date.date()),
+            date=date,
+            start_time=TimeChoices.T_18_30,  # 6:30 PM
+            end_time=TimeChoices.T_20_30,  # 8:30 PM
+            semester=semester,
+        ).save())
 
 def create_attendance_list(events, excuses_pending, excuses_approved, brother):
     """zips together a list of tuples where the first element is each event and the second is the brother's
