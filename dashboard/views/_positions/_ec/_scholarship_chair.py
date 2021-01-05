@@ -1,7 +1,6 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
 
 import datetime
 
@@ -23,6 +22,9 @@ from dashboard.utils import (
     get_semester,
     verify_position,
 )
+
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
 
 @verify_position(['Scholarship Chair', 'President', 'Adviser'])
 def scholarship_c(request):
@@ -99,22 +101,23 @@ def scholarship_c_event_add(request):
     return render(request, "event-add.html", context)
 
 
-class StudyEventDelete(DeleteView):
+class StudyEventDelete(DashboardDeleteView):
     @verify_position(['Scholarship Chair', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(StudyEventDelete, self).get(request, *args, **kwargs)
 
     model = StudyTableEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:scholarship_c')
 
 
-class StudyEventEdit(UpdateView):
+class StudyEventEdit(DashboardUpdateView):
     @verify_position(['Scholarship Chair', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(StudyEventEdit, self).get(request, *args, **kwargs)
 
     model = StudyTableEvent
+    template_name = 'generic_forms/studytableevent_form.html'
     success_url = reverse_lazy('dashboard:scholarship_c')
     form_class = StudyTableEventForm
 
@@ -171,11 +174,12 @@ def scholarship_c_gpa(request):
     return render(request, 'scholarship-gpa.html', context)
 
 
-class ScholarshipReportEdit(UpdateView):
+class ScholarshipReportEdit(DashboardUpdateView):
     @verify_position(['Scholarship Chair', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(ScholarshipReportEdit, self).get(request, *args, **kwargs)
 
     model = ScholarshipReport
+    template_name = 'generic_forms/base_form.html'
     success_url = reverse_lazy('dashboard:scholarship_c')
     fields = ['cumulative_gpa', 'past_semester_gpa', 'scholarship_plan', 'active']

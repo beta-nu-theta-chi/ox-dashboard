@@ -2,7 +2,6 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import render, redirect
-from django.views.generic.edit import UpdateView, DeleteView
 
 import datetime
 
@@ -25,7 +24,10 @@ from dashboard.utils import (
     verify_position,
 )
 
-class CommitteeDelete(DeleteView):
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
+
+class CommitteeDelete(DashboardDeleteView):
     @verify_position(['Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(CommitteeDelete, self).get(request, *args, **kwargs)
@@ -34,10 +36,10 @@ class CommitteeDelete(DeleteView):
         return HttpResponseRedirect(reverse('dashboard:committee_list'))
 
     model = Committee
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
 
 
-class CommitteeEdit(UpdateView):
+class CommitteeEdit(DashboardUpdateView):
     def get(self, request, *args, **kwargs):
         return super(CommitteeEdit, self).get(request, *args, **kwargs)
 
@@ -58,6 +60,7 @@ class CommitteeEdit(UpdateView):
         return super().form_valid(form)
 
     model = Committee
+    template_name = 'generic_forms/base_form.html'
     fields = ['meeting_day', 'meeting_time', 'meeting_interval']
 
 
@@ -124,7 +127,7 @@ def committee_event_add(request, position):
     return render(request, 'event-add.html', context)
 
 
-class CommitteeEventDelete(DeleteView):
+class CommitteeEventDelete(DashboardDeleteView):
     @verify_position(['Recruitment Chair', 'Vice President of Health and Safety', 'Scholarship Chair', 'Philanthropy Chair', 'Alumni Relations Chair', 'Public Relations Chair', 'Membership Development Chair', 'Social Chair', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(CommitteeEventDelete, self).get(request, *args, **kwargs)
@@ -133,10 +136,10 @@ class CommitteeEventDelete(DeleteView):
         return self.request.GET.get('next')
 
     model = CommitteeMeetingEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
 
 
-class CommitteeEventEdit(UpdateView):
+class CommitteeEventEdit(DashboardUpdateView):
     @verify_position(['Recruitment Chair', 'Vice President of Health and Safety', 'Scholarship Chair', 'Philanthropy Chair', 'Alumni Relations Chair', 'Public Relations Chair', 'Membership Development Chair', 'Social Chair', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(CommitteeEventEdit, self).get(request, *args, **kwargs)
@@ -145,4 +148,5 @@ class CommitteeEventEdit(UpdateView):
         return reverse('dashboard:committee_event', args=[int(self.request.GET.get('id'))])
 
     model = CommitteeMeetingEvent
+    template_name = 'generic_forms/base_form.html'
     form_class = CommitteeMeetingForm

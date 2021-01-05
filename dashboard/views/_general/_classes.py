@@ -1,7 +1,6 @@
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import render
-from django.views.generic.edit import DeleteView
 
 from dashboard.models import (
     Position,
@@ -11,6 +10,9 @@ from dashboard.models import (
 )
 from dashboard.forms import ClassTakenForm
 from dashboard.utils import verify_position
+
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
 
 def classes(request, department=None, number=None, brother=None):
     if request.user.brother in Position.objects.get(title='Scholarship Chair').brothers.all():
@@ -84,11 +86,11 @@ def classes_add(request):
     return render(request, "model-add.html", context)
 
 
-class ClassesDelete(DeleteView):
+class ClassesDelete(DashboardDeleteView):
     @verify_position(['Scholarship Chair', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(ClassesDelete, self).get(request, *args, **kwargs)
 
     model = Classes
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:classes')

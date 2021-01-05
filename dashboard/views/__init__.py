@@ -5,3 +5,4 @@ from dashboard.views._general import *
 from dashboard.views._home import *
 from dashboard.views._house_management import *
 from dashboard.views._positions import *
+from dashboard.views._dashboard_generic_views import *

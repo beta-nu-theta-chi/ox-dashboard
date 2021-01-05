@@ -1,7 +1,6 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
 
 from dashboard.forms import (
     EditBrotherAttendanceForm,
@@ -20,8 +19,12 @@ from dashboard.utils import (
     get_semester,
     mark_attendance_list,
     update_eligible_brothers,
-    verify_position
+    verify_position,
+    save_event,
 )
+
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
 
 @verify_position(['Philanthropy Chair', 'Adviser'])
 def philanthropy_c(request):
@@ -89,21 +92,22 @@ def philanthropy_c_event_add(request):
     return render(request, 'event-add.html', context)
 
 
-class PhilanthropyEventDelete(DeleteView):
+class PhilanthropyEventDelete(DashboardDeleteView):
     @verify_position(['Philanthropy Chair', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(PhilanthropyEventDelete, self).get(request, *args, **kwargs)
 
     model = PhilanthropyEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:philanthropy_c')
 
 
-class PhilanthropyEventEdit(UpdateView):
+class PhilanthropyEventEdit(DashboardUpdateView):
     @verify_position(['Philanthropy Chair', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(PhilanthropyEventEdit, self).get(request, *args, **kwargs)
 
     model = PhilanthropyEvent
+    template_name = 'generic_forms/base_form.html'
     success_url = reverse_lazy('dashboard:philanthropy_c')
     form_class = PhilanthropyEventForm

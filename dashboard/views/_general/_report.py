@@ -2,11 +2,13 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import render
-from django.views.generic.edit import UpdateView, DeleteView
 
 from dashboard.models import Position, Report
 from dashboard.forms import ReportForm
 from dashboard.utils import verify_brother
+
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
 
 def create_report(request):
     brother = request.user.brother
@@ -38,7 +40,7 @@ def create_report(request):
     return render(request, "model-add.html", context)
 
 
-class DeleteReport(DeleteView):
+class DeleteReport(DashboardDeleteView):
     def get(self, request, *args, **kwargs):
         report = Report.objects.get(pk=self.kwargs['pk'])
         brother = report.brother
@@ -51,10 +53,10 @@ class DeleteReport(DeleteView):
         return self.request.GET.get('next')
 
     model = Report
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
 
 
-class EditReport(UpdateView):
+class EditReport(DashboardUpdateView):
     def get(self, request, *args, **kwargs):
         report = Report.objects.get(pk=self.kwargs['pk'])
         brother = report.brother
@@ -68,7 +70,7 @@ class EditReport(UpdateView):
         form.fields["position"].queryset = Report.objects.get(pk=self.kwargs['pk']).brother.position_set.exclude(title__in=['Adviser'])
         return form
 
-
     model = Report
+    template_name = 'generic_forms/base_form.html'
     success_url = reverse_lazy('dashboard:brother')
     fields = ['position', 'information']

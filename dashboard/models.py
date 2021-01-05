@@ -489,10 +489,6 @@ class RecruitmentEvent(Event):
     def __str__(self):
         return "Recruitment Event - " + str(self.date)
 
-    @staticmethod
-    def human_readable_name():
-        return "Recruitment Event"
-
 
 class HealthAndSafetyEvent(Event):
     def __str__(self):

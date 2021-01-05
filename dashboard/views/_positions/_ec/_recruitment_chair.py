@@ -2,7 +2,6 @@ from django.conf import settings
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
 
 import csv
 import datetime
@@ -32,6 +31,9 @@ from dashboard.utils import (
     update_eligible_brothers,
     verify_position,
 )
+
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
 
 @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
 def recruitment_c(request):
@@ -151,22 +153,23 @@ def recruitment_c_pnm_add(request):
     return render(request, 'model-add.html', context)
 
 
-class PnmDelete(DeleteView):
+class PnmDelete(DashboardDeleteView):
     @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(PnmDelete, self).get(request, *args, **kwargs)
 
     model = PotentialNewMember
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:recruitment_c')
 
 
-class PnmEdit(UpdateView):
+class PnmEdit(DashboardUpdateView):
     @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(PnmEdit, self).get(request, *args, **kwargs)
 
     model = PotentialNewMember
+    template_name = 'generic_forms/potentialnewmember_form.html'
     success_url = reverse_lazy('dashboard:recruitment_c')
     form_class = PotentialNewMemberForm
 
@@ -234,21 +237,22 @@ def recruitment_c_event_add(request):
     return render(request, "event-add.html", context)
 
 
-class RecruitmentEventDelete(DeleteView):
+class RecruitmentEventDelete(DashboardDeleteView):
     @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(RecruitmentEventDelete, self).get(request, *args, **kwargs)
 
     model = RecruitmentEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:recruitment_c')
 
 
-class RecruitmentEventEdit(UpdateView):
+class RecruitmentEventEdit(DashboardUpdateView):
     @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(RecruitmentEventEdit, self).get(request, *args, **kwargs)
 
     form_class = RecruitmentEventForm
+    template_name = 'generic_forms/base_form.html'
     model = RecruitmentEvent
     success_url = reverse_lazy('dashboard:recruitment_c')

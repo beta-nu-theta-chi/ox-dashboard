@@ -1,7 +1,6 @@
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import render, redirect
-from django.views.generic.edit import UpdateView, DeleteView
 
 from dashboard.forms import HealthAndSafetyEventForm, EditBrotherAttendanceForm
 from dashboard.models import Brother, HealthAndSafetyEvent, Event
@@ -15,6 +14,9 @@ from dashboard.utils import (
     update_eligible_brothers,
     verify_position
 )
+
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
 
 @verify_position(['President', 'Adviser', 'Vice President', 'Vice President of Health and Safety'])
 def vphs(request):
@@ -48,23 +50,24 @@ def health_and_safety_event_add(request):
     return render(request, 'model-add.html', context)
 
 
-class HealthAndSafetyEdit(UpdateView):
+class HealthAndSafetyEdit(DashboardUpdateView):
     @verify_position(['President', 'Adviser', 'Vice President', 'Vice President of Health and Safety'])
     def get(self, request, *args, **kwargs):
         return super(HealthAndSafetyEdit, self).get(request, *args, **kwargs)
 
     model = HealthAndSafetyEvent
+    template_name = 'generic_forms/base_form.html'
     success_url = reverse_lazy('dashboard:vphs')
     form_class = HealthAndSafetyEventForm
 
 
-class HealthAndSafetyDelete(DeleteView):
+class HealthAndSafetyDelete(DashboardDeleteView):
     @verify_position(['President', 'Adviser', 'Vice President', 'Vice President of Health and Safety'])
     def get(self, request, *args, **kwargs):
         return super(HealthAndSafetyDelete, self).get(request, *args, **kwargs)
 
     model = HealthAndSafetyEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:vphs')
 
 

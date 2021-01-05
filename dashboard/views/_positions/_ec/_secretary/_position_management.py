@@ -1,11 +1,13 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
 
 from dashboard.forms import PositionForm
 from dashboard.models import Position
 from dashboard.utils import all_positions, verify_position
+
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
 def secretary_positions(request):
@@ -43,21 +45,22 @@ def secretary_position_add(request):
     return render(request, 'model-add.html', context)
 
 
-class PositionEdit(UpdateView):
+class PositionEdit(DashboardUpdateView):
     @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(PositionEdit, self).get(request, *args, **kwargs)
 
     model = Position
+    template_name = 'generic_forms/position_form.html'
     success_url = reverse_lazy('dashboard:secretary_positions')
     fields = ['brothers']
 
 
-class PositionDelete(DeleteView):
+class PositionDelete(DashboardDeleteView):
     @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(PositionDelete, self).get(request, *args, **kwargs)
 
     model = Position
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:secretary_positions')

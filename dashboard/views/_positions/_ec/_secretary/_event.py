@@ -1,7 +1,6 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
 
 from dashboard.forms import ChapterEventForm, EditBrotherAttendanceForm
 from dashboard.models import ChapterEvent, Event, Semester
@@ -13,6 +12,9 @@ from dashboard.utils import (
     update_eligible_brothers,
     verify_position,
 )
+
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
 def secretary_event(request, event_id):
@@ -75,23 +77,24 @@ def secretary_event_add(request):
     return render(request, "event-add.html", context)
 
 
-class ChapterEventEdit(UpdateView):
+class ChapterEventEdit(DashboardUpdateView):
     @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(ChapterEventEdit, self).get(request, *args, **kwargs)
 
     model = ChapterEvent
+    template_name = 'generic_forms/chapterevent_form.html'
     success_url = reverse_lazy('dashboard:secretary')
     form_class = ChapterEventForm
 
 
-class ChapterEventDelete(DeleteView):
+class ChapterEventDelete(DashboardDeleteView):
     @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(ChapterEventDelete, self).get(request, *args, **kwargs)
 
     model = ChapterEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:secretary')
 
 

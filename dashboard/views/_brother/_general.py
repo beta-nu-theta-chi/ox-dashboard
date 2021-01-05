@@ -4,7 +4,6 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
 
 from  dashboard.models import (
     ChapterEvent,
@@ -28,6 +27,8 @@ from dashboard.utils import (
     notifies,
     verify_brother
 )
+
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
 
 
 def brother_view(request):
@@ -157,7 +158,7 @@ def brother_view(request):
     return render(request, "brother.html", context)
 
 
-class BrotherEdit(UpdateView):
+class BrotherEdit(DashboardUpdateView):
     def get(self, request, *args, **kwargs):
         brother = Brother.objects.get(pk=self.kwargs['pk'])
         if not verify_brother(brother, request.user):
@@ -166,5 +167,6 @@ class BrotherEdit(UpdateView):
         return super(BrotherEdit, self).get(request, *args, **kwargs)
 
     model = Brother
+    template_name = 'generic_forms/base_form.html'
     success_url = reverse_lazy('dashboard:brother')
     form_class = BrotherEditForm

@@ -13,6 +13,7 @@ from  dashboard.models import (
 )
 from dashboard.forms import ExcuseForm
 
+
 def brother_chapter_event(request, event_id, view):
     """ Renders the brother page for chapter event with a excuse form """
     if not request.user.is_authenticated:  # brother auth check

@@ -1,11 +1,13 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
 
 from dashboard.forms import BrotherForm, BrotherEditForm
 from dashboard.models import Brother, User
 from dashboard.utils import verify_position
+
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
 def secretary_brother_list(request):
@@ -63,21 +65,22 @@ def secretary_brother_add(request):
     return render(request, 'model-add.html', context)
 
 
-class SecretaryBrotherEdit(UpdateView):
+class SecretaryBrotherEdit(DashboardUpdateView):
     @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(SecretaryBrotherEdit, self).get(request, *args, **kwargs)
 
     model = Brother
+    template_name = 'generic_forms/brother_form.html'
     success_url = reverse_lazy('dashboard:secretary_brother_list')
     form_class = BrotherEditForm
 
 
-class SecretaryBrotherDelete(DeleteView):
+class SecretaryBrotherDelete(DashboardDeleteView):
     @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(SecretaryBrotherDelete, self).get(request, *args, **kwargs)
 
     model = Brother
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:secretary')

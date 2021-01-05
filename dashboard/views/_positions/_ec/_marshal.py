@@ -1,7 +1,6 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
 
 import datetime
 import random
@@ -21,6 +20,9 @@ from dashboard.models import (
     User,
 )
 from dashboard.utils import forms_is_valid, get_semester, verify_position
+
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
 
 @verify_position(['Marshal', 'Vice President', 'President', 'Adviser'])
 def marshal(request):
@@ -224,21 +226,22 @@ def marshal_candidate_add(request):
     return render(request, 'model-add.html', context)
 
 
-class CandidateEdit(UpdateView):
+class CandidateEdit(DashboardUpdateView):
     @verify_position(['Marshal', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(CandidateEdit, self).get(request, *args, **kwargs)
 
     model = Brother
+    template_name = 'generic_forms/brother_form.html'
     success_url = reverse_lazy('dashboard:marshal')
     form_class = CandidateEditForm
 
 
-class CandidateDelete(DeleteView):
+class CandidateDelete(DashboardDeleteView):
     @verify_position(['Marshal', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(CandidateDelete, self).get(request, *args, **kwargs)
 
     model = Brother
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:marshal')

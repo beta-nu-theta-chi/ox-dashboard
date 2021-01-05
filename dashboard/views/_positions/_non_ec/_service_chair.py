@@ -1,7 +1,6 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
 
 from dashboard.forms import (
     EditBrotherAttendanceForm,
@@ -21,8 +20,12 @@ from dashboard.utils import (
     get_semester,
     mark_attendance_list,
     update_eligible_brothers,
-    verify_position
+    verify_position,
+    save_event,
 )
+
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
 
 @verify_position(['Service Chair', 'Adviser'])
 def service_c(request):
@@ -81,22 +84,23 @@ def service_c_event(request, event_id):
     return render(request, 'service-event.html', context)
 
 
-class ServiceEventDelete(DeleteView):
+class ServiceEventDelete(DashboardDeleteView):
     @verify_position(['Service Chair', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(ServiceEventDelete, self).get(request, *args, **kwargs)
 
     model = ServiceEvent
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:service_c')
 
 
-class ServiceEventEdit(UpdateView):
+class ServiceEventEdit(DashboardUpdateView):
     @verify_position(['Service Chair', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(ServiceEventEdit, self).get(request, *args, **kwargs)
 
     model = ServiceEvent
+    template_name = 'generic_forms/base_form.html'
     success_url = reverse_lazy('dashboard:service_c')
     form_class = ServiceEventForm
 
