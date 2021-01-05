@@ -6,4 +6,4 @@ from dashboard.utils import committee_meeting_panel,verify_position
 def memdev_c(request):
     committee_meetings, context = committee_meeting_panel('Membership Development Chair')
 
-    return render(request, 'memdev-chair.html', context)
+    return render(request, 'membership-development-chair.html', context)

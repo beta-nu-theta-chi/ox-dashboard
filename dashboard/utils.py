@@ -523,3 +523,20 @@ def save_event(instance, eligible_attendees):
     # you must save the instance into the database as a row in the table before you can set the manytomany field
     instance.eligible_attendees.set(eligible_attendees)
     instance.save()
+
+
+def get_human_readable_model_name(object):
+    was_last_upper = True
+    end_string = ''
+    for char in object.__class__.__name__:
+        if char.isupper():
+            if not was_last_upper:
+                end_string += ' ' + char
+            else:
+                end_string += char
+            was_last_upper = True
+        else:
+            was_last_upper = False
+            end_string += char
+
+    return end_string

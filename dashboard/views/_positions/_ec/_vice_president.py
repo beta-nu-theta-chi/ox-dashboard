@@ -3,12 +3,15 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
+from django.utils.html import conditional_escape
+
 import datetime
 
 from dashboard.models import (
     Brother,
     Committee,
     CommitteeMeetingEvent,
+    Position,
 )
 from dashboard.forms import CommitteeForm, InHouseForm
 from dashboard.utils import (
@@ -115,6 +118,7 @@ def in_house(request):
     """Allows the VP to select who's living in the house"""
 
     form = InHouseForm(request.POST or None)
+    position = Position.objects.get(title='Vice President')
 
     if request.method == 'POST':
         if form.is_valid():
@@ -126,5 +130,8 @@ def in_house(request):
                     b.save()
         return HttpResponseRedirect(reverse('dashboard:vice_president_in_house'))
 
-    context = {'form': form}
-    return render(request, 'in_house.html', context)
+    context = {
+        'form': form,
+        'position': position,
+    }
+    return render(request, 'vice-president-in-house.html', context)

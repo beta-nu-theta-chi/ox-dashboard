@@ -41,14 +41,15 @@ def brother_chapter_event(request, event_id, view):
         'event': event,
         'excuse_exists': excuse.exists(),
         'brother': brother,
-        'attended': event.attendees_brothers.filter(pk=brother.pk).exists()
+        'attended': event.attendees_brothers.filter(pk=brother.pk).exists(),
+        'button': 'Submit Excuse',
     }
 
     # if an excuse has been submitted, add the excuse to the context
     if excuse.exists():
         context.update({ 'excuse': excuse[0], })
 
-    return render(request, "chapter-event.html", context)
+    return render(request, "events/base-event.html", context)
 
 
 def brother_service_event(request, event_id, view):
@@ -85,14 +86,15 @@ def brother_service_event(request, event_id, view):
         'event': event,
         'form': form,
         'excuse_exists': excuse.exists(),
-        'attended': event.attendees_brothers.filter(pk=brother.pk).exists()
+        'attended': event.attendees_brothers.filter(pk=brother.pk).exists(),
+        'button': 'Submit Excuse',
     }
 
     # if an excuse has been submitted, add the excuse to the context
     if excuse.exists():
         context.update({ 'excuse': excuse[0], })
 
-    return render(request, "service-event.html", context)
+    return render(request, "events/service-event.html", context)
 
 
 def brother_philanthropy_event(request, event_id, view):
@@ -132,14 +134,15 @@ def brother_philanthropy_event(request, event_id, view):
         'event': event,
         'form': form,
         'excuse_exists': excuse.exists(),
-        'attended': event.attendees_brothers.filter(pk=brother.pk).exists()
+        'attended': event.attendees_brothers.filter(pk=brother.pk).exists(),
+        'button': 'Submit Excuse',
     }
 
     # if an excuse has been submitted, add the excuse to the context
     if excuse.exists():
         context.update({ 'excuse': excuse[0], })
 
-    return render(request, "philanthropy-event.html", context)
+    return render(request, "events/philanthropy-event.html", context)
 
 
 def brother_recruitment_event(request, event_id, view):
@@ -171,14 +174,15 @@ def brother_recruitment_event(request, event_id, view):
         'attendees_pnms': attendees_pnms,
         'event': event,
         'excuse_exists': excuse.exists(),
-        'attended': event.attendees_brothers.filter(pk=brother.pk).exists()
+        'attended': event.attendees_brothers.filter(pk=brother.pk).exists(),
+        'button': 'Submit Excuse',
     }
 
     # if an excuse has been submitted, add the excuse to the context
     if excuse.exists():
         context.update({ 'excuse': excuse[0], })
 
-    return render(request, "recruitment-event.html", context)
+    return render(request, "events/recruitment-event.html", context)
 
 
 def brother_hs_event(request, event_id, view):
@@ -209,12 +213,13 @@ def brother_hs_event(request, event_id, view):
         'form': form,
         'excuse_exists': excuse.exists(),
         'brother': brother,
-        'attended': event.attendees_brothers.filter(pk=brother.pk).exists()
+        'attended': event.attendees_brothers.filter(pk=brother.pk).exists(),
+        'button': 'Submit Excuse',
     }
 
     # if an excuse has been submitted, add the excuse to the context
     if excuse.exists():
         context.update({ 'excuse': excuse[0], })
 
-    return render(request, "hs-event.html", context)
+    return render(request, "events/base-event.html", context)
 

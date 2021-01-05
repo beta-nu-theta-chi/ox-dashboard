@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 
+{% block dropdown %}
+    {% if position == "Secretary" %}
+       {% include "secretary-base.html" %}
+    {% elif position == "Recruitment Chair" %}
+        {% include "recruitment-chair-base.html" %}
+    {% endif %}
+{% endblock %}
+
 {% block content %}
     <!-- Main component for a primary marketing message or call to action -->
     <div class="jumbotron">
@@ -21,7 +29,7 @@
                     {% if not forloop.first %}
                         <div class="excusesgrayline"></div>
                     {% endif %}
-                    <div style="grid-column: 2"> <a href={% url 'dashboard:secretary_excuse' excuse.id %}?next={{ request.path }}>
+                    <div style="grid-column: 2"> <a href={% url 'dashboard:excuse' position|slugify excuse.id %}>
                         {{ excuse.brother }}
                     </a> </div>
                     <div>{{ excuse.event.name }}</div>

@@ -33,7 +33,7 @@ class CommitteeDelete(DashboardDeleteView):
         return super(CommitteeDelete, self).get(request, *args, **kwargs)
 
     def get_success_url(self):
-        return HttpResponseRedirect(reverse('dashboard:committee_list'))
+        return reverse('dashboard:committee_list')
 
     model = Committee
     template_name = 'generic_forms/base_confirm_delete.html'
@@ -101,7 +101,7 @@ def committee_event(request, event_id):
         'form': form,
     }
 
-    return render(request, "committee_event.html", context)
+    return render(request, "committee-event.html", context)
 
 
 @verify_position(['Public Relations Chair', 'Scholarship Chair', 'Service Chair', 'Philanthropy Chair', 'Alumni Relations Chair', 'Membership Development Chair', 'Social Chair', 'Vice President of Health and Safety', ' Recruitment Chair', 'Vice President', 'President', 'Adviser'])

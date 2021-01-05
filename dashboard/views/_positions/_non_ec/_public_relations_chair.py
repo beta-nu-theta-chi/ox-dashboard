@@ -8,6 +8,7 @@ def public_relations_c(request):
     committee_meetings, context = committee_meeting_panel('Public Relations Chair')
     context.update({
         'form': photo_form(PhotoForm, request),
+        'button': 'Add Photo'
     })
 
     return render(request, 'public-relations-chair.html', context)

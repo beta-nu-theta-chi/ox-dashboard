@@ -33,4 +33,4 @@ def secretary_attendance(request):
         'brother_attendance': brother_attendance,
     }
 
-    return render(request, 'chapter-event-attendance.html', context)
+    return render(request, 'secretary-attendance.html', context)

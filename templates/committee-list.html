@@ -3,6 +3,8 @@
 {% block dropdown %}
 {% endblock %}
 
+{% load custom_tag %}
+
 {% block content %}
     <!-- Main component for a primary marketing message or call to action -->
     <div class="jumbotron">
@@ -87,14 +89,14 @@
                     {% if forloop.counter == 1 %}
                     <thead>
                         <tr>
-                            <td>{{ field.label_tag }}</td>
+                            <td>{{ field | append_ast_if_req }}</td>
                             <td>{{ field }}</td>
                         </tr>
                     </thead>
                     <tbody>
                     {% else %}
                         <tr>
-                            <td>{{ field.label_tag }}</td>
+                            <td>{{ field | append_ast_if_req }}</td>
                             <td>{{ field }}</td>
                         </tr>
                     {% endif %}

@@ -44,5 +44,6 @@ def secretary(request):
         'mass_entry_form': mass_entry_form,
         'is_entry': is_entry, # TODO change to have post stuff
         'brothers': brothers,
+        'position': "Secretary",
     }
     return render(request, 'secretary.html', context)

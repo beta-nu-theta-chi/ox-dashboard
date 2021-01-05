@@ -20,11 +20,11 @@ def secretary_positions(request):
                 new_position.save()
         return HttpResponseRedirect(reverse('dashboard:secretary_positions'))
 
-    positions = Position.objects.order_by("title")
+    positions = Position.objects.all()
     context = {
         'positions': positions,
     }
-    return render(request, "positions.html", context)
+    return render(request, "secretary-positions.html", context)
 
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
@@ -51,7 +51,7 @@ class PositionEdit(DashboardUpdateView):
         return super(PositionEdit, self).get(request, *args, **kwargs)
 
     model = Position
-    template_name = 'generic_forms/position_form.html'
+    template_name = 'generic_forms/base_form.html'
     success_url = reverse_lazy('dashboard:secretary_positions')
     fields = ['brothers']
 

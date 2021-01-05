@@ -49,6 +49,13 @@ class BrotherForm(forms.ModelForm):
             'birthday': SelectDateWidget(years=YEAR_RANGE),
         }
 
+    def clean(self):
+        password = self.cleaned_data.get('password', None)
+        password2 = self.cleaned_data.get('password2', None)
+        if password != password2:
+            self._errors['password2'] = self.error_class(['Please make sure your passwords match'])
+        return self.cleaned_data
+
 
 class BrotherEditForm(forms.ModelForm):
     class Meta:
@@ -63,6 +70,13 @@ class BrotherEditForm(forms.ModelForm):
         widgets = {
             'birthday': SelectDateWidget(years=YEAR_RANGE),
         }
+
+    def clean(self):
+        password = self.cleaned_data.get('password', None)
+        password2 = self.cleaned_data.get('password2', None)
+        if password != password2:
+            self._errors['password2'] = self.error_class(['Please make sure your passwords match'])
+        return self.cleaned_data
 
 
 class ClassTakenForm(forms.ModelForm):
@@ -197,11 +211,6 @@ class EventForm(forms.ModelForm):
         if end_time is not None and end_time < start_time:
             self._errors['end_time'] = self.error_class(['End time before start time'])
         return self.cleaned_data
-
-
-class StudyTableEventForm(EventForm):
-    class Meta(EventForm.Meta):
-        model = StudyTableEvent
 
 
 class ScholarshipEventForm(EventForm):

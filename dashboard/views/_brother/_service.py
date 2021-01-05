@@ -76,7 +76,7 @@ class ServiceSubmissionEdit(DashboardUpdateView):
         return super(ServiceSubmissionEdit, self).get(request, *args, **kwargs)
 
     model = ServiceSubmission
-    template_name = 'generic_forms/servicesubmission_form.html'
+    template_name = 'generic_forms/base_form.html'
     success_url = reverse_lazy('dashboard:brother')
     form_class = ServiceSubmissionForm
 

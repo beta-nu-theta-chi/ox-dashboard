@@ -7,6 +7,10 @@
 {% block content %}
     <!-- Main component for a primary marketing message or call to action -->
     <div class="jumbotron">
-        <h1>Detail Manager</h1>
+        <h1>{{ position }}</h1>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">{% block heading %}Select members in each group{% endblock %}</div>
+        {% include "default-form.html" %}
     </div>
 {% endblock %}

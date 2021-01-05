@@ -200,24 +200,15 @@ def marshal_candidate_add(request):
     if request.method == 'POST':
         if form.is_valid():
             instance = form.cleaned_data
-            if instance['password'] == instance['password2']:
-                user = User.objects.create_user(instance['case_ID'], instance['case_ID'] + "@case.edu",
-                                                instance['password'])
-                user.last_name = instance['last_name']
-                user.save()
+            user = User.objects.create_user(instance['case_ID'], instance['case_ID'] + "@case.edu",
+                                            instance['password'])
+            user.last_name = instance['last_name']
+            user.save()
 
-                brother = form.save(commit=False)
-                brother.user = user
-                brother.save()
-
-                return HttpResponseRedirect(reverse('dashboard:marshal'))
-            else:
-                context = {
-                    'error_message': "Please make sure your passwords match",
-                    'title': 'Add New Candidate',
-                    'form': form,
-                }
-                return render(request, 'model-add.html', context)
+            brother = form.save(commit=False)
+            brother.user = user
+            brother.save()
+            return HttpResponseRedirect(reverse('dashboard:marshal'))
 
     context = {
         'title': 'Add New Candidate',
@@ -232,7 +223,7 @@ class CandidateEdit(DashboardUpdateView):
         return super(CandidateEdit, self).get(request, *args, **kwargs)
 
     model = Brother
-    template_name = 'generic_forms/brother_form.html'
+    template_name = 'generic_forms/base_form.html'
     success_url = reverse_lazy('dashboard:marshal')
     form_class = CandidateEditForm
 

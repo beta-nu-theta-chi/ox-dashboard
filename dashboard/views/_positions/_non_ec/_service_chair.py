@@ -22,6 +22,7 @@ from dashboard.utils import (
     update_eligible_brothers,
     verify_position,
     save_event,
+    get_human_readable_model_name,
 )
 
 from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
@@ -60,7 +61,7 @@ def service_c(request):
 @verify_position(['Service Chair', 'Adviser'])
 def service_c_event(request, event_id):
     """ Renders the service chair way of adding ServiceEvent """
-    event = Event.objects.get(pk=event_id)
+    event = ServiceEvent.objects.get(pk=event_id)
     brothers, brother_form_list = attendance_list(request, event)
 
     form = EditBrotherAttendanceForm(request.POST or None, event=event_id)
@@ -79,9 +80,10 @@ def service_c_event(request, event_id):
         'brother_form_list': brother_form_list,
         'event': event,
         'form': form,
+        'event_type': get_human_readable_model_name(event),
     }
 
-    return render(request, 'service-event.html', context)
+    return render(request, 'events/service-event.html', context)
 
 
 class ServiceEventDelete(DashboardDeleteView):

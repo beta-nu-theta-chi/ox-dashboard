@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 
 from dashboard.forms import ChapterEventForm, EditBrotherAttendanceForm
-from dashboard.models import ChapterEvent, Event, Semester
+from dashboard.models import ChapterEvent, Event, Semester, Brother
 from dashboard.utils import (
     attendance_list,
     forms_is_valid,
@@ -11,6 +11,7 @@ from dashboard.utils import (
     save_event,
     update_eligible_brothers,
     verify_position,
+    get_human_readable_model_name,
 )
 
 from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
@@ -19,7 +20,7 @@ from dashboard.views._dashboard_generic_views import DashboardUpdateView, Dashbo
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
 def secretary_event(request, event_id):
     """ Renders the attendance sheet for any event """
-    event = Event.objects.get(pk=event_id)
+    event = ChapterEvent.objects.get(pk=event_id)
     brothers, brother_form_list = attendance_list(request, event)
 
     form = EditBrotherAttendanceForm(request.POST or None, event=event_id)
@@ -39,8 +40,9 @@ def secretary_event(request, event_id):
         'brother_form_list': brother_form_list,
         'event': event,
         'form': form,
+        'event_type': get_human_readable_model_name(event),
     }
-    return render(request, "chapter-event.html", context)
+    return render(request, "events/base-event.html", context)
 
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
@@ -54,7 +56,7 @@ def secretary_event_view(request, event_id):
         'attendees': attendees,
         'event': event,
     }
-    return render(request, "chapter-event.html", context)
+    return render(request, "events/base-event.html", context)
 
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
@@ -83,7 +85,7 @@ class ChapterEventEdit(DashboardUpdateView):
         return super(ChapterEventEdit, self).get(request, *args, **kwargs)
 
     model = ChapterEvent
-    template_name = 'generic_forms/chapterevent_form.html'
+    template_name = 'generic_forms/base_form.html'
     success_url = reverse_lazy('dashboard:secretary')
     form_class = ChapterEventForm
 
@@ -96,22 +98,3 @@ class ChapterEventDelete(DashboardDeleteView):
     model = ChapterEvent
     template_name = 'generic_forms/base_confirm_delete.html'
     success_url = reverse_lazy('dashboard:secretary')
-
-
-@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
-def secretary_all_events(request):
-    """ Renders a secretary view with all the ChapterEvent models ordered by date grouped by semester """
-    events_by_semester = []
-    semesters = Semester.objects.order_by("season").order_by("year").all()
-    for semester in semesters:
-        events = ChapterEvent.objects.filter(semester=semester).order_by("date")
-        if len(events) == 0:
-            events_by_semester.append([])
-        else:
-            events_by_semester.append(events)
-    zip_list = zip(events_by_semester, semesters)
-    context = {
-        'list': zip_list,
-        'position': "Secretary"
-    }
-    return render(request, "chapter-event-all.html", context)

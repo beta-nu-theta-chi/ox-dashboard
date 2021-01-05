@@ -163,6 +163,7 @@ class Brother(models.Model):
     def get_service_attendance(self):
         return self.get_attendance(ServiceEvent)
 
+
 class MeetABrother(models.Model):
     brother = models.ForeignKey(Brother, on_delete=models.CASCADE, related_name='brother_mab')
     candidate = models.ForeignKey(Brother, on_delete=models.CASCADE, related_name='candidate_mab')
@@ -498,11 +499,6 @@ class HealthAndSafetyEvent(Event):
 class ScholarshipEvent(Event):
     def __str__(self):
         return "Scholarship Event - " + str(self.date)
-
-
-class StudyTableEvent(Event):
-    def __str__(self):
-        return "Study Tables - %s" % self.date
 
 
 def get_standing_committees(brother):

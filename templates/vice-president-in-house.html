@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block dropdown %}
+    {% include "vice-president-base.html" %}
 {% endblock %}
 
 {% block content %}
@@ -9,8 +10,7 @@
         <h1>{{ position }}</h1>
     </div>
     <div class="panel panel-default">
-        <div class="panel-heading">Add Photo</div>
+        <div class="panel-heading">{% block heading %}Select the brothers living in the house{% endblock %}</div>
         {% include "default-form.html" %}
     </div>
-    {% include "committee-chair-base.html" %}
 {% endblock %}

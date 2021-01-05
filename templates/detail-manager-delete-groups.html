@@ -1,12 +1,15 @@
-{% extends "vice-president-base.html" %}
+{% extends "base.html" %}
+
+{% block dropdown %}
+    {% include "detail-manager-base.html" %}
+{% endblock %}
 
 {% block content %}
     <!-- Main component for a primary marketing message or call to action -->
     <div class="jumbotron">
-        <h1>Vice President</h1>
     </div>
     <div class="panel panel-default">
-        <div class="panel-heading">Select the brothers living in the house</div>
+        <div class="panel-heading">Delete detail groups for the semester</div>
         {% if message %}
             <div class="alert">
                 {{ message }}
@@ -18,10 +21,15 @@
             </div>
         {% endif %}
         <div class="panel-body">
+            <form action="" method="get">
+                {{ semester_form.as_p }}
+                <input type="submit" value="Switch semester" />
+            </form>
+            <br />
             <form action="" method="post">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <input type="submit" value="Submit"/>
+                <input type="submit" value="Delete"/>
             </form>
         </div>
     </div>

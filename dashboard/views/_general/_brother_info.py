@@ -5,6 +5,7 @@ from django.shortcuts import render
 
 from  dashboard.models import Brother
 
+
 def brother_info_list(request):
     if not request.user.is_authenticated:  # brother auth check
         messages.error(request, "Brother not logged in")

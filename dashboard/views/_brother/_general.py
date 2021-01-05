@@ -130,7 +130,6 @@ def brother_view(request):
             mabro.save()
         return HttpResponseRedirect(reverse('dashboard:brother'))
 
-
     context = {
         'brother': brother,
         'chapter_attendance': chapter_attendance,

@@ -1,14 +1,7 @@
 {% extends "base.html" %}
 
 {% block dropdown %}
-    <li class="dropdown">
-        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-           aria-expanded="false">Recruitment Chair <span class="caret"></span></a>
-        <ul class="dropdown-menu">
-            <li><a href={% url 'dashboard:recruitment_c_rush_attendance' %}>Rush Attendance</a></li>
-            <li><a href={% url 'dashboard:recruitment_c_excuses' %}>Excuses Archive</a></li>
-        </ul>
-    </li>
+    {% include "recruitment-chair-base.html" %}
 {% endblock %}
 
 {% block content %}
@@ -126,7 +119,7 @@
                     {% if not forloop.first %}
                         <div class="excusesgrayline"></div>
                     {% endif %}
-                    <div style="grid-column: 2"> <a href={% url 'dashboard:recruitment_c_excuse' excuse.id %}?next={{ request.path }}>
+                    <div style="grid-column: 2"> <a href={% url 'dashboard:excuse' position|slugify excuse.id %}>
                         {{ excuse.brother }}
                     </a> </div>
                     <div>{{ excuse.event.name }}</div>
@@ -134,74 +127,12 @@
                     <div>{{ excuse.date_submitted }}</div>
                     <div>{{ excuse.description }}</div>
                     <div><a class="btn btn-success btn-xs"
-                                   href={% url 'dashboard:excuse_quick_accept' excuse.id %}?next={{ request.path }}>&check;</a></div>
+                                   href={% url 'dashboard:excuse_quick_accept' position|slugify excuse.id %}>&check;</a></div>
                 {% empty %}
                     <div style="grid-column: 2">No pending excuses!</div>
                 {% endfor %}
             </div>
         </div>
     </div>
-    <div class="panel panel-default">
-        <div class="panel-heading">Committee Info</div>
-        <div class="panel-body">
-            <div class="row">
-                <div class=" col-lg-2 "></div>
-                <div class=" col-lg-8 ">
-                    <table class="table table-event-information">
-                        <tr>
-                            <td>Committee:</td>
-                            <td>{{ committee.get_committee_display }}</td>
-                        </tr>
-                        <tr>
-                            <td>Meeting Day:</td>
-                            <td>{{ committee.get_meeting_day_display }}</td>
-                        </tr>
-                        <tr>
-                            <td>Meeting Time:</td>
-                            <td>{{ committee.meeting_time }}</td>
-                        </tr>
-                        <tr>
-                            <td>Meeting Frequency</td>
-                            <td>{{ committee.get_meeting_interval_display }}</td>
-                        </tr>
-                    </table>
-                    <a class="btn btn-default" href={% url 'dashboard:committee_edit' committee.id %}?next={{ request.path }}&committee={{ committee.url_name }} role="button">Edit Committee</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="panel panel-default">
-        <div class="panel-heading">Committee Meeting</div>
-        <div class="panel-body">
-            <table class="table table-condensed">
-                <thead style="font-weight:bold;">
-                <tr>
-                    <td>{{ committee.get_committee_display }} Committee</td>
-                    <td>Minutes:</td>
-                    <td>Edit?</td>
-                    <td>Delete?</td>
-                </tr>
-                </thead>
-                <tbody>
-                {% for meeting in committee_meetings %}
-                    <tr>
-                        <td><a href={% url 'dashboard:committee_event' meeting.id %}>{{ meeting.date }} - {{ meeting.start_time }}</a></td>
-                        {% if meeting.minutes %}
-                            <td><a href="{{ meeting.minutes }}">link</a></td>
-                        {% else %}
-                            <td></td>
-                        {% endif %}
-                        <td><a class="btn btn-default"
-                              href={% url 'dashboard:committee_event_edit' meeting.id %}?id={{ meeting.id }}>+</a></td>
-                        <td><a class="btn btn-danger"
-                               href={% url 'dashboard:committee_event_delete' meeting.id %}?next={{ request.path }}>X</a></td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            <a class="btn btn-success" href={% url 'dashboard:committee_event_add' position %}?next={{ request.path }}
-                    role="button">Add Meeting</a>
-        </div>
-    </div>
+    {% include "committee-chair-base.html" %}
 {% endblock %}

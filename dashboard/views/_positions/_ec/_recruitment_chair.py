@@ -2,6 +2,7 @@ from django.conf import settings
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
+from django.utils.text import slugify
 
 import csv
 import datetime
@@ -30,6 +31,7 @@ from dashboard.utils import (
     mark_attendance_list,
     update_eligible_brothers,
     verify_position,
+    get_human_readable_model_name,
 )
 
 from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
@@ -72,7 +74,7 @@ def recruitment_c_all_excuses(request):
         'excuses': excuses,
         'position': 'Recruitment Chair',
     }
-    return render(request, 'excuses_archive.html', context)
+    return render(request, 'excuses-archive.html', context)
 
 
 def all_pnm_csv(request):
@@ -114,7 +116,7 @@ def recruitment_c_rush_attendance(request):
         'rush_attendance': rush_attendance,
     }
 
-    return render(request, 'rush_attendance.html', context)
+    return render(request, 'recruitment-chair-rush-attendance.html', context)
 
 
 @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
@@ -169,7 +171,7 @@ class PnmEdit(DashboardUpdateView):
         return super(PnmEdit, self).get(request, *args, **kwargs)
 
     model = PotentialNewMember
-    template_name = 'generic_forms/potentialnewmember_form.html'
+    template_name = 'generic_forms/base_form.html'
     success_url = reverse_lazy('dashboard:recruitment_c')
     form_class = PotentialNewMemberForm
 
@@ -213,8 +215,9 @@ def recruitment_c_event(request, event_id):
         'media_root': settings.MEDIA_ROOT,
         'media_url': settings.MEDIA_URL,
         'form': form,
+        'event_type': get_human_readable_model_name(event),
     }
-    return render(request, "recruitment-event.html", context)
+    return render(request, "events/recruitment-event.html", context)
 
 
 @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])

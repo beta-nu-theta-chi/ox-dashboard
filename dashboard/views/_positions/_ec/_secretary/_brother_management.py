@@ -17,7 +17,7 @@ def secretary_brother_list(request):
         'position': 'Secretary',
         'brothers': brothers
     }
-    return render(request, "brother-list.html", context)
+    return render(request, "secretary-brother-list.html", context)
 
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
@@ -39,24 +39,15 @@ def secretary_brother_add(request):
     if request.method == 'POST':
         if form.is_valid():
             instance = form.cleaned_data
-            if instance['password'] == instance['password2']:
-                user = User.objects.create_user(instance['case_ID'], instance['case_ID'] + "@case.edu",
-                                                instance['password'])
-                user.last_name = instance['last_name']
-                user.save()
+            user = User.objects.create_user(instance['case_ID'], instance['case_ID'] + "@case.edu",
+                                            instance['password'])
+            user.last_name = instance['last_name']
+            user.save()
 
-                brother = form.save(commit=False)
-                brother.user = user
-                brother.save()
-
-                return HttpResponseRedirect(reverse('dashboard:secretary_brother_list'))
-            else:
-                context = {
-                    'error_message': "Please make sure your passwords match",
-                    'title': 'Add New Brother',
-                    'form': form,
-                }
-                return render(request, 'model-add.html', context)
+            brother = form.save(commit=False)
+            brother.user = user
+            brother.save()
+            return HttpResponseRedirect(reverse('dashboard:secretary_brother_list'))
 
     context = {
         'title': 'Add New Brother',
@@ -71,7 +62,7 @@ class SecretaryBrotherEdit(DashboardUpdateView):
         return super(SecretaryBrotherEdit, self).get(request, *args, **kwargs)
 
     model = Brother
-    template_name = 'generic_forms/brother_form.html'
+    template_name = 'generic_forms/base_form.html'
     success_url = reverse_lazy('dashboard:secretary_brother_list')
     form_class = BrotherEditForm
 

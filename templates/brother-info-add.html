@@ -3,6 +3,8 @@
 {% block dropdown %}
 {% endblock %}
 
+{% load custom_tag %}
+
 {% block content %}
     <!-- Main component for a primary marketing message or call to action -->
     <div class="jumbotron">
@@ -40,7 +42,7 @@
                 {{ form.non_field.errors }}
                 <div class="modeladd">
                     {% for field in form %}
-                        <div class="modellabel">{{ field.label_tag }}</div>
+                        <div class="modellabel">{{ field | append_ast_if_req }}</div>
                         <div>{{ field }}</div>
                         {% if title == 'Media Account' %}
                             {% if field.label == 'Media' %}

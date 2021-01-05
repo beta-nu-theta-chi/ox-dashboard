@@ -1,13 +1,15 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse, reverse_lazy
+from django.utils.text import slugify
 
 from dashboard.forms import ExcuseResponseForm
 from dashboard.models import Excuse, RecruitmentEvent
 from dashboard.utils import verify_position
 
+
 @verify_position(['Recruitment Chair', 'Secretary', 'Vice President', 'President', 'Adviser'])
-def excuse(request, excuse_id):
+def excuse(request, position, excuse_id):
     """ Renders Excuse response form """
     excuse = get_object_or_404(Excuse, pk=excuse_id)
     form = ExcuseResponseForm(request.POST or None, excuse=excuse)
@@ -18,7 +20,7 @@ def excuse(request, excuse_id):
             excuse.status = instance.status
             excuse.response_message = instance.response_message
             excuse.save()
-            return HttpResponseRedirect(request.GET.get('next'))
+            return HttpResponseRedirect('/' + position)
 
     context = {
         'type': 'response',
@@ -29,11 +31,11 @@ def excuse(request, excuse_id):
 
 
 # accepts the excuse then immediately redirects you back to where you came from
-def excuse_quick_accept(request, excuse_id):
+def excuse_quick_accept(request, position, excuse_id):
     excuse = Excuse.objects.get(pk=excuse_id)
     excuse.status = '1'
     excuse.save()
-    return HttpResponseRedirect(request.GET.get('next'))
+    return HttpResponseRedirect('/' + position)
 
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
@@ -45,4 +47,4 @@ def secretary_all_excuses(request):
         'excuses': excuses,
         'position': 'Secretary',
     }
-    return render(request, 'excuses_archive.html', context)
+    return render(request, 'excuses-archive.html', context)

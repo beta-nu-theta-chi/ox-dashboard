@@ -1,0 +1,27 @@
+{% extends "events/base-event.html" %}
+
+{% block dropdown %}
+{% endblock %}
+
+{% block rsvp %}
+    {% if type == 'brother-view' %}
+        <div class="panel panel-default">
+            <div class="panel-heading">RSVP</div>
+            <div class="panel-body">
+                {% if type == 'brother-view' %}
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        {% if rsvpd %}
+                            <input type="submit" name='cancel_rsvp' value="Cancel RSVP"/><br><br>
+                        {% else %}
+                            <input type="submit" name='rsvp' value="RSVP"/><br><br>
+                        {% endif %}
+                    </form>
+                {% endif %}
+                    {% for brother in event.rsvp_brothers.all %}
+                    {{ brother }}<br>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

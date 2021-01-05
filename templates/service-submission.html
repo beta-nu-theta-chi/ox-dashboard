@@ -62,19 +62,7 @@
     {% if type == "response" %}
         <div class="panel panel-default">
             <div class="panel-heading">Service Submission Response</div>
-
-            <div class="panel-body">
-                {% if error_message %}
-                    <div class="alert alert-danger" role="alert">
-                        {{ error_message }}
-                    </div>
-                {% endif %}
-                <form action="" method="post">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <input class="btn btn-success" type="submit" value="Submit"/>
-                </form>
-            </div>
+            {% include "default-form.html" %}
         </div>
     {% endif %}
 {% endblock %}

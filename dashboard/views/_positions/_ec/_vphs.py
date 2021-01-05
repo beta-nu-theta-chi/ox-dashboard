@@ -73,7 +73,7 @@ class HealthAndSafetyDelete(DashboardDeleteView):
 
 def health_and_safety_event(request, event_id):
     """ Renders the vphs way of view events """
-    event = Event.objects.get(pk=event_id)
+    event = HealthandSafetyEvent.objects.get(pk=event_id)
     brothers, brother_form_list = attendance_list(request, event)
 
     form = EditBrotherAttendanceForm(request.POST or None, event=event_id)
@@ -93,5 +93,6 @@ def health_and_safety_event(request, event_id):
         'brother_form_list': brother_form_list,
         'event': event,
         'form': form,
+        'event_type': get_human_readable_model_name(event),
     }
-    return render(request, "hs-event.html", context)
+    return render(request, "events/base-event.html", context)

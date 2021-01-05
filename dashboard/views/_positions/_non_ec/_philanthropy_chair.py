@@ -21,6 +21,7 @@ from dashboard.utils import (
     update_eligible_brothers,
     verify_position,
     save_event,
+    get_human_readable_model_name
 )
 
 from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
@@ -65,9 +66,10 @@ def philanthropy_c_event(request, event_id):
         'brothers_rsvp': brothers_rsvp,
         'event': event,
         'form': form,
+        'event_type': get_human_readable_model_name(event),
     }
 
-    return render(request, 'philanthropy-event.html', context)
+    return render(request, 'events/philanthropy-event.html', context)
 
 
 @verify_position(['Philanthropy Chair', 'Adviser'])
