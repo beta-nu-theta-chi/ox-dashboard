@@ -9,6 +9,7 @@ from dashboard.models import (
 )
 from dashboard.utils import get_semester
 
+
 def event_list(request):
     """Renders all the semester events"""
     chapter_events = ChapterEvent.objects.filter(semester=get_semester()).order_by("date")

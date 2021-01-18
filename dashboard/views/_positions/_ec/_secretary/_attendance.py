@@ -15,6 +15,9 @@ def secretary_attendance(request):
     accepted_excuses = Excuse.objects.filter(event__semester=get_semester(), status='1', event__in=events)
     brother_attendance = []
 
+    # For each brother, appends a tuple to brother_attendance that contains the number of events excused, unexcused,
+    # attended/excuse and events eligible for them to attend. The latter 2 are used to display the
+    # attendance fraction
     for brother in brothers:
         events_eligible_list = events.filter(eligible_attendees=brother)
         events_eligible = events_eligible_list.count()

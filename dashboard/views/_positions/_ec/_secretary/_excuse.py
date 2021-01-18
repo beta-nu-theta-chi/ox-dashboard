@@ -9,8 +9,11 @@ from dashboard.utils import verify_position
 
 
 @verify_position(['Recruitment Chair', 'Secretary', 'Vice President', 'President', 'Adviser'])
-def excuse(request, position, excuse_id):
+def excuse(request, position_slug, excuse_id):
     """ Renders Excuse response form """
+    # since this view can be accessed from both the Recruitment Chair and the Secretary pages,
+    # in order to redirect back to those pages, pass in a slug for the position
+    # doing a redirect on the slug should allow you to redirect back to the position's page
     excuse = get_object_or_404(Excuse, pk=excuse_id)
     form = ExcuseResponseForm(request.POST or None, excuse=excuse)
 
@@ -20,7 +23,7 @@ def excuse(request, position, excuse_id):
             excuse.status = instance.status
             excuse.response_message = instance.response_message
             excuse.save()
-            return HttpResponseRedirect('/' + position)
+            return HttpResponseRedirect('/' + position_slug)
 
     context = {
         'type': 'response',
@@ -31,11 +34,14 @@ def excuse(request, position, excuse_id):
 
 
 # accepts the excuse then immediately redirects you back to where you came from
-def excuse_quick_accept(request, position, excuse_id):
+def excuse_quick_accept(request, position_slug, excuse_id):
+    # since this view can be accessed from both the Recruitment Chair and the Secretary pages,
+    # in order to redirect back to those pages, pass in a slug for the position
+    # doing a redirect on the slug should allow you to redirect back to the position's page
     excuse = Excuse.objects.get(pk=excuse_id)
     excuse.status = '1'
     excuse.save()
-    return HttpResponseRedirect('/' + position)
+    return HttpResponseRedirect('/' + position_slug)
 
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])

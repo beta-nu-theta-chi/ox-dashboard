@@ -20,6 +20,7 @@ def secretary_positions(request):
                 new_position.save()
         return HttpResponseRedirect(reverse('dashboard:secretary_positions'))
 
+    # doing a .all() ensures that the positions are listed in order of succession since they're created in that order
     positions = Position.objects.all()
     context = {
         'positions': positions,

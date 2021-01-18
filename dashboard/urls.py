@@ -110,8 +110,8 @@ urlpatterns = [
     url(r'^event/(?P<pk>\d+)/edit/$', views.EventEdit.as_view(), name="event_edit"),
     url(r'^secretary/event/(?P<event_id>[0-9]+)/view/$', views.secretary_event_view, name="secretary_event_view"),
     url(r'^secretary/event/(?P<event_id>[0-9]+)/$', views.secretary_event, name="secretary_event"),
-    url(r'^(?P<position>\D+)/excuse/(?P<excuse_id>[0-9]+)/$', views.excuse, name="excuse"),
-    url(r'^(?P<position>\D+)/excuse/(?P<excuse_id>[0-9]+)/quick_accept/$', views.excuse_quick_accept, name="excuse_quick_accept"),
+    url(r'^(?P<position_slug>\D+)/excuse/(?P<excuse_id>[0-9]+)/$', views.excuse, name="excuse"),
+    url(r'^(?P<position_slug>\D+)/excuse/(?P<excuse_id>[0-9]+)/quick_accept/$', views.excuse_quick_accept, name="excuse_quick_accept"),
     url(r'^secretary/excuses', views.secretary_all_excuses, name="secretary_excuses"),
     url(r'^secretary/agenda/$', views.secretary_agenda, name="secretary_agenda"),
 

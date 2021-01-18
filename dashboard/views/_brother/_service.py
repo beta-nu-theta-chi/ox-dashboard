@@ -2,7 +2,6 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import DeleteView
 
 from dashboard.forms import ServiceSubmissionForm
 from dashboard.models import ServiceSubmission

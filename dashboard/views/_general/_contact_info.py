@@ -6,6 +6,7 @@ from django.shortcuts import render
 
 from  dashboard.models import Brother
 
+
 @login_required
 def contact_list(request):
     if not request.user.is_authenticated:  # brother auth check

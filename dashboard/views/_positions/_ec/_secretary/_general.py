@@ -11,10 +11,12 @@ from dashboard.views._positions._ec._secretary._mass_entry import (
 from dashboard.models import ChapterEvent, Excuse, RecruitmentEvent, Position
 from dashboard.utils import get_semester, verify_position
 
+
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
 def secretary(request):
     """ Renders the secretary page giving access to excuses and ChapterEvents """
-    excuses = Excuse.objects.filter(event__semester=get_semester(), status='0').exclude(event__in=RecruitmentEvent.objects.all()).order_by("date_submitted", "event__date")
+    excuses = Excuse.objects.filter(event__semester=get_semester(), status='0')\
+        .exclude(event__in=RecruitmentEvent.objects.all()).order_by("date_submitted", "event__date")
     events = ChapterEvent.objects.filter(semester=get_semester()).order_by("start_time").order_by("date")
 
     brothers = []
@@ -45,7 +47,7 @@ def secretary(request):
         'is_entry': is_entry, # TODO change to have post stuff
         'brothers': brothers,
         'position': "Secretary",
-        'position_slug': "secretary",
+        'position_slug': "secretary", # a slug is just a label containing only letters, numbers, underscores, or hyphens
 
     }
     return render(request, 'secretary/secretary.html', context)

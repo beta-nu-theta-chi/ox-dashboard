@@ -6,6 +6,7 @@ from dashboard.forms import CommitteeCreateForm
 from dashboard.models import Brother, Committee
 from dashboard.utils import create_recurring_meetings
 
+
 def committee_list(request):
     committees = Committee.objects.all()
     brothers = Brother.objects.order_by('last_name')

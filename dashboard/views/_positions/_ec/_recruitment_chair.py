@@ -18,13 +18,11 @@ from dashboard.models import (
     Excuse,
     PotentialNewMember,
     RecruitmentEvent,
-    Semester
 )
 from dashboard.utils import (
     attendance_list,
     committee_meeting_panel,
     forms_is_valid,
-    get_season_from,
     get_season,
     get_semester,
     get_year,
@@ -43,7 +41,7 @@ def recruitment_c(request):
     """ Renders Recruitment chair page with events for the current and following semester """
     events = RecruitmentEvent.objects.all()
     excuses = Excuse.objects.filter(event__semester=get_semester(), status='0',
-        event__in=events).order_by("date_submitted", "event__date")
+                                    event__in=events).order_by("date_submitted", "event__date")
     current_season = get_season()
     if current_season == '0':
         semester_events = RecruitmentEvent.objects.filter(semester__season='0', semester__year=get_year())
@@ -58,7 +56,7 @@ def recruitment_c(request):
 
     context.update({
         'position': 'Recruitment Chair',
-        'position_slug': 'recruitment-chair',
+        'position_slug': 'recruitment-chair', # a slug is just a label containing only letters, numbers, underscores, or hyphens
         'events': semester_events,
         'events_future': semester_events_next,
         'potential_new_members': potential_new_members,
@@ -217,7 +215,8 @@ def recruitment_c_event_add(request):
     }
     return render(request, "event-add.html", context)
 
-
+# since recruitment events have additional info that can be edited it needs its own view
+# other event types use EventEdit in views/events.py
 class RecruitmentEventEdit(DashboardUpdateView):
     @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
