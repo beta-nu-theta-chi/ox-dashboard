@@ -27,4 +27,4 @@ def emergency_phone_tree_view(request):
         'phone_tree' : phone_tree
     }
 
-    return render(request, 'emergency-phone-tree.html', context)
+    return render(request, 'general/emergency-phone-tree.html', context)

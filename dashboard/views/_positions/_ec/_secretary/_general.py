@@ -8,7 +8,7 @@ from dashboard.views._positions._ec._secretary._mass_entry import (
     staged_mass_entry_brothers,
 )
 
-from dashboard.models import ChapterEvent, Excuse, RecruitmentEvent
+from dashboard.models import ChapterEvent, Excuse, RecruitmentEvent, Position
 from dashboard.utils import get_semester, verify_position
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
@@ -45,5 +45,7 @@ def secretary(request):
         'is_entry': is_entry, # TODO change to have post stuff
         'brothers': brothers,
         'position': "Secretary",
+        'position_slug': "secretary",
+
     }
-    return render(request, 'secretary.html', context)
+    return render(request, 'secretary/secretary.html', context)

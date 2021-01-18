@@ -1,15 +1,12 @@
 {% extends "base.html" %}
 
-{% block dropdown %}
-{% endblock %}
-
 {% block content %}
     <!-- Main component for a primary marketing message or call to action -->
-{% block title %}
-    <div class="jumbotron">
-        <h1>{{ event_type }}</h1>
-    </div>
-{% endblock %}
+    {% block title %}
+        <div class="jumbotron">
+            <h1>{{ event_type }}</h1>
+        </div>
+    {% endblock %}
     <div class="panel panel-default">
         <div class="panel-heading">Event</div>
         <div class="panel-body">
@@ -53,7 +50,9 @@
                         </tbody>
                     </table>
                     {% if type == 'attendance' or type == 'ec-view' %}
-                        <a class="btn btn-default" href={% url 'dashboard:health_and_safety_event_edit' event.id %} role="button">Edit event</a>
+                        {% block edit_button %}
+                            <a class="btn btn-default" href={% url 'dashboard:event_edit' event.id %} role="button">Edit event</a>
+                        {% endblock %}
                     {% endif %}
                 </div>
                 <div class=" col-lg-2 "></div>
@@ -62,47 +61,7 @@
     </div>
     {% block rsvp %}{% endblock %}
     {% if type == 'attendance' %}
-        <div class="panel panel-default">
-            <div class="panel-heading">Brother Attendance</div>
-            <div class="panel-body">
-                <form action="" method="post">
-                    <input class="btn btn-success" type="submit" name="edit" value="Update Eligible Brothers Attendance List"><br><br>
-                    {% csrf_token %}
-                    {{ form.non_field.errors }}
-                    <div class="row justify-content-start">
-                        <div class="col col-sm-8">
-                            <table class="table table-responsive">
-                                <tr>
-                                    {% for field in form %}
-                                        <td>
-                                            {{ field.label_tag }}
-                                        </td>
-                                    {% endfor %}
-                                </tr>
-                                <tr>
-                                    {% for field in form %}
-                                        <td>
-                                            {{ field }}
-                                        </td>
-                                    {% endfor %}
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                    <hr>
-                    <h3>Attendance</h3>
-                    <hr>
-                    {% for form in brother_form_list %}
-                        {% for field in form %}
-                            {{ field }}{{ field.label_tag }}
-                            {{ field.errors }}
-                        {% endfor %}
-                        <br>
-                    {% endfor %}
-                    <input class="btn btn-success" type="submit" name="update" value="Update"/>
-                </form>
-            </div>
-        </div>
+        {% include "events/base-brother-attendance.html" %}
     {% endif %}
     {% block generalattendance %}{% endblock %}
     {% if type == 'ec-view' %}

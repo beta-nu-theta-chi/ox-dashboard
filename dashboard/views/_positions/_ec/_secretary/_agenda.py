@@ -45,4 +45,4 @@ def secretary_agenda(request):
         'reports': reports,
     }
 
-    return render(request, 'secretary-agenda.html', context)
+    return render(request, 'secretary/agenda.html', context)

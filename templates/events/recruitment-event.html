@@ -1,6 +1,11 @@
 {% extends "events/base-event.html" %}
 
 {% block dropdown %}
+    {% include "recruitment-chair/recruitment-chair-base.html" %}
+{% endblock %}
+
+{% block edit_button %}
+    <a class="btn btn-default" href={% url 'dashboard:recruitment_c_event_edit' event.id %} role="button">Edit event</a>
 {% endblock %}
 
 {% block generalattendance %}

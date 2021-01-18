@@ -26,4 +26,4 @@ def event_list(request):
         'type': 'general'
     }
 
-    return render(request, "event-list.html", context)
+    return render(request, "general/event-list.html", context)

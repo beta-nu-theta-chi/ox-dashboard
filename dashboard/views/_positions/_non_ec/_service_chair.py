@@ -54,8 +54,10 @@ def service_c(request):
         'hours_pending': hours_pending,
         'submissions_pending': submissions_pending,
         'submissions_submitted': submissions_submitted,
+        'position': 'Service Chair',
+        'position_slug': 'service-chair',
     }
-    return render(request, 'service-chair.html', context)
+    return render(request, 'service-chair/service-chair.html', context)
 
 
 @verify_position(['Service Chair', 'Adviser'])
@@ -86,27 +88,6 @@ def service_c_event(request, event_id):
     return render(request, 'events/service-event.html', context)
 
 
-class ServiceEventDelete(DashboardDeleteView):
-    @verify_position(['Service Chair', 'Adviser'])
-    def get(self, request, *args, **kwargs):
-        return super(ServiceEventDelete, self).get(request, *args, **kwargs)
-
-    model = ServiceEvent
-    template_name = 'generic_forms/base_confirm_delete.html'
-    success_url = reverse_lazy('dashboard:service_c')
-
-
-class ServiceEventEdit(DashboardUpdateView):
-    @verify_position(['Service Chair', 'Adviser'])
-    def get(self, request, *args, **kwargs):
-        return super(ServiceEventEdit, self).get(request, *args, **kwargs)
-
-    model = ServiceEvent
-    template_name = 'generic_forms/base_form.html'
-    success_url = reverse_lazy('dashboard:service_c')
-    form_class = ServiceEventForm
-
-
 @verify_position(['Service Chair', 'Adviser'])
 def service_c_submission_response(request, submission_id):
     """ Renders the service chair way of responding to submissions """
@@ -126,7 +107,7 @@ def service_c_submission_response(request, submission_id):
         'form': form,
     }
 
-    return render(request, 'service-submission.html', context)
+    return render(request, 'service-chair/service-submission.html', context)
 
 
 @verify_position(['Service Chair', 'Adviser'])
@@ -179,4 +160,4 @@ def service_c_hours(request):
         'brother_hours_list': brother_hours_list,
     }
 
-    return render(request, "service-hours-list.html", context)
+    return render(request, "service-chair/service-hours-list.html", context)

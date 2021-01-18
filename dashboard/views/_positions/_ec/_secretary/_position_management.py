@@ -24,7 +24,7 @@ def secretary_positions(request):
     context = {
         'positions': positions,
     }
-    return render(request, "secretary-positions.html", context)
+    return render(request, "positions.html", context)
 
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
@@ -51,7 +51,7 @@ class PositionEdit(DashboardUpdateView):
         return super(PositionEdit, self).get(request, *args, **kwargs)
 
     model = Position
-    template_name = 'generic_forms/base_form.html'
+    template_name = 'generic-forms/base-form.html'
     success_url = reverse_lazy('dashboard:secretary_positions')
     fields = ['brothers']
 
@@ -62,5 +62,5 @@ class PositionDelete(DashboardDeleteView):
         return super(PositionDelete, self).get(request, *args, **kwargs)
 
     model = Position
-    template_name = 'generic_forms/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
     success_url = reverse_lazy('dashboard:secretary_positions')

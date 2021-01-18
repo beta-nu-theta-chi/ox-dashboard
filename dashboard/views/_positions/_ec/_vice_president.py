@@ -35,7 +35,7 @@ def vice_president(request):
         'committee_meetings': committee_meetings,
     }
 
-    return render(request, 'vice-president.html', context)
+    return render(request, 'vice-president/vice-president.html', context)
 
 
 @verify_position(['Vice President', 'President', 'Adviser'])
@@ -134,4 +134,4 @@ def in_house(request):
         'form': form,
         'position': position,
     }
-    return render(request, 'vice-president-in-house.html', context)
+    return render(request, 'vice-president/in-house.html', context)

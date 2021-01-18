@@ -53,7 +53,7 @@ class DeleteReport(DashboardDeleteView):
         return self.request.GET.get('next')
 
     model = Report
-    template_name = 'generic_forms/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
 
 
 class EditReport(DashboardUpdateView):
@@ -71,6 +71,6 @@ class EditReport(DashboardUpdateView):
         return form
 
     model = Report
-    template_name = 'generic_forms/base_form.html'
+    template_name = 'generic-forms/base-form.html'
     success_url = reverse_lazy('dashboard:brother')
     fields = ['position', 'information']

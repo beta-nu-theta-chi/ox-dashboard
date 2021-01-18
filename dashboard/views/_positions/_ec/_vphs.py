@@ -26,6 +26,7 @@ def vphs(request):
 
     context.update({
         'position': 'Vice President of Health and Safety',
+        'position_slug': 'vphs',
         'events': events,
     })
     return render(request, 'vphs.html', context)
@@ -48,27 +49,6 @@ def health_and_safety_event_add(request):
         'form': form,
     }
     return render(request, 'model-add.html', context)
-
-
-class HealthAndSafetyEdit(DashboardUpdateView):
-    @verify_position(['President', 'Adviser', 'Vice President', 'Vice President of Health and Safety'])
-    def get(self, request, *args, **kwargs):
-        return super(HealthAndSafetyEdit, self).get(request, *args, **kwargs)
-
-    model = HealthAndSafetyEvent
-    template_name = 'generic_forms/base_form.html'
-    success_url = reverse_lazy('dashboard:vphs')
-    form_class = HealthAndSafetyEventForm
-
-
-class HealthAndSafetyDelete(DashboardDeleteView):
-    @verify_position(['President', 'Adviser', 'Vice President', 'Vice President of Health and Safety'])
-    def get(self, request, *args, **kwargs):
-        return super(HealthAndSafetyDelete, self).get(request, *args, **kwargs)
-
-    model = HealthAndSafetyEvent
-    template_name = 'generic_forms/base_confirm_delete.html'
-    success_url = reverse_lazy('dashboard:vphs')
 
 
 def health_and_safety_event(request, event_id):

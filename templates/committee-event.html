@@ -52,56 +52,14 @@
                         </tbody>
                     </table>
                     {% if type == 'chairman' %}
-                    <a class="btn btn-default" href={% url 'dashboard:committee_event_edit' position_slug event.id %}?id={{ event.id }} role="button">Edit event</a>
+                    <a class="btn btn-default" href={% url 'dashboard:committee_event_edit' event.id %}?id={{ event.id }} role="button">Edit event</a>
                     {% endif %}
                 </div>
                 <div class=" col-lg-2 "></div>
             </div>
         </div>
     </div>
-
     {% if type == 'chairman' %}
-    <div class="panel panel-default">
-        <div class="panel-heading">Brother Attendance</div>
-        <div class="panel-body">
-            <form action="" method="post">
-                <input class="btn btn-success" type="submit" name="add" value="Add to Attendance"><br><br>
-                    {% csrf_token %}
-                    {{ form.non_field.errors }}
-                    <div class="row justify-content-start">
-                        <div class="col col-sm-8">
-                            <table class="table table-responsive">
-                                <tr>
-                                    {% for field in form %}
-                                        <td>
-                                            {{ field.label_tag }}
-                                        </td>
-                                    {% endfor %}
-                                </tr>
-                                <tr>
-                                    {% for field in form %}
-                                        <td>
-                                            {{ field }}
-                                        </td>
-                                    {% endfor %}
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                    <hr>
-                    <h3>Attendance</h3>
-                    <hr>
-                    {% for form in brother_form_list %}
-                        {% for field in form %}
-                            {{ field }}{{ field.label_tag }}
-                            {{ field.errors }}
-                        {% endfor %}
-                        <br>
-                    {% endfor %}
-                <input class="btn btn-success" type="submit" name="update" value="Update"/>
-            </form>
-        </div>
-    </div>
+        {% include "events/base-brother-attendance.html" %}
     {% endif %}
-
 {% endblock %}

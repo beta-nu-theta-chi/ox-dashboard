@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.core.handlers.wsgi import WSGIRequest
 
-from .forms import BrotherAttendanceForm
+from .forms import BrotherAttendanceForm, ChapterEventForm, ServiceEventForm, HealthAndSafetyEventForm, PhilanthropyEventForm
 from .models import *
 
 import requests
@@ -434,6 +434,7 @@ def notified_by(brother):
     node = PhoneTreeNode.objects.filter(brother=brother)
     return node[0].notified_by if len(node) > 0 else None
 
+
 def create_attendance_list(events, excuses_pending, excuses_approved, brother):
     """zips together a list of tuples where the first element is each event and the second is the brother's
     status regarding the event. If the event hasn't occurred, the status is blank, if it's not a mandatory
@@ -458,7 +459,7 @@ def create_attendance_list(events, excuses_pending, excuses_approved, brother):
     """
     attendance = []
     for event in events:
-        if int(event.date.strftime("%s")) > int(datetime.datetime.now().strftime("%s")):
+        if event.date >= datetime.date.today():
             attendance.append('')
         elif not event.mandatory:
             attendance.append('Not Mandatory')
@@ -540,3 +541,13 @@ def get_human_readable_model_name(object):
             end_string += char
 
     return end_string
+
+
+def get_form_from_position(position, request):
+    form_dict = {
+        'Philanthropy Chair': PhilanthropyEventForm(request.POST or None, initial={'name': 'Philanthropy Event'}),
+        'Secretary': ChapterEventForm(request.POST or None, initial={'name': 'Chapter Event'}),
+        'Service Chair': ServiceEventForm(request.POST or None, initial={'name': 'Service Event'}),
+        'Vice President of Health and Safety': HealthAndSafetyEventForm(request.POST or None, initial={'name': 'Sacred Purpose Event'}),
+    }
+    return form_dict[position]

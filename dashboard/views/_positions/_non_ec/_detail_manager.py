@@ -58,7 +58,7 @@ def supplies_finish(request):
         'form': form,
         'button': 'Mark as Ordered'
     }
-    return render(request, 'detail-manager-finish-supplies.html', context)
+    return render(request, 'detail-manager/finish-supplies.html', context)
 
 
 @verify_position(['Detail Manager', 'Adviser'])
@@ -82,7 +82,7 @@ def house_detail_toggle(request):
         'form': form,
         'position': position
     }
-    return render(request, 'detail-manager-house-detail-toggle.html', context)
+    return render(request, 'detail-manager/house-detail-toggle.html', context)
 
 
 @verify_position(['Detail Manager', 'Adviser'])
@@ -108,7 +108,7 @@ def create_groups(request):
         'form': form,
         'position': position
     }
-    return render(request, 'detail-manager-create-groups.html', context)
+    return render(request, 'detail-manager/create-groups.html', context)
 
 
 @verify_position(['Detail Manager', 'Adviser'])
@@ -129,7 +129,7 @@ def select_groups(request):
         'form': form,
         'position': position
     }
-    return render(request, 'detail-manager-select-groups.html', context)
+    return render(request, 'detail-manager/select-groups.html', context)
 
 
 @verify_position(['Detail Manager', 'Adviser'])
@@ -150,7 +150,7 @@ def delete_groups(request):
 
     context = {'form': form, 'semester_form': semester_form}
 
-    return render(request, 'detail-manager-delete-groups.html', context)
+    return render(request, 'detail-manager/delete-groups.html', context)
 
 
 @verify_position(['Detail Manager', 'Adviser'])
@@ -197,7 +197,7 @@ def post_thursday(request):
         'form': date_form,
         'date': 'thursday',
     }
-    return render(request, 'detail-manager-post-details.html', context)
+    return render(request, 'detail-manager/post-details.html', context)
 
 
 # TODO: This might belong in the house management section.  Cannot check because details do not seem to work.
@@ -277,7 +277,7 @@ def post_sunday(request):
         'form': date_form,
         'date': 'sunday',
     }
-    return render(request, 'detail-manager-post-details.html', context)
+    return render(request, 'detail-manager/post-details.html', context)
 
 
 # TODO: This might belong in the house management section.  Cannot check because details do not seem to work.
@@ -326,7 +326,7 @@ def current_details_helper(request, brother):
             'does_house_details': False,
             'who': str(brother),
         }
-        return render(request, 'list-details.html', context)
+        return render(request, 'house-management/list-details.html', context)
 
     context = {}
 
@@ -350,7 +350,7 @@ def current_details_helper(request, brother):
     context['who'] = str(brother)
     context['does_house_details'] = True
 
-    return render(request, 'list-details.html', context)
+    return render(request, 'house-management/list-details.html', context)
 
 
 @verify_position(['Detail Manager', 'Adviser'])
@@ -365,7 +365,7 @@ def all_details_helper(request, brother):
             'does_house_details': False,
             'who': str(brother),
         }
-        return render(request, 'list-details.html', context)
+        return render(request, 'house-management/list-details.html', context)
 
     thursday_details = ThursdayDetail.objects.filter(brother=brother)
 
@@ -380,7 +380,7 @@ def all_details_helper(request, brother):
         'who': str(brother),
     }
 
-    return render(request, 'all_details.html', context)
+    return render(request, 'house-management/all-details.html', context)
 
 
 @verify_position(['Detail Manager', 'Adviser'])
@@ -393,7 +393,7 @@ def all_users_details(request):
             calc_fines(e)
     ) for e in brothers}
     context = {'brothers': b}
-    return render(request, 'detail-manager-all-users-details.html', context)
+    return render(request, 'detail-manager/all-users-details.html', context)
 
 
 @verify_position(['Detail Manager', 'Adviser'])
@@ -423,7 +423,7 @@ def detail_dates(request):
         'sunday_dates': sunday_dates,
     }
 
-    return render(request, 'detail-manager-details-by-date.html', context)
+    return render(request, 'detail-manager/details-by-date.html', context)
 
 
 @verify_position(['Detail Manager', 'Adviser'])
@@ -439,7 +439,7 @@ def details_on_date(request, date):
         'sunday_group_details': sunday_group_details,
     }
 
-    return render(request, 'detail-manager-details-on-date.html', context)
+    return render(request, 'detail-manager/details-on-date.html', context)
 
 
 @verify_position(['Detail Manager', 'Adviser'])
@@ -454,10 +454,10 @@ def detail_fine_helper(request, brother):
             'does_house_details': False,
             'who': str(brother),
         }
-        return render(request, 'list-details.html', context)
+        return render(request, 'house-management/list-details.html', context)
 
     fine = calc_fines(brother)
 
     context = {'fine': fine, 'brother': brother}
 
-    return render(request, 'detail-fines.html', context)
+    return render(request, 'house-management/detail-fines.html', context)

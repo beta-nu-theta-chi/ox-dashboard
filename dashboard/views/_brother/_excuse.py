@@ -34,7 +34,7 @@ class ExcuseDelete(DashboardDeleteView):
         return super(ExcuseDelete, self).get(request, *args, **kwargs)
 
     model = Excuse
-    template_name = 'generic_forms/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
     success_url = reverse_lazy('dashboard:brother')
 
 
@@ -48,6 +48,6 @@ class ExcuseEdit(DashboardUpdateView):
         return super(ExcuseEdit, self).get(request, *args, **kwargs)
 
     model = Excuse
-    template_name = 'generic_forms/excuse_form.html'
+    template_name = 'generic-forms/excuse-form.html'
     success_url = reverse_lazy('dashboard:brother')
     fields = ['description']

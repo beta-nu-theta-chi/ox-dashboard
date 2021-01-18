@@ -58,7 +58,7 @@ def classes(request, department=None, number=None, brother=None):
         'view': view,
     }
 
-    return render(request, "classes.html", context)
+    return render(request, "general/classes.html", context)
 
 
 def classes_add(request):
@@ -92,5 +92,5 @@ class ClassesDelete(DashboardDeleteView):
         return super(ClassesDelete, self).get(request, *args, **kwargs)
 
     model = Classes
-    template_name = 'generic_forms/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
     success_url = reverse_lazy('dashboard:classes')

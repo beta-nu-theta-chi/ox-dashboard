@@ -4,12 +4,13 @@ from django.urls import reverse, reverse_lazy
 
 from dashboard.forms import (
     EditBrotherAttendanceForm,
-    PhilanthropyEventForm,
+    EventForm,
 )
 from dashboard.models import (
     Brother,
     PhilanthropyEvent,
     Semester,
+    Position,
 )
 from dashboard.utils import (
     attendance_list,
@@ -21,7 +22,8 @@ from dashboard.utils import (
     update_eligible_brothers,
     verify_position,
     save_event,
-    get_human_readable_model_name
+    get_human_readable_model_name,
+    get_form_from_position,
 )
 
 from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
@@ -35,6 +37,7 @@ def philanthropy_c(request):
 
     context.update({
         'position': 'Philanthropy Chair',
+        'position_slug': 'philanthropy-chair',
         'events': events,
     })
 
@@ -72,44 +75,22 @@ def philanthropy_c_event(request, event_id):
     return render(request, 'events/philanthropy-event.html', context)
 
 
-@verify_position(['Philanthropy Chair', 'Adviser'])
-def philanthropy_c_event_add(request):
+#@verify_position(['Philanthropy Chair', 'Adviser'])
+def event_add(request, position_slug):
     """ Renders the philanthropy chair way of adding PhilanthropyEvent """
-    form = PhilanthropyEventForm(request.POST or None, initial={'name': 'Philanthropy Event'})
+    position = Position.PositionChoices(position_slug).label
+    form = get_form_from_position(position, request)
 
     if request.method == 'POST':
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            semester, _ = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
-                   year=instance.date.year)
             eligible_attendees = Brother.objects.exclude(brother_status='2').order_by('last_name')
-            save_event(instance, eligible_attendees)
-            return HttpResponseRedirect(reverse('dashboard:philanthropy_c'))
+            slug = save_event(instance, eligible_attendees)
+            return HttpResponseRedirect('/' + position_slug)
 
     context = {
-        'position': 'Philanthropy Chair',
+        'position': position,
         'form': form,
     }
     return render(request, 'event-add.html', context)
-
-
-class PhilanthropyEventDelete(DashboardDeleteView):
-    @verify_position(['Philanthropy Chair', 'Adviser'])
-    def get(self, request, *args, **kwargs):
-        return super(PhilanthropyEventDelete, self).get(request, *args, **kwargs)
-
-    model = PhilanthropyEvent
-    template_name = 'generic_forms/base_confirm_delete.html'
-    success_url = reverse_lazy('dashboard:philanthropy_c')
-
-
-class PhilanthropyEventEdit(DashboardUpdateView):
-    @verify_position(['Philanthropy Chair', 'Adviser'])
-    def get(self, request, *args, **kwargs):
-        return super(PhilanthropyEventEdit, self).get(request, *args, **kwargs)
-
-    model = PhilanthropyEvent
-    template_name = 'generic_forms/base_form.html'
-    success_url = reverse_lazy('dashboard:philanthropy_c')
-    form_class = PhilanthropyEventForm

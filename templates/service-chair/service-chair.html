@@ -1,0 +1,77 @@
+{% extends "event-chair-base.html" %}
+
+{% block dropdown %}
+    {% include "service-chair/service-chair-base.html" %}
+{% endblock %}
+
+{% block content %}
+    <!-- Main component for a primary marketing message or call to action -->
+    <div class="jumbotron">
+        <h1>{{ position }}</h1>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Service Events</div>
+        <div class="panel-body">
+            <table class="table table-condensed">
+                <thead style="font-weight:bold;">
+                <tr>
+                    <td>Event:</td>
+                    <td>Date:</td>
+                    <td>Edit?</td>
+                    <td>Delete?</td>
+                </tr>
+                </thead>
+                <tbody>
+                {% for event in events %}
+                    <tr>
+                        <td><a href={% url 'dashboard:service_c_event' event.id %}>{{ event.name }}</a></td>
+                        <td>{{ event.date }}</td>
+                        <td><a class="btn btn-default"
+                               href={% url 'dashboard:event_edit' event.id %}>+</a></td>
+                      <td><a class="btn btn-danger"
+                               href={% url 'dashboard:event_delete' event.id %}>X</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <a class="btn btn-success" href={% url 'dashboard:event_add' position_slug %} role="button">Add an event</a>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Pending Service Hours</div>
+        <div class="panel-body">
+            Approved Hours: {{ hours_approved }}<br>
+            Pending Hours: {{ hours_pending }}<br><br>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="panel panel-warning">
+                        <div class="panel-heading">Pending Submissions</div>
+                        <div class="panel-body">
+                            {% for submission in submissions_pending %}
+                                <a href={% url 'dashboard:service_c_submission_response' submission.id %}>
+                                    {{ submission.brother.first_name }} {{ submission.brother.last_name }}
+                                    - {{ submission.name }} - Hours: {{ submission.hours }}
+                                </a>
+                                <br>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Submitted Submissions</div>
+                        <div class="panel-body">
+                            {% for submission in submissions_submitted %}
+                                <a href={% url 'dashboard:service_c_submission_response' submission.id %}>
+                                    {{ submission.brother.first_name }} {{ submission.brother.last_name }}
+                                    - {{ submission.name }} - Hours: {{ submission.hours }}
+                                </a>
+                                <br>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

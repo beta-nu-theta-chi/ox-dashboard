@@ -18,4 +18,4 @@ def emergency_contact_list(request):
     context = {
         'brothers': brothers,
     }
-    return render(request, 'emergency-contact-list.html', context)
+    return render(request, 'general/emergency-contact-list.html', context)

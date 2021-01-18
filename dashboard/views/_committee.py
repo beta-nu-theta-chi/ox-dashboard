@@ -7,13 +7,13 @@ import datetime
 
 from dashboard.forms import (
     BrotherAttendanceForm,
-    CommitteeMeetingForm,
+    EventForm,
     EditBrotherAttendanceForm,
 )
 from dashboard.models import (
     Committee,
     CommitteeMeetingEvent,
-    Position
+    Position,
 )
 from dashboard.utils import (
     create_recurring_meetings,
@@ -36,7 +36,7 @@ class CommitteeDelete(DashboardDeleteView):
         return reverse('dashboard:committee_list')
 
     model = Committee
-    template_name = 'generic_forms/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
 
 
 class CommitteeEdit(DashboardUpdateView):
@@ -60,7 +60,7 @@ class CommitteeEdit(DashboardUpdateView):
         return super().form_valid(form)
 
     model = Committee
-    template_name = 'generic_forms/base_form.html'
+    template_name = 'generic-forms/base-form.html'
     fields = ['meeting_day', 'meeting_time', 'meeting_interval']
 
 
@@ -136,7 +136,7 @@ class CommitteeEventDelete(DashboardDeleteView):
         return self.request.GET.get('next')
 
     model = CommitteeMeetingEvent
-    template_name = 'generic_forms/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
 
 
 class CommitteeEventEdit(DashboardUpdateView):
@@ -145,8 +145,8 @@ class CommitteeEventEdit(DashboardUpdateView):
         return super(CommitteeEventEdit, self).get(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse('dashboard:committee_event', args=[int(self.request.GET.get('id'))])
+        return reverse('dashboard:committee_event', args=[self.object.id])
 
     model = CommitteeMeetingEvent
-    template_name = 'generic_forms/base_form.html'
-    form_class = CommitteeMeetingForm
+    template_name = 'generic-forms/base-form.html'
+    form_class = EventForm

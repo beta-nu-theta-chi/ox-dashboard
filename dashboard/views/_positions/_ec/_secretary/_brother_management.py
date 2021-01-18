@@ -17,7 +17,7 @@ def secretary_brother_list(request):
         'position': 'Secretary',
         'brothers': brothers
     }
-    return render(request, "secretary-brother-list.html", context)
+    return render(request, "secretary/brother-list.html", context)
 
 
 @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
@@ -62,7 +62,7 @@ class SecretaryBrotherEdit(DashboardUpdateView):
         return super(SecretaryBrotherEdit, self).get(request, *args, **kwargs)
 
     model = Brother
-    template_name = 'generic_forms/base_form.html'
+    template_name = 'generic-forms/base-form.html'
     success_url = reverse_lazy('dashboard:secretary_brother_list')
     form_class = BrotherEditForm
 
@@ -73,5 +73,5 @@ class SecretaryBrotherDelete(DashboardDeleteView):
         return super(SecretaryBrotherDelete, self).get(request, *args, **kwargs)
 
     model = Brother
-    template_name = 'generic_forms/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
     success_url = reverse_lazy('dashboard:secretary')

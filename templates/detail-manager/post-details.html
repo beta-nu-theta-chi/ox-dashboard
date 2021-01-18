@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block dropdown %}
+    {% include "detail-manager/detail-manager-base.html" %}
+{% endblock %}
+
+{% block content %}
+    <!-- Main component for a primary marketing message or call to action -->
+    <div class="jumbotron">
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Post {{ date }} details for a date</div>
+        {% include "default-form.html" %}
+    </div>
+{% endblock %}

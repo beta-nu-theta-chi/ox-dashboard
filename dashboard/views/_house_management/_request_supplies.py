@@ -17,4 +17,4 @@ def supplies_request(request):
         'form': form,
         'button': 'Request',
     }
-    return render(request, 'request-supplies.html', context)
+    return render(request, 'house-management/request-supplies.html', context)

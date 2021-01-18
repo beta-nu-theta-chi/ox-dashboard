@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block dropdown %}
+{% endblock %}
+
+{% load custom_tag %}
+
+{% block content %}
+    <div class="jumbotron">
+        <h1>Edit {% block title %}{{ next }}{{ form.instance.title }} {{ model }}{% endblock %} </h1>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Edit</div>
+        <div class="panel-body">
+            {% if form.is_multipart %}
+                <form method="post" enctype="multipart/form-data">
+            {% else %}
+                <form method="post">
+            {% endif %}
+                {{ form.non_field.errors }}
+                {% csrf_token %}
+                <div class="modeladd">
+                    <div style="grid-column: 1/7;">{% block model_info %}{% endblock %}</div>
+                    {% for field in form %}
+                        {% if not forloop.first %}
+                            <div class="grayline"></div>
+                        {% endif %}
+                        <div class="modellabel">{{ field | append_ast_if_req }}</div>
+                        <div>{{ field }}</div>
+                        <div style="grid-column: 6/7;">{{ field.errors }}</div>
+                    {% endfor %}
+                    <input class="btn btn-success" type="submit" value="Update"/>
+                    {% block goback %}{% endblock %}
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+

@@ -24,7 +24,7 @@ def brother_service_submission(request, submission_id):
         'submission': submission,
     }
 
-    return render(request, 'service-submission.html', context)
+    return render(request, 'service-chair/service-submission.html', context)
 
 
 def brother_service_submission_add(request):
@@ -61,7 +61,7 @@ class ServiceSubmissionDelete(DashboardDeleteView):
             return HttpResponseRedirect(reverse('dashboard:home'))
         return super(ServiceSubmissionDelete, self).get(request, *args, **kwargs)
 
-    template_name = 'generic_forms/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
     model = ServiceSubmission
     success_url = reverse_lazy('dashboard:brother')
 
@@ -76,7 +76,7 @@ class ServiceSubmissionEdit(DashboardUpdateView):
         return super(ServiceSubmissionEdit, self).get(request, *args, **kwargs)
 
     model = ServiceSubmission
-    template_name = 'generic_forms/base_form.html'
+    template_name = 'generic-forms/base-form.html'
     success_url = reverse_lazy('dashboard:brother')
     form_class = ServiceSubmissionForm
 

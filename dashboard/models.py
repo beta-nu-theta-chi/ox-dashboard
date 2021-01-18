@@ -143,10 +143,20 @@ class Brother(models.Model):
 
     # returns the brother's attendance fraction for the associated event
     def get_attendance(self, event_type):
+        month = datetime.datetime.now().month
+        year = datetime.datetime.now().year
+        if month <= 5:
+            season = '0'
+        elif month <= 7:
+            season = '1'
+        else:
+            season = '2'
+        semester, _ = Semester.objects.get_or_create(season=season, year=year)
         return "%s / %s" % (
-        event_type.objects.filter(mandatory=True, attendees_brothers=self).count() + event_type.objects.filter(
-            mandatory=True, excuse__status=1).count(),
-        event_type.objects.filter(mandatory=True, eligible_attendees=self, date__lte=datetime.datetime.now()).count())
+            event_type.objects.filter(semester=semester, mandatory=True, attendees_brothers=self).count() + event_type.objects.filter(
+                semester=semester, mandatory=True, excuse__status=1).count(),
+            event_type.objects.filter(semester=semester, mandatory=True, eligible_attendees=self, date__lt=datetime.datetime.now()).count()
+        )
 
     def get_chapter_attendance(self):
         return self.get_attendance(ChapterEvent)
@@ -213,6 +223,9 @@ class Classes(models.Model):
     def ordered_brother_set(self):
         return self.brothers.order_by('last_name', 'first_name')
 
+    class Meta:
+        verbose_name_plural = "Classes"
+
     def __str__(self):
         return "%s" % self.department + " " + str(self.number)
 
@@ -254,39 +267,39 @@ def query_positions_with_committee():
 
 class Position(models.Model):
     class PositionChoices(models.TextChoices):
-        PRESIDENT = 'President'
-        VICE_PRESIDENT = 'Vice President'
-        VICE_PRESIDENT_OF_HEALTH_AND_SAFETY = 'Vice President of Health and Safety', _('Vice President of Health and Safety')
-        SECRETARY = 'Secretary'
-        TREASURER = 'Treasurer'
-        MARSHAL = 'Marshal'
-        RECRUITMENT_CHAIR = 'Recruitment Chair'
-        SCHOLARSHIP_CHAIR = 'Scholarship Chair'
-        DETAIL_MANAGER = 'Detail Manager'
-        PHILANTHROPY_CHAIR = 'Philanthropy Chair'
-        PUBLIC_RELATIONS_CHAIR = 'Public Relations Chair'
-        SERVICE_CHAIR = 'Service Chair'
-        ALUMNI_RELATIONS_CHAIR = 'Alumni Relations Chair'
-        MEMBERSHIP_DEVELOPMENT_CHAIR = 'Membership Development Chair'
-        SOCIAL_CHAIR = 'Social Chair'
-        COMMUNITY_STANDARDS_CHAIR = 'Community Standards Chair'
-        OX_ROAST_CHAIR = 'OX Roast Chair', _('OX Roast Chair')
-        DAMAGE_CHAIR = 'Damage Chair'
-        GREEK_GAMES_CHAIR = 'Greek Games Chair'
-        HISTORIAN = 'Historian'
-        FIRST_GUARD = 'First Guard'
-        SECOND_GUARD = 'Second Guard'
-        INTERNAL_CHANGE_CHAIR = 'Internal Change Chair'
-        STANDARDS_BOARD_JUSTICE = 'Standards Board Justice'
-        EXECUTIVE_COUNCIL_MEMBER_AT_LARGE = 'Executive Council Member At Large'
-        HOUSE_MANAGER = 'House Manager'
-        RISK_MANAGER = 'Risk Manager'
-        IFC_REP = 'IFC Rep', _('IFC Rep')
-        AWARDS_CHAIR = 'Awards Chair'
-        FOOD_STEWARD = 'Food Steward'
-        ATHLETICS_CHAIR = 'Athletics Chair'
-        DASHBOARD_CHAIR = 'Dashboard Chair'
-        ADVISER = 'Adviser'
+        PRESIDENT = 'president'
+        VICE_PRESIDENT = 'vice-president'
+        VICE_PRESIDENT_OF_HEALTH_AND_SAFETY = 'vphs', _('Vice President of Health and Safety')
+        SECRETARY = 'secretary'
+        TREASURER = 'treasurer'
+        MARSHAL = 'marshal'
+        RECRUITMENT_CHAIR = 'recruitment-chair'
+        SCHOLARSHIP_CHAIR = 'scholarship-chair'
+        DETAIL_MANAGER = 'detail-manager'
+        PHILANTHROPY_CHAIR = 'philanthropy-chair'
+        PUBLIC_RELATIONS_CHAIR = 'public-relations-chair'
+        SERVICE_CHAIR = 'service-chair'
+        ALUMNI_RELATIONS_CHAIR = 'alumni-relations-chair'
+        MEMBERSHIP_DEVELOPMENT_CHAIR = 'membership-development-chair'
+        SOCIAL_CHAIR = 'social-chair'
+        COMMUNITY_STANDARDS_CHAIR = 'community-standards-chair'
+        OX_ROAST_CHAIR = 'ox-roast-chair', _('OX Roast Chair')
+        DAMAGE_CHAIR = 'damage-chair'
+        GREEK_GAMES_CHAIR = 'greek-games-chair'
+        HISTORIAN = 'historian'
+        FIRST_GUARD = 'first-guard'
+        SECOND_GUARD = 'second-guard'
+        INTERNAL_CHANGE_CHAIR = 'internal-change-chair'
+        STANDARDS_BOARD_JUSTICE = 'standards-board-justice'
+        EXECUTIVE_COUNCIL_MEMBER_AT_LARGE = 'executive-council-member-at-large'
+        HOUSE_MANAGER = 'house-manager'
+        RISK_MANAGER = 'risk-manager'
+        IFC_REP = 'ifc-rep', _('IFC Rep')
+        AWARDS_CHAIR = 'awards-chair'
+        FOOD_STEWARD = 'food-steward'
+        ATHLETICS_CHAIR = 'athletics-chair'
+        DASHBOARD_CHAIR = 'dashboard-chair'
+        ADVISER = 'adviser'
 
     title = models.CharField(max_length=45, choices=PositionChoices.choices, unique=True, blank=False)
 
@@ -441,7 +454,6 @@ class TimeChoices(datetime.time, models.Choices):
 
 class Event(models.Model):
 
-
     name = models.CharField(max_length=200, default="Event")
     date = models.DateField(default=django.utils.timezone.now)
     all_day = models.BooleanField(default=False)
@@ -455,12 +467,18 @@ class Event(models.Model):
     description = models.TextField(blank=True, null=True)
     minutes = models.URLField(blank=True, null=True)
     mandatory = models.BooleanField(default=True)
+    slug = models.SlugField(blank=True)
 
 
 class ChapterEvent(Event):
 
     def __str__(self):
         return "Chapter Event - " + str(self.date)
+
+    def __init__(self, *args, **kwargs):
+        if 'slug' not in kwargs:
+            kwargs['slug'] = 'secretary'
+        super(ChapterEvent, self).__init__(*args, **kwargs)
 
 
 class PhilanthropyEvent(Event):
@@ -471,6 +489,13 @@ class PhilanthropyEvent(Event):
     def __str__(self):
         return "Philanthropy Event - " + str(self.date)
 
+    def __init__(self, *args, **kwargs):
+        if 'slug' not in kwargs:
+            kwargs['slug'] = 'philanthropy-chair'
+        if 'name' not in kwargs:
+            kwargs['name'] = 'Philanthropy Event'
+        super(PhilanthropyEvent, self).__init__(*args, **kwargs)
+
 
 class ServiceEvent(Event):
     rsvp_brothers = models.ManyToManyField(
@@ -479,6 +504,11 @@ class ServiceEvent(Event):
 
     def __str__(self):
         return "Service Event - " + str(self.date)
+
+    def __init__(self, *args, **kwargs):
+        if 'slug' not in kwargs:
+            kwargs['slug'] = 'service-chair'
+        super(ServiceEvent, self).__init__(*args, **kwargs)
 
 
 class RecruitmentEvent(Event):
@@ -490,15 +520,30 @@ class RecruitmentEvent(Event):
     def __str__(self):
         return "Recruitment Event - " + str(self.date)
 
+    def __init__(self, *args, **kwargs):
+        if 'slug' not in kwargs:
+            kwargs['slug'] = 'recruitment-chair'
+        super(RecruitmentEvent, self).__init__(*args, **kwargs)
+
 
 class HealthAndSafetyEvent(Event):
     def __str__(self):
         return "Health and Safety Event - " + str(self.date)
 
+    def __init__(self, *args, **kwargs):
+        if 'slug' not in kwargs:
+            kwargs['slug'] = 'vphs'
+        super(HealthAndSafetyEvent, self).__init__(*args, **kwargs)
+
 
 class ScholarshipEvent(Event):
     def __str__(self):
         return "Scholarship Event - " + str(self.date)
+
+    def __init__(self, *args, **kwargs):
+        if 'slug' not in kwargs:
+            kwargs['slug'] = 'scholarship-chair'
+        super(ScholarshipEvent, self).__init__(*args, **kwargs)
 
 
 def get_standing_committees(brother):

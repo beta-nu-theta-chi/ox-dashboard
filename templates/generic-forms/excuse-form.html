@@ -1,0 +1,16 @@
+{% extends "generic-forms/base-form.html" %}
+
+{% block model_info %}
+    <div class="modellabel">Event:</div>
+    <div>{{ form.instance.event.name }}</div>
+    <div class="grayline"></div>
+    <div class="modellabel">Date of event:</div>
+    <div>{{ form.instance.event.date }}</div>
+    <div class="grayline"></div>
+    <div class="modellabel">Date Submitted:</div>
+    <div>{{ form.instance.date_submitted }}</div>
+    <div class="grayline"></div>
+    <div class="modellabel">Start Time:</div>
+    <div>{{ form.instance.event.start_time }}</div>
+    <div class="grayline"></div>
+{% endblock %}

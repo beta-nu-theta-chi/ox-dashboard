@@ -2,7 +2,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 
-from dashboard.forms import ChapterEventForm, EditBrotherAttendanceForm
+from dashboard.forms import ChapterEventForm, EventForm, EditBrotherAttendanceForm
 from dashboard.models import ChapterEvent, Event, Semester, Brother
 from dashboard.utils import (
     attendance_list,
@@ -59,10 +59,11 @@ def secretary_event_view(request, event_id):
     return render(request, "events/base-event.html", context)
 
 
-@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
-def secretary_event_add(request):
-    """ Renders the Secretary way of adding ChapterEvents """
-    form = ChapterEventForm(request.POST or None, initial={'name': 'Chapter Event'})
+@verify_position(['Philanthropy Chair', 'Service Chair', 'Secretary', 'Vice President of Health and Safety', 'President', 'Adviser'])
+def event_add(request, position_slug):
+    """ Renders the philanthropy chair way of adding PhilanthropyEvent """
+    position = Position.PositionChoices(position_slug).label
+    form = get_form_from_position(position, request)
 
     if request.method == 'POST':
         if form.is_valid():
@@ -70,31 +71,35 @@ def secretary_event_add(request):
             instance = form.save(commit=False)
             eligible_attendees = Brother.objects.exclude(brother_status='2').order_by('last_name')
             save_event(instance, eligible_attendees)
-            return HttpResponseRedirect(reverse('dashboard:secretary'))
+            return HttpResponseRedirect('/' + position_slug)
 
     context = {
-        'position': 'Secretary',
+        'position': position,
         'form': form,
     }
-    return render(request, "event-add.html", context)
+    return render(request, 'event-add.html', context)
 
 
-class ChapterEventEdit(DashboardUpdateView):
-    @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+class EventEdit(DashboardUpdateView):
+    @verify_position(['Philanthropy Chair', 'Service Chair', 'Secretary', 'Vice President of Health and Safety', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
-        return super(ChapterEventEdit, self).get(request, *args, **kwargs)
+        return super(EventEdit, self).get(request, *args, **kwargs)
 
-    model = ChapterEvent
-    template_name = 'generic_forms/base_form.html'
-    success_url = reverse_lazy('dashboard:secretary')
-    form_class = ChapterEventForm
+    def get_success_url(self, **kwargs):
+        return '/' + self.object.slug
+
+    model = Event
+    template_name = 'generic-forms/base-form.html'
+    form_class = EventForm
 
 
-class ChapterEventDelete(DashboardDeleteView):
-    @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+class EventDelete(DashboardDeleteView):
+    @verify_position(['Philanthropy Chair', 'Service Chair', 'Secretary', 'Vice President of Health and Safety', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
-        return super(ChapterEventDelete, self).get(request, *args, **kwargs)
+        return super(EventDelete, self).get(request, *args, **kwargs)
 
-    model = ChapterEvent
-    template_name = 'generic_forms/base_confirm_delete.html'
-    success_url = reverse_lazy('dashboard:secretary')
+    def get_success_url(self, **kwargs):
+        return '/' + self.object.slug
+
+    model = Event
+    template_name = 'generic-forms/base-confirm-delete.html'

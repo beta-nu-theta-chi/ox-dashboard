@@ -39,7 +39,7 @@ class BrotherForm(forms.ModelForm):
     class Meta:
         model = Brother
         fields = [
-            'first_name', 'last_name', 'roster_number', 'semester_joined', 'semester_graduating',
+            'first_name', 'last_name', 'pronouns', 'roster_number', 'semester_joined', 'semester_graduating',
             'school_status', 'brother_status', 'case_ID', 'major', 'minor',
             'birthday', 'hometown', 't_shirt_size', 'phone_number',
             'room_number', 'address', 'emergency_contact',
@@ -70,13 +70,6 @@ class BrotherEditForm(forms.ModelForm):
         widgets = {
             'birthday': SelectDateWidget(years=YEAR_RANGE),
         }
-
-    def clean(self):
-        password = self.cleaned_data.get('password', None)
-        password2 = self.cleaned_data.get('password2', None)
-        if password != password2:
-            self._errors['password2'] = self.error_class(['Please make sure your passwords match'])
-        return self.cleaned_data
 
 
 class ClassTakenForm(forms.ModelForm):
@@ -258,25 +251,17 @@ class ServiceSubmissionForm(forms.ModelForm):
             'date': SelectDateWidget(),
         }
 
+    def clean(self):
+        hours = self.cleaned_data.get('hours', None)
+        if hours == 0:
+            self._errors['hours'] = self.error_class(['Cannot submit 0 hours of service'])
+        return self.cleaned_data
+
 
 class ServiceSubmissionResponseForm(forms.ModelForm):
     class Meta:
         model = ServiceSubmission
         fields = ['status']
-
-
-class CandidateEditForm(forms.ModelForm):
-    class Meta:
-        model = Brother
-        fields = ['first_name', 'last_name', 'roster_number', 'semester_joined',
-                  'school_status', 'brother_status', 'major', 'minor', 't_shirt_size',
-                  'case_ID', 'birthday', 'hometown', 'phone_number',
-                  'emergency_contact_phone_number', 'emergency_contact', 'room_number',
-                  'address'
-        ]
-        widgets = {
-            'birthday': SelectDateWidget(years=YEAR_RANGE),
-        }
 
 
 class SuppliesForm(forms.ModelForm):
@@ -297,7 +282,8 @@ class MeetABrotherEditForm(forms.Form):
         exists = kwargs.pop('mab_exists', "")
         super(MeetABrotherEditForm, self).__init__(*args, **kwargs)
 
-        #sets the label for each form as the brother the form relates to and sets the initial for the checkbox to whether or not the meet a brother exists
+        # sets the label for each form as the brother the form relates to and sets the initial for the checkbox
+        # to whether or not the meet a brother exists
         if brother:
             self.fields['update'].label = brother.first_name + ' ' + brother.last_name
             self.fields['update'].initial = exists

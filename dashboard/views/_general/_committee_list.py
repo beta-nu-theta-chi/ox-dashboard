@@ -33,4 +33,4 @@ def committee_list(request):
         'view_type': view_type
     }
 
-    return render(request, 'committee-list.html', context)
+    return render(request, 'general/committee-list.html', context)

@@ -48,7 +48,7 @@ def scholarship_c(request):
         'position': 'Scholarship Chair',
         'brother_plans': brother_plans,
     })
-    return render(request, "scholarship-chair.html", context)
+    return render(request, "scholarship-chair/scholarship-chair.html", context)
 
 
 @verify_position(['Scholarship Chair', 'President', 'Adviser'])
@@ -61,7 +61,7 @@ def scholarship_c_plan(request, plan_id):
         'plan': plan,
     }
 
-    return render(request, 'scholarship-report.html', context)
+    return render(request, 'scholarship-chair/scholarship-report.html', context)
 
 
 @verify_position(['Scholarship Chair', 'President', 'Adviser'])
@@ -91,7 +91,7 @@ def scholarship_c_gpa(request):
         'form_plans': form_plans,
     }
 
-    return render(request, 'scholarship-gpa.html', context)
+    return render(request, 'scholarship-chair/scholarship-gpa.html', context)
 
 
 class ScholarshipReportEdit(DashboardUpdateView):
@@ -100,6 +100,6 @@ class ScholarshipReportEdit(DashboardUpdateView):
         return super(ScholarshipReportEdit, self).get(request, *args, **kwargs)
 
     model = ScholarshipReport
-    template_name = 'generic_forms/base_form.html'
+    template_name = 'generic-forms/base-form.html'
     success_url = reverse_lazy('dashboard:scholarship_c')
     fields = ['cumulative_gpa', 'past_semester_gpa', 'scholarship_plan', 'active']

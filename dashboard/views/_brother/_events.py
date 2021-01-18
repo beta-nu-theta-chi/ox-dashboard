@@ -99,7 +99,7 @@ def brother_service_event(request, event_id, view):
 
 def brother_philanthropy_event(request, event_id, view):
     """ Renders the brother page for service event with a excuse form """
-    if not request.user.is_authenticated:  # brother auth check
+    if view is not 'general' and not request.user.is_authenticated:  # brother auth check
         messages.error(request, "Brother not logged in before viewing brother chapter events")
         return HttpResponseRedirect(reverse('dashboard:home'))
 

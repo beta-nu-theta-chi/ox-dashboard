@@ -7,7 +7,7 @@ import random
 
 from dashboard.forms import (
     BrotherForm,
-    CandidateEditForm,
+    BrotherEditForm,
     MABEditCandidateForm,
     MeetABrotherEditForm,
     MeetABrotherForm,
@@ -114,7 +114,7 @@ def marshal(request):
         'candidate_attendance': candidate_attendance,
         'mab_form_list': mab_form_list,
     }
-    return render(request, 'marshal.html', context)
+    return render(request, 'marshal/marshal.html', context)
 
 
 def marshal_mab_edit_candidate(request):
@@ -130,7 +130,7 @@ def marshal_mab_edit_candidate(request):
         'form': form,
     }
 
-    return render(request, 'marshal-mab-edit-candidate.html', context)
+    return render(request, 'marshal/mab-edit-candidate.html', context)
 
 
 def marshal_mab_edit(request):
@@ -140,7 +140,6 @@ def marshal_mab_edit(request):
     mab_form_list = []
 
     brothers = Brother.objects.filter(brother_status='1')
-
 
     arbitrary_date_before_time = datetime.datetime(1000, 1, 1)
 
@@ -178,7 +177,7 @@ def marshal_mab_edit(request):
         'mab_form_list': mab_form_list,
     }
 
-    return render(request, 'marshal-mab-edit.html', context)
+    return render(request, 'marshal/mab-edit.html', context)
 
 
 @verify_position(['Marshal', 'Vice President', 'President', 'Adviser'])
@@ -223,9 +222,9 @@ class CandidateEdit(DashboardUpdateView):
         return super(CandidateEdit, self).get(request, *args, **kwargs)
 
     model = Brother
-    template_name = 'generic_forms/base_form.html'
+    template_name = 'generic-forms/base-form.html'
     success_url = reverse_lazy('dashboard:marshal')
-    form_class = CandidateEditForm
+    form_class = BrotherEditForm
 
 
 class CandidateDelete(DashboardDeleteView):
@@ -234,5 +233,5 @@ class CandidateDelete(DashboardDeleteView):
         return super(CandidateDelete, self).get(request, *args, **kwargs)
 
     model = Brother
-    template_name = 'generic_forms/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
     success_url = reverse_lazy('dashboard:marshal')

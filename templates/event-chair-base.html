@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- Main component for a primary marketing message or call to action -->
+    <div class="jumbotron">
+        <h1>{{ position }}</h1>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Events</div>
+        <div class="panel-body">
+            <table class="table table-condensed">
+                <thead style="font-weight:bold;">
+                <tr>
+                    <td>Event:</td>
+                    <td>Date:</td>
+                    <td>Edit?</td>
+                    <td>Delete?</td>
+                </tr>
+                </thead>
+                <tbody>
+                {% for event in events %}
+                    <tr>
+                        <td><a href={% block event_url %}{% url 'dashboard:home' %}{% endblock %}>{{ event.name }}</a></td>
+                        <td>{{ event.date }}</td>
+                        <td><a class="btn btn-default"
+                               href={% url 'dashboard:event_edit' event.id %}>+</a></td>
+                        <td><a class="btn btn-danger"
+                               href={% url 'dashboard:event_delete' event.id %}>X</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <a class="btn btn-success" href={% url 'dashboard:event_add' position_slug %} role="button">Add an event</a>
+        </div>
+    </div>
+
+{% block chair %}
+{% endblock %}
+
+{% endblock %}
+

@@ -32,6 +32,7 @@ from dashboard.utils import (
     update_eligible_brothers,
     verify_position,
     get_human_readable_model_name,
+    save_event,
 )
 
 from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
@@ -57,12 +58,13 @@ def recruitment_c(request):
 
     context.update({
         'position': 'Recruitment Chair',
+        'position_slug': 'recruitment-chair',
         'events': semester_events,
         'events_future': semester_events_next,
         'potential_new_members': potential_new_members,
         'excuses': excuses,
     })
-    return render(request, 'recruitment-chair.html', context)
+    return render(request, 'recruitment-chair/recruitment-chair.html', context)
 
 
 @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
@@ -93,30 +95,6 @@ def all_pnm_csv(request):
         writer.writerow(row)
 
     return response
-
-
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
-def recruitment_c_rush_attendance(request):
-    """ Renders Scholarship chair page with rush attendance """
-    brothers = Brother.objects.exclude(brother_status='2').order_by("last_name", "first_name")
-    events = RecruitmentEvent.objects.filter(semester=get_semester(), rush=True) \
-        .exclude(date__gt=datetime.date.today())
-    events_attended_list = []
-
-    for brother in brothers:
-        events_attended = 0
-        for event in events:
-            if event.attendees_brothers.filter(id=brother.id).exists():
-                events_attended += 1
-        events_attended_list.append(events_attended)
-
-    rush_attendance = zip(brothers, events_attended_list)
-
-    context = {
-        'rush_attendance': rush_attendance,
-    }
-
-    return render(request, 'recruitment-chair-rush-attendance.html', context)
 
 
 @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
@@ -161,7 +139,7 @@ class PnmDelete(DashboardDeleteView):
         return super(PnmDelete, self).get(request, *args, **kwargs)
 
     model = PotentialNewMember
-    template_name = 'generic_forms/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
     success_url = reverse_lazy('dashboard:recruitment_c')
 
 
@@ -171,7 +149,7 @@ class PnmEdit(DashboardUpdateView):
         return super(PnmEdit, self).get(request, *args, **kwargs)
 
     model = PotentialNewMember
-    template_name = 'generic_forms/base_form.html'
+    template_name = 'generic-forms/base-form.html'
     success_url = reverse_lazy('dashboard:recruitment_c')
     form_class = PotentialNewMemberForm
 
@@ -240,22 +218,45 @@ def recruitment_c_event_add(request):
     return render(request, "event-add.html", context)
 
 
-class RecruitmentEventDelete(DashboardDeleteView):
-    @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
-    def get(self, request, *args, **kwargs):
-        return super(RecruitmentEventDelete, self).get(request, *args, **kwargs)
-
-    model = RecruitmentEvent
-    template_name = 'generic_forms/base_confirm_delete.html'
-    success_url = reverse_lazy('dashboard:recruitment_c')
-
-
 class RecruitmentEventEdit(DashboardUpdateView):
     @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
     def get(self, request, *args, **kwargs):
         return super(RecruitmentEventEdit, self).get(request, *args, **kwargs)
 
+    def get_success_url(self, **kwargs):
+        return '/' + self.object.slug
+
     form_class = RecruitmentEventForm
-    template_name = 'generic_forms/base_form.html'
+    template_name = 'generic-forms/base-form.html'
     model = RecruitmentEvent
-    success_url = reverse_lazy('dashboard:recruitment_c')
+
+
+@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+def recruitment_c_attendance(request):
+    """ Renders the secretary view for chapter attendance """
+    brothers = Brother.objects.exclude(brother_status='2').order_by('last_name', 'first_name')
+    events = RecruitmentEvent.objects.filter(semester=get_semester(), mandatory=True, date__lt=datetime.date.today())
+    accepted_excuses = Excuse.objects.filter(event__semester=get_semester(), status='1', event__in=events)
+    brother_attendance = []
+
+    for brother in brothers:
+        events_eligible_list = events.filter(eligible_attendees=brother)
+        events_eligible = events_eligible_list.count()
+        events_attended = 0
+        events_excused = 0
+        events_unexcused = 0
+        for event in events_eligible_list:
+            if event.attendees_brothers.filter(id=brother.id).exists():
+                events_attended += 1
+            elif accepted_excuses.filter(brother=brother, event=event).exists():
+                events_excused += 1
+            else:
+                events_unexcused += 1
+        brother_attendance.append((brother, events_excused, events_unexcused, events_attended+events_excused, events_eligible))
+
+    context = {
+        'brother_attendance': brother_attendance,
+        'position': 'Recruitment Chair'
+    }
+
+    return render(request, 'attendance.html', context)

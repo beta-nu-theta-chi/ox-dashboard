@@ -9,4 +9,4 @@ def supplies_list(request):
 
     context = {'supplies': supplies}
 
-    return render(request, 'list-supplies.html', context)
+    return render(request, 'house-management/list-supplies.html', context)

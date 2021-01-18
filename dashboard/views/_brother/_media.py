@@ -37,7 +37,7 @@ class MediaAccountDelete(DashboardDeleteView):
         return super(MediaAccountDelete, self).get(request, *args, **kwargs)
 
     model = MediaAccount
-    template_name = 'generic_forms/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
     success_url = reverse_lazy('dashboard:brother')
 
 
