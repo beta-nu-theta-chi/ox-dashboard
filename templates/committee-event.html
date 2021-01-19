@@ -52,7 +52,8 @@
                         </tbody>
                     </table>
                     {% if type == 'chairman' %}
-                    <a class="btn btn-default" href={% url 'dashboard:committee_event_edit' event.id %}?id={{ event.id }} role="button">Edit event</a>
+                    <a class="btn btn-default" href={% url 'dashboard:committee_event_edit' event.id %} role="button">Edit Event</a>
+                    <a class="btn btn-danger" href={% url 'dashboard:event_delete' event.id %} role="button">Delete Event</a>
                     {% endif %}
                 </div>
                 <div class=" col-lg-2 "></div>

@@ -12,12 +12,12 @@ from dashboard.views._dashboard_generic_views import DashboardUpdateView, Dashbo
 
 def create_report(request):
     brother = request.user.brother
-    positions = brother.position_set.exclude(title__in=['Adviser'])
+    positions = brother.position_set.exclude(title__in=['adviser'])
 
     form = ReportForm(request.POST or None)
 
-    if Position.objects.get(title='Secretary') in positions:
-        form.fields["position"].queryset = Position.objects.exclude(title__in=['Adviser'])
+    if Position.objects.get(title='secretary') in positions:
+        form.fields["position"].queryset = Position.objects.exclude(title__in=['adviser'])
     else:
         form.fields["position"].queryset = positions
 
@@ -26,7 +26,7 @@ def create_report(request):
             instance = form.save(commit=False)
             instance.brother = brother
             instance.save()
-            if Position.objects.get(title='Secretary') in positions:
+            if Position.objects.get(title='secretary') in positions:
                 return HttpResponseRedirect(reverse('dashboard:secretary_agenda'))
             else:
                 return HttpResponseRedirect(reverse('dashboard:brother'))
@@ -67,7 +67,7 @@ class EditReport(DashboardUpdateView):
 
     def get_form(self):
         form = super().get_form()
-        form.fields["position"].queryset = Report.objects.get(pk=self.kwargs['pk']).brother.position_set.exclude(title__in=['Adviser'])
+        form.fields["position"].queryset = Report.objects.get(pk=self.kwargs['pk']).brother.position_set.exclude(title__in=['adviser'])
         return form
 
     model = Report

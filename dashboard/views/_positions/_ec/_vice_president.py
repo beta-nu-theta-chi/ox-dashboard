@@ -3,8 +3,6 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from django.utils.html import conditional_escape
-
 import datetime
 
 from dashboard.models import (
@@ -22,7 +20,8 @@ from dashboard.utils import (
     verify_position
 )
 
-@verify_position(['Vice President', 'President', 'Adviser'])
+
+@verify_position(['vice-president', 'president', 'adviser'])
 def vice_president(request):
     """ Renders the Vice President page and all relevant information, primarily committee related """
     committee_meetings = CommitteeMeetingEvent.objects.filter(semester=get_semester())\
@@ -38,7 +37,7 @@ def vice_president(request):
     return render(request, 'vice-president/vice-president.html', context)
 
 
-@verify_position(['Vice President', 'President', 'Adviser'])
+@verify_position(['vice-president', 'president', 'adviser'])
 def vice_president_committee_assignments(request):
     """Renders Committee assignment update page for the Vice President"""
     form_list = []
@@ -92,7 +91,8 @@ def vice_president_committee_assignments(request):
                         if committee in brother_committees:
                             # iterate through all of the committee meetings after now
                             for meeting in Committee.objects.get(committee=committee).meetings.filter(date__gt=datetime.datetime.now(), eligible_attendees=brother):
-                                # same as above but false instead of true is assigned to the brother
+                                # if the meeting hasn't been previously added to the committee_map, adds it
+                                # adds brother: false to the dictionary associated with this meeting
                                 if meeting not in meeting_map:
                                     meeting_map[meeting] = {brother: False}
                                 else:
@@ -104,6 +104,7 @@ def vice_president_committee_assignments(request):
                 remove_list = [brother_face for brother_face, boo in brother_map.items() if boo is False]
                 meeting.eligible_attendees.add(*add_list)
                 meeting.eligible_attendees.remove(*remove_list)
+                meeting.attendees_brothers.remove(*remove_list)
                 meeting.save()
             return HttpResponseRedirect(reverse('dashboard:committee_list'))
     context = {
@@ -112,13 +113,14 @@ def vice_president_committee_assignments(request):
 
     return render(request, 'committee-assignment.html', context)
 
-@verify_position(['Vice President', 'President', 'Adviser'])
+
+@verify_position(['vice-president', 'president', 'adviser'])
 @transaction.atomic
 def in_house(request):
     """Allows the VP to select who's living in the house"""
 
     form = InHouseForm(request.POST or None)
-    position = Position.objects.get(title='Vice President')
+    position = Position.objects.get(title='vice-president')
 
     if request.method == 'POST':
         if form.is_valid():

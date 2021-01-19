@@ -9,7 +9,7 @@ from dashboard.utils import verify_position
 from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
 
 
-@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+@verify_position(['secretary', 'vice-president', 'president', 'adviser'])
 def secretary_brother_list(request):
     """ Renders the Secretary way of viewing brothers """
     brothers = Brother.objects.exclude(brother_status='2')
@@ -20,7 +20,7 @@ def secretary_brother_list(request):
     return render(request, "secretary/brother-list.html", context)
 
 
-@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+@verify_position(['secretary', 'vice-president', 'president', 'adviser'])
 def secretary_brother_view(request, brother_id):
     """ Renders the Secretary way of viewing a brother """
     brother = Brother.objects.get(pk=brother_id)
@@ -31,7 +31,7 @@ def secretary_brother_view(request, brother_id):
     return render(request, "brother-view.html", context)
 
 
-@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+@verify_position(['secretary', 'vice-president', 'president', 'adviser'])
 def secretary_brother_add(request):
     """ Renders the Secretary way of viewing a brother """
     form = BrotherForm(request.POST or None)
@@ -57,7 +57,7 @@ def secretary_brother_add(request):
 
 
 class SecretaryBrotherEdit(DashboardUpdateView):
-    @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+    @verify_position(['secretary', 'vice-president', 'president', 'adviser'])
     def get(self, request, *args, **kwargs):
         return super(SecretaryBrotherEdit, self).get(request, *args, **kwargs)
 
@@ -68,7 +68,7 @@ class SecretaryBrotherEdit(DashboardUpdateView):
 
 
 class SecretaryBrotherDelete(DashboardDeleteView):
-    @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+    @verify_position(['secretary', 'vice-president', 'president', 'adviser'])
     def get(self, request, *args, **kwargs):
         return super(SecretaryBrotherDelete, self).get(request, *args, **kwargs)
 

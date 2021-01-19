@@ -8,23 +8,6 @@ from django.core.handlers.wsgi import WSGIRequest
 from .forms import BrotherAttendanceForm, ChapterEventForm, ServiceEventForm, HealthAndSafetyEventForm, PhilanthropyEventForm
 from .models import *
 
-import requests
-import re
-
-# EC Positions
-all_positions = [
-    'President', 'Vice President', 'Vice President of Health and Safety',
-    'Secretary', 'Treasurer', 'Marshal', 'Recruitment Chair',
-    'Scholarship Chair', 'Service Chair', 'Philanthropy Chair',
-    'Detail Manager', 'Alumni Relations Chair',
-    'Membership Development Chair', 'Social Chair', 'Public Relations Chair'
-]
-
-has_committee = [
-    'Vice President of Health and Safety', 'Recruitment Chair',
-    'Scholarship Chair', 'Philanthropy Chair', 'Alumni Relations Chair',
-    'Membership Development Chair', 'Social Chair', 'Public Relations Chair'
-]
 
 # Toggle dependant on whether you want position verification
 # if os.environ.get('DEBUG'):
@@ -92,7 +75,7 @@ def verify_position(positions):
     def verify_decorator(f):
         def error(request):
             e = "Access denied. Only %s may access this page" % ", ".join(
-                positions
+                [y for x, y in Position.PositionChoices.choices if x in positions]
             )
             messages.error(request, e)
             return HttpResponseRedirect(reverse('dashboard:home'))
@@ -129,6 +112,7 @@ def committee_meeting_panel(position_name):
     context = {
         'committee_meetings': committee_meetings,
         'position': position,
+        'position_slug': position_name, # a slug is just a label containing only letters, numbers, underscores, or hyphens
         'committee': committee,
     }
 
@@ -394,6 +378,8 @@ def create_committee_event(date, semester, meeting_time, committee_object):
                                   committee=committee_object, recurring=True)
     event.save()
     event.eligible_attendees.set(committee_object.members.order_by('last_name'))
+    event.name = event.committee.get_committee_display() + " Committee Meeting"
+    event.slug = event.committee.chair.title
     event.save()
 
 
@@ -543,11 +529,12 @@ def get_human_readable_model_name(object):
     return end_string
 
 
+# a dictionary holding the different position options and returning the corresponding edit form
 def get_form_from_position(position, request):
     form_dict = {
-        'Philanthropy Chair': PhilanthropyEventForm(request.POST or None, initial={'name': 'Philanthropy Event'}),
-        'Secretary': ChapterEventForm(request.POST or None, initial={'name': 'Chapter Event'}),
-        'Service Chair': ServiceEventForm(request.POST or None, initial={'name': 'Service Event'}),
-        'Vice President of Health and Safety': HealthAndSafetyEventForm(request.POST or None, initial={'name': 'Sacred Purpose Event'}),
+        'philanthropy-chair': PhilanthropyEventForm(request.POST or None, initial={'name': 'Philanthropy Event'}),
+        'secretary': ChapterEventForm(request.POST or None, initial={'name': 'Chapter Event'}),
+        'service-chair': ServiceEventForm(request.POST or None, initial={'name': 'Service Event'}),
+        'vphs': HealthAndSafetyEventForm(request.POST or None, initial={'name': 'Sacred Purpose Event'}),
     }
     return form_dict[position]

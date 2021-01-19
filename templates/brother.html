@@ -62,7 +62,7 @@
                                 {% for committee in standing_committees %}
                                     {{ committee.get_committee_display }}<br>
                                 {% empty %}
-                                Unassigned
+                                    Unassigned
                                 {% endfor %}
                             </td>
                         </tr>
@@ -72,7 +72,7 @@
                                 {% for committee in operational_committees %}
                                     {{ committee.get_committee_display }}<br>
                                 {% empty %}
-                                Unassigned
+                                    Unassigned
                                 {% endfor %}
                             </td>
                         </tr>
@@ -202,17 +202,17 @@
                 <div class="brotherevent">
                     {% if forloop.first %}
                         <div></div>
-                        <div> <b>{{ committee.get_committee_display }}:</b> </div>
+                        <div><b>{{ committee.get_committee_display }}:</b></div>
                         <div></div>
-                        <div> <b>Minutes:</b> </div>
+                        <div><b>Minutes:</b></div>
                         <div></div>
                     {% else %}
                         <br>
                         <div class="blackline"></div>
                         <div></div>
-                        <div> <br> <b>{{ committee.get_committee_display }}:</b> </div>
+                        <div><br><b>{{ committee.get_committee_display }}:</b></div>
                         <div></div>
-                        <div> <br> <b>Minutes:</b> </div>
+                        <div><br><b>Minutes:</b> </div>
                         <div></div>
                     {% endif %}
                     {% for meeting in meetings %}
@@ -246,17 +246,17 @@
                 <div class="brotherevent">
                     {% if forloop.first %}
                         <div></div>
-                        <div> <b>{{ committee.get_committee_display }}:</b> </div>
+                        <div><b>{{ committee.get_committee_display }}:</b></div>
                         <div></div>
-                        <div> <b>Minutes:</b> </div>
+                        <div><b>Minutes:</b> </div>
                         <div></div>
                     {% else %}
                         <br>
                         <div class="blackline"></div>
                         <div></div>
-                        <div> <br> <b>{{ committee.get_committee_display }}:</b> </div>
+                        <div><br><b>{{ committee.get_committee_display }}:</b></div>
                         <div></div>
-                        <div> <br> <b>Minutes:</b> </div>
+                        <div><br><b>Minutes:</b></div>
                         <div></div>
                     {% endif %}
                     {% for meeting in meetings %}
@@ -288,9 +288,9 @@
         <div class="panel-body">
             <div class="brotherevent">
                 <div></div>
-                <div> <b>Event:</b> </div>
-                <div> <b>Date:</b> </div>
-                <div> <b>Attendance:</b></div>
+                <div><b>Event:</b></div>
+                <div><b>Date:</b></div>
+                <div><b>Attendance:</b></div>
                 <div></div>
                 {% for event, attendance in chapter_attendance %}
                 <div class="brothergrayline"></div>
@@ -312,9 +312,9 @@
         <div class="panel-body">
             <div class="brotherevent">
                 <div></div>
-                <div> <b>Events This Semester:</b> </div>
-                <div> <b>Date:</b> </div>
-                <div> <b>Attendance:</b> </div>
+                <div><b>Events This Semester:</b></div>
+                <div><b>Date:</b></div>
+                <div><b>Attendance:</b></div>
                 <div></div>
                 {% for event, attendance in recruitment_attendance %}
                 <div class="brothergrayline"></div>
@@ -331,9 +331,9 @@
             <br>
             <div class="brotherevent">
                 <div></div>
-                <div> <b>Events Next Semester:</b> </div>
-                <div> <b>Date:</b> </div>
-                <div> <b>Rush:</b> </div>
+                <div><b>Events Next Semester:</b></div>
+                <div><b>Date:</b></div>
+                <div><b>Rush:</b></div>
                 <div></div>
                 {% for event in recruitment_events_next %}
                 <div class="brothergrayline"></div>
@@ -355,9 +355,9 @@
         <div class="panel-body">
                 <div class="brotherevent">
                     <div></div>
-                    <div> <b>Event:</b> </div>
-                    <div> <b>Date:</b> </div>
-                    <div></div>
+                    <div> b>Event:</b></div>
+                    <div><b>Date:</b></div>
+                    <div><b>Attendance:</b></div>
                     <div></div>
                     {% for event, attendance in hs_attendance %}
                     <div class="brothergrayline"></div>
@@ -379,9 +379,9 @@
         <div class="panel-body">
             <div class="brotherevent">
                 <div></div>
-                <div> <b>Event:</b> </div>
-                <div> <b>Date:</b> </div>
-                <div></div>
+                <div><b>Event:</b></div>
+                <div><b>Date:</b></div>
+                <div><b>Attendance:</b></div>
                 {% for event, attendance in philanthropy_attendance %}
                 <div class="brothergrayline"></div>
                 <div></div>
@@ -402,9 +402,9 @@
         <div class="panel-body">
             <div class="brotherevent">
                     <div></div>
-                    <div> <b>Event:</b> </div>
-                    <div> <b>Date:</b> </div>
-                    <div></div>
+                    <div><b>Event:</b></div>
+                    <div><b>Date:</b></div>
+                    <div><b>Attendance:</b></div>
                     <div></div>
                     {% for event, attendance in service_attendance %}
                     <div class="brothergrayline"></div>

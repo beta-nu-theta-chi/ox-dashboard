@@ -3,8 +3,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.db import transaction
-from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import render, redirect
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse
 
 import random
@@ -38,13 +38,13 @@ from dashboard.utils import (
 )
 
 
-@verify_position(['Detail Manager', 'Adviser'])
+@verify_position(['detail-manager', 'vice-president', 'president', 'adviser'])
 def detail_m(request):
     """ Renders the detail manager page"""
-    return render(request, 'detail-manager.html', {})
+    return render(request, 'detail-manager/detail-manager.html', {})
 
 
-@verify_position(['Detail Manager', 'Adviser'])
+@verify_position(['detail-manager', 'vice-president', 'president', 'adviser'])
 def supplies_finish(request):
     form = SuppliesFinishForm(request.POST or None)
 
@@ -61,12 +61,12 @@ def supplies_finish(request):
     return render(request, 'detail-manager/finish-supplies.html', context)
 
 
-@verify_position(['Detail Manager', 'Adviser'])
+@verify_position(['detail-manager', 'vice-president', 'president', 'adviser'])
 @transaction.atomic
 def house_detail_toggle(request):
     """Selects who does house details"""
     form = HouseDetailsSelectForm(request.POST or None)
-    position = Position.objects.get(title='Detail Manager')
+    position = Position.objects.get(title='detail-manager')
 
     if request.method == 'POST':
         if form.is_valid():
@@ -85,13 +85,13 @@ def house_detail_toggle(request):
     return render(request, 'detail-manager/house-detail-toggle.html', context)
 
 
-@verify_position(['Detail Manager', 'Adviser'])
+@verify_position(['detail-manager', 'vice-president', 'president', 'adviser'])
 @transaction.atomic
 def create_groups(request):
     """Create detail groups for a specific semester. Decides how many to create
     based on the group size and brothers living in the house"""
     form = CreateDetailGroups(request.POST or None)
-    position = Position.objects.get(title='Detail Manager')
+    position = Position.objects.get(title='detail-manager')
 
     if request.method == 'POST':
         if form.is_valid():
@@ -111,12 +111,12 @@ def create_groups(request):
     return render(request, 'detail-manager/create-groups.html', context)
 
 
-@verify_position(['Detail Manager', 'Adviser'])
+@verify_position(['detail-manager', 'vice-president', 'president', 'adviser'])
 @transaction.atomic
 def select_groups(request):
     """Select brothers in detail groups (for this semester)"""
     form = SelectDetailGroups(request.POST or None, semester=get_semester())
-    position = Position.objects.get(title='Detail Manager')
+    position = Position.objects.get(title='detail-manager')
 
     if request.method == 'POST':
         if form.is_valid():
@@ -132,7 +132,7 @@ def select_groups(request):
     return render(request, 'detail-manager/select-groups.html', context)
 
 
-@verify_position(['Detail Manager', 'Adviser'])
+@verify_position(['detail-manager', 'vice-president', 'president', 'adviser'])
 @transaction.atomic
 def delete_groups(request):
     """Delete detail groups.  Can select a semester to delete form"""
@@ -153,7 +153,7 @@ def delete_groups(request):
     return render(request, 'detail-manager/delete-groups.html', context)
 
 
-@verify_position(['Detail Manager', 'Adviser'])
+@verify_position(['detail-manager', 'vice-president', 'president', 'adviser'])
 @transaction.atomic
 def post_thursday(request):
     """Post Thursday Details, due on the date from the form"""
@@ -188,7 +188,7 @@ def post_thursday(request):
                 )
 
             det_manager_email = Position.objects.get(
-                title='Detail Manager'
+                title='detail-manager'
             ).brothers.first().user.email
             for (subject, message, to) in emails:
                 send_mail(subject, message, det_manager_email, to)
@@ -208,7 +208,7 @@ def finish_thursday_detail(request, detail_id):
     detail = ThursdayDetail.objects.get(pk=detail_id)
     if not verify_brother(detail.brother, request.user):
         if request.user.brother not in Position.objects.get(
-            title='Detail Manager'
+            title='detail-manager'
         ).brothers.all():
             messages.error(request, "That's not your detail!")
             return HttpResponseRedirect(reverse('dashboard:home'))
@@ -223,7 +223,7 @@ def finish_thursday_detail(request, detail_id):
     return render(request, 'finish-thursday-detail.html', context)
 
 
-@verify_position(['Detail Manager', 'Adviser'])
+@verify_position(['detail-manager', 'vice-president', 'president', 'adviser'])
 @transaction.atomic
 def post_sunday(request):
     """Post Sunday Details, due on the date from the form"""
@@ -268,7 +268,7 @@ def post_sunday(request):
                 )
 
             det_manager_email = Position.objects.get(
-                title='Detail Manager'
+                title='detail-manager'
             ).brothers.first().user.email
             for (subject, message, to) in emails:
                 send_mail(subject, message, det_manager_email, to)
@@ -286,7 +286,7 @@ def finish_sunday_detail(request, detail_id):
     groupdetail = SundayGroupDetail.objects.get(pk=detail_id)
     if request.user.brother not in groupdetail.group.brothers.all():
         if request.user.brother not in Position.objects.get(
-            title='Detail Manager'
+            title='detail-manager'
         ).brothers.all():
             messages.error(request, "That's not your detail!")
             return HttpResponseRedirect(reverse('dashboard:home'))
@@ -314,7 +314,7 @@ def finish_sunday_detail(request, detail_id):
     return render(request, 'finish-sunday-detail.html', context)
 
 
-@verify_position(['Detail Manager', 'Adviser'])
+@verify_position(['detail-manager', 'vice-president', 'president', 'adviser'])
 def current_details_brother(request, brother_id):
     brother = Brother.objects.get(pk=brother_id)
     return current_details_helper(request, brother)
@@ -353,7 +353,7 @@ def current_details_helper(request, brother):
     return render(request, 'house-management/list-details.html', context)
 
 
-@verify_position(['Detail Manager', 'Adviser'])
+@verify_position(['detail-manager', 'vice-president', 'president', 'adviser'])
 def all_details_brother(request, brother_id):
     brother = Brother.objects.get(pk=brother_id)
     return all_details_helper(request, brother)
@@ -383,7 +383,7 @@ def all_details_helper(request, brother):
     return render(request, 'house-management/all-details.html', context)
 
 
-@verify_position(['Detail Manager', 'Adviser'])
+@verify_position(['detail-manager', 'vice-president', 'president', 'adviser'])
 def all_users_details(request):
     brothers = Brother.objects.filter(brother_status='1')
     b = {e: (
@@ -396,7 +396,7 @@ def all_users_details(request):
     return render(request, 'detail-manager/all-users-details.html', context)
 
 
-@verify_position(['Detail Manager', 'Adviser'])
+@verify_position(['detail-manager', 'vice-president', 'president', 'adviser'])
 def detail_dates(request):
     semester_form = SelectSemester(request.GET or None)
     if semester_form.is_valid():
@@ -426,7 +426,7 @@ def detail_dates(request):
     return render(request, 'detail-manager/details-by-date.html', context)
 
 
-@verify_position(['Detail Manager', 'Adviser'])
+@verify_position(['detail-manager', 'vice-president', 'president', 'adviser'])
 def details_on_date(request, date):
     d_format = "%Y-%m-%d"
     date = datetime.datetime.strptime(date, d_format).date()
@@ -442,7 +442,7 @@ def details_on_date(request, date):
     return render(request, 'detail-manager/details-on-date.html', context)
 
 
-@verify_position(['Detail Manager', 'Adviser'])
+@verify_position(['detail-manager', 'vice-president', 'president', 'adviser'])
 def detail_fines_brother(request, brother_id):
     brother = Brother.objects.get(pk=brother_id)
     return detail_fine_helper(request, brother)

@@ -11,11 +11,11 @@ from dashboard.models import (
 from dashboard.forms import ClassTakenForm
 from dashboard.utils import verify_position
 
-from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+from dashboard.views._dashboard_generic_views import DashboardDeleteView
 
 
 def classes(request, department=None, number=None, brother=None):
-    if request.user.brother in Position.objects.get(title='Scholarship Chair').brothers.all():
+    if request.user.brother in Position.objects.get(title='scholarship-chair').brothers.all():
         view = "scholarship"
     else:
         view = ""
@@ -87,7 +87,7 @@ def classes_add(request):
 
 
 class ClassesDelete(DashboardDeleteView):
-    @verify_position(['Scholarship Chair', 'President', 'Adviser'])
+    @verify_position(['scholarship-chair', 'president', 'adviser'])
     def get(self, request, *args, **kwargs):
         return super(ClassesDelete, self).get(request, *args, **kwargs)
 

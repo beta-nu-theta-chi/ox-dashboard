@@ -12,7 +12,7 @@ from dashboard.utils import (
 )
 
 
-@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+@verify_position(['secretary', 'vice-president', 'president', 'adviser'])
 def secretary_event(request, event_id):
     """ Renders the attendance sheet for any event """
     event = ChapterEvent.objects.get(pk=event_id)
@@ -40,7 +40,7 @@ def secretary_event(request, event_id):
     return render(request, "events/base-event.html", context)
 
 
-@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+@verify_position(['secretary', 'vice-president', 'president', 'adviser'])
 def secretary_event_view(request, event_id):
     """ Renders the Secretary way of viewing old events """
     event = ChapterEvent.objects.get(pk=event_id)

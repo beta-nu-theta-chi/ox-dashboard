@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 
 from dashboard.forms import CommitteeCreateForm
-from dashboard.models import Brother, Committee
+from dashboard.models import Brother, Committee, query_positions_with_committee, Position
 from dashboard.utils import create_recurring_meetings
 
 
@@ -13,17 +13,20 @@ def committee_list(request):
     current_brother = request.user.brother
     form = CommitteeCreateForm(request.POST or None)
     form.fields["committee"].choices = [e for e in form.fields["committee"].choices if not Committee.objects.filter(committee=e[0]).exists()]
-    form.fields["chair"].choices = [e for e in form.fields["chair"].choices if e[0] not in Committee.objects.values_list('chair', flat=True)]
 
-    if current_brother.position_set.filter(title='Vice President'):
+    if current_brother.position_set.filter(title='vice-president'):
         view_type = 'Vice President'
     else:
         view_type = 'brother'
 
     if request.method == 'POST':
         if form.is_valid():
-            form.save()
+            committee = form.save(commit=False)
             instance = form.cleaned_data
+            index = Committee.CommitteeChoices.values.index(instance['committee'])
+            positions = Position.objects.filter(query_positions_with_committee())
+            committee.chair = positions[index]
+            committee.save()
             create_recurring_meetings(instance, instance['committee'])
             return HttpResponseRedirect(reverse('dashboard:committee_list'))
 

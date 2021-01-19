@@ -7,7 +7,7 @@
 
 {% block content %}
     <div class="jumbotron">
-        <h1>Edit {% block title %}{{ next }}{{ form.instance.title }} {{ model }}{% endblock %} </h1>
+        <h1>Edit {% block title %}{% if not form.instance.name %}{{ model }}{% endif %}{{ form.instance.name }}{% endblock %} </h1>
     </div>
     <div class="panel panel-default">
         <div class="panel-heading">Edit</div>
@@ -20,7 +20,13 @@
                 {{ form.non_field.errors }}
                 {% csrf_token %}
                 <div class="modeladd">
-                    <div style="grid-column: 1/7;">{% block model_info %}{% endblock %}</div>
+                    {% block model_info %}{% endblock %}
+                    {% for field in form %}
+                        {% if field.help_text %}
+                            <div style="grid-column: 2/6;">{{ field.help_text }}</div>
+                            <div class="blackline"></div>
+                        {% endif %}
+                    {% endfor %}
                     {% for field in form %}
                         {% if not forloop.first %}
                             <div class="grayline"></div>

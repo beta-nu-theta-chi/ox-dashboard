@@ -8,12 +8,11 @@ from dashboard.models import Excuse, RecruitmentEvent
 from dashboard.utils import verify_position
 
 
-@verify_position(['Recruitment Chair', 'Secretary', 'Vice President', 'President', 'Adviser'])
+@verify_position(['recruitment-chair', 'secretary', 'vice-president', 'president', 'adviser'])
 def excuse(request, position_slug, excuse_id):
     """ Renders Excuse response form """
-    # since this view can be accessed from both the Recruitment Chair and the Secretary pages,
-    # in order to redirect back to those pages, pass in a slug for the position
-    # doing a redirect on the slug should allow you to redirect back to the position's page
+    # since this view can be accessed from multiple different pages,in order to redirect back to those pages,
+    # pass in a slug for the position doing a redirect on the slug should redirect back to the position's page
     excuse = get_object_or_404(Excuse, pk=excuse_id)
     form = ExcuseResponseForm(request.POST or None, excuse=excuse)
 
@@ -35,16 +34,15 @@ def excuse(request, position_slug, excuse_id):
 
 # accepts the excuse then immediately redirects you back to where you came from
 def excuse_quick_accept(request, position_slug, excuse_id):
-    # since this view can be accessed from both the Recruitment Chair and the Secretary pages,
-    # in order to redirect back to those pages, pass in a slug for the position
-    # doing a redirect on the slug should allow you to redirect back to the position's page
+    # since this view can be accessed from multiple different pages,in order to redirect back to those pages,
+    # pass in a slug for the position doing a redirect on the slug should redirect back to the position's page
     excuse = Excuse.objects.get(pk=excuse_id)
     excuse.status = '1'
     excuse.save()
     return HttpResponseRedirect('/' + position_slug)
 
 
-@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+@verify_position(['secretary', 'vice-president', 'president', 'adviser'])
 def secretary_all_excuses(request):
     """ Renders Excuse archive """
     excuses = Excuse.objects.exclude(status='0').exclude(event__in=RecruitmentEvent.objects.all()).order_by('brother__last_name', 'event__date')

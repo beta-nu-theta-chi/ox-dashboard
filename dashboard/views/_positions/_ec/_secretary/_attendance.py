@@ -6,7 +6,7 @@ from dashboard.models import Brother, RecruitmentEvent, Event, Excuse
 from dashboard.utils import verify_position, get_semester
 
 
-@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+@verify_position(['secretary', 'vice-president', 'president', 'adviser'])
 def secretary_attendance(request):
     """ Renders the secretary view for chapter attendance """
     brothers = Brother.objects.exclude(brother_status='2').order_by('last_name', 'first_name')

@@ -2,21 +2,16 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 
-import datetime
-
 from dashboard.forms import (
     GPAForm,
 )
 from dashboard.models import (
     Brother,
     ScholarshipReport,
-    Semester,
 )
 from dashboard.utils import (
-    attendance_list,
     committee_meeting_panel,
     forms_is_valid,
-    get_season_from,
     get_semester,
     verify_position,
 )
@@ -24,7 +19,7 @@ from dashboard.utils import (
 from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
 
 
-@verify_position(['Scholarship Chair', 'President', 'Adviser'])
+@verify_position(['scholarship-chair', 'president', 'adviser'])
 def scholarship_c(request):
     """ Renders the Scholarship page listing all brother gpas """
 
@@ -42,16 +37,15 @@ def scholarship_c(request):
 
     brother_plans = zip(brothers, plans)
 
-    committee_meetings, context = committee_meeting_panel('Scholarship Chair')
+    committee_meetings, context = committee_meeting_panel('scholarship-chair')
 
     context.update({
-        'position': 'Scholarship Chair',
         'brother_plans': brother_plans,
     })
     return render(request, "scholarship-chair/scholarship-chair.html", context)
 
 
-@verify_position(['Scholarship Chair', 'President', 'Adviser'])
+@verify_position(['scholarship-chair', 'president', 'adviser'])
 def scholarship_c_plan(request, plan_id):
     """Renders Scholarship Plan page for the Scholarship Chair"""
     plan = ScholarshipReport.objects.get(pk=plan_id)
@@ -64,7 +58,7 @@ def scholarship_c_plan(request, plan_id):
     return render(request, 'scholarship-chair/scholarship-report.html', context)
 
 
-@verify_position(['Scholarship Chair', 'President', 'Adviser'])
+@verify_position(['scholarship-chair', 'president', 'adviser'])
 def scholarship_c_gpa(request):
     """Renders Scholarship Gpa update page for the Scholarship Chair"""
     plans = ScholarshipReport.objects.filter(semester=get_semester()).order_by("brother__last_name")
@@ -95,7 +89,7 @@ def scholarship_c_gpa(request):
 
 
 class ScholarshipReportEdit(DashboardUpdateView):
-    @verify_position(['Scholarship Chair', 'President', 'Adviser'])
+    @verify_position(['scholarship-chair', 'president', 'adviser'])
     def get(self, request, *args, **kwargs):
         return super(ScholarshipReportEdit, self).get(request, *args, **kwargs)
 

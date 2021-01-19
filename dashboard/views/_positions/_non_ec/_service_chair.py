@@ -1,22 +1,19 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 
 from dashboard.forms import (
     EditBrotherAttendanceForm,
-    Semester,
     ServiceEventForm,
     ServiceSubmissionResponseForm,
 )
 from dashboard.models import (
     Brother,
-    Event,
     ServiceEvent,
     ServiceSubmission,
 )
 from dashboard.utils import (
     attendance_list,
-    get_season_from,
     get_semester,
     mark_attendance_list,
     update_eligible_brothers,
@@ -25,10 +22,8 @@ from dashboard.utils import (
     get_human_readable_model_name,
 )
 
-from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
 
-
-@verify_position(['Service Chair', 'Adviser'])
+@verify_position(['service-chair', 'vice-president', 'president', 'adviser'])
 def service_c(request):
     """ Renders the service chair page with service submissions """
     events = ServiceEvent.objects.filter(semester=get_semester())
@@ -55,12 +50,12 @@ def service_c(request):
         'submissions_pending': submissions_pending,
         'submissions_submitted': submissions_submitted,
         'position': 'Service Chair',
-        'position_slug': 'service-chair',
+        'position_slug': 'service-chair', # a slug is just a label containing only letters, numbers, underscores, or hyphens
     }
     return render(request, 'service-chair/service-chair.html', context)
 
 
-@verify_position(['Service Chair', 'Adviser'])
+@verify_position(['service-chair', 'vice-president', 'president', 'adviser'])
 def service_c_event(request, event_id):
     """ Renders the service chair way of adding ServiceEvent """
     event = ServiceEvent.objects.get(pk=event_id)
@@ -88,7 +83,7 @@ def service_c_event(request, event_id):
     return render(request, 'events/service-event.html', context)
 
 
-@verify_position(['Service Chair', 'Adviser'])
+@verify_position(['service-chair', 'vice-president', 'president', 'adviser'])
 def service_c_submission_response(request, submission_id):
     """ Renders the service chair way of responding to submissions """
     submission = ServiceSubmission.objects.get(pk=submission_id)
@@ -110,7 +105,7 @@ def service_c_submission_response(request, submission_id):
     return render(request, 'service-chair/service-submission.html', context)
 
 
-@verify_position(['Service Chair', 'Adviser'])
+@verify_position(['service-chair', 'vice-president', 'president', 'adviser'])
 def service_c_event_add(request):
     """ Renders the service chair way of adding ServiceEvent """
     form = ServiceEventForm(request.POST or None, initial={'name': 'Service Event'})
@@ -131,7 +126,7 @@ def service_c_event_add(request):
     return render(request, 'event-add.html', context)
 
 
-@verify_position(['Service Chair', 'Adviser'])
+@verify_position(['service-chair', 'vice-president', 'president', 'adviser'])
 def service_c_hours(request):
     """ Renders the service chair way of viewing total service hours by brothers """
     brothers = Brother.objects.exclude(brother_status='2').order_by("last_name", "first_name")

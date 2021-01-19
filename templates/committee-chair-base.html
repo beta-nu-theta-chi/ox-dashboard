@@ -22,7 +22,7 @@
                         <td>{{ committee.get_meeting_interval_display }}</td>
                     </tr>
                 </table>
-                <a class="btn btn-default" href={% url 'dashboard:committee_edit' committee.id %}?next={{ request.path }}&committee={{ committee.url_name }} role="button">Edit Committee</a>
+                <a class="btn btn-default" href={% url 'dashboard:committee_edit' committee.id %} role="button">Edit Committee</a>
             </div>
         </div>
     </div>
@@ -50,14 +50,14 @@
                         <td></td>
                     {% endif %}
                     <td><a class="btn btn-default"
-                          href={% url 'dashboard:committee_event_edit' meeting.id %}?id={{ meeting.id }}>+</a></td>
+                          href={% url 'dashboard:committee_event_edit' meeting.id %}>+</a></td>
                     <td><a class="btn btn-danger"
-                           href={% url 'dashboard:committee_event_delete' meeting.id %}?next={{ request.path }}>X</a></td>
+                           href={% url 'dashboard:event_delete' meeting.id %}>X</a></td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
-        <a class="btn btn-success" href={% url 'dashboard:committee_event_add' position %}?next={{ request.path }}
+        <a class="btn btn-success" href={% url 'dashboard:committee_event_add' position.title %}
                 role="button">Add Meeting</a>
     </div>
 </div>

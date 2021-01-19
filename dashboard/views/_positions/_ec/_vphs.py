@@ -1,5 +1,5 @@
 from django.http import HttpResponseRedirect
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.shortcuts import render, redirect
 
 from dashboard.forms import HealthAndSafetyEventForm, EditBrotherAttendanceForm
@@ -12,48 +12,26 @@ from dashboard.utils import (
     mark_attendance_list,
     save_event,
     update_eligible_brothers,
-    verify_position
+    verify_position,
+    get_human_readable_model_name
 )
 
-from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
 
-
-@verify_position(['President', 'Adviser', 'Vice President', 'Vice President of Health and Safety'])
+@verify_position([ 'vphs', 'vice-president', 'president', 'adviser'])
 def vphs(request):
     """ Renders the VPHS and the events they can create """
     events = HealthAndSafetyEvent.objects.filter(semester=get_semester()).order_by("start_time").order_by("date")
-    committee_meetings, context = committee_meeting_panel('Vice President of Health and Safety')
+    committee_meetings, context = committee_meeting_panel('vphs')
 
     context.update({
-        'position': 'Vice President of Health and Safety',
-        'position_slug': 'vphs',
         'events': events,
     })
     return render(request, 'vphs.html', context)
 
 
-@verify_position(['President', 'Adviser', 'Vice President', 'Vice President of Health and Safety'])
-def health_and_safety_event_add(request):
-    """ Renders the VPHS adding an event """
-    form = HealthAndSafetyEventForm(request.POST or None, initial={'name': 'Sacred Purpose Event'})
-
-    if form.is_valid():
-        # TODO: add google calendar event adding
-        instance = form.save(commit=False)
-        eligible_attendees = Brother.objects.exclude(brother_status='2').order_by('last_name')
-        save_event(instance, eligible_attendees)
-        return HttpResponseRedirect(reverse('dashboard:vphs'))
-
-    context = {
-        'title': 'Add New Health and Safety Event',
-        'form': form,
-    }
-    return render(request, 'model-add.html', context)
-
-
 def health_and_safety_event(request, event_id):
     """ Renders the vphs way of view events """
-    event = HealthandSafetyEvent.objects.get(pk=event_id)
+    event = HealthAndSafetyEvent.objects.get(pk=event_id)
     brothers, brother_form_list = attendance_list(request, event)
 
     form = EditBrotherAttendanceForm(request.POST or None, event=event_id)

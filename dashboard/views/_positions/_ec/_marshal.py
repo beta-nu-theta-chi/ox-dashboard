@@ -24,7 +24,7 @@ from dashboard.utils import forms_is_valid, get_semester, verify_position
 from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
 
 
-@verify_position(['Marshal', 'Vice President', 'President', 'Adviser'])
+@verify_position(['marshal', 'vice-president', 'president', 'adviser'])
 def marshal(request):
     """ Renders the marshal page listing all the candidates and relevant information to them """
     candidates = Brother.objects.filter(brother_status='0').order_by("last_name", "first_name")
@@ -180,7 +180,7 @@ def marshal_mab_edit(request):
     return render(request, 'marshal/mab-edit.html', context)
 
 
-@verify_position(['Marshal', 'Vice President', 'President', 'Adviser'])
+@verify_position(['marshal', 'vice-president', 'president', 'adviser'])
 def marshal_candidate(request, brother_id):
     """ Renders the marshal page to view candidate info """
     brother = Brother.objects.get(pk=brother_id)
@@ -191,7 +191,7 @@ def marshal_candidate(request, brother_id):
     return render(request, "brother-view.html", context)
 
 
-@verify_position(['Marshal', 'Vice President', 'President', 'Adviser'])
+@verify_position(['marshal', 'vice-president', 'president', 'adviser'])
 def marshal_candidate_add(request):
     """ Renders the Marshal way of viewing a candidate """
     form = BrotherForm(request.POST or None)
@@ -217,7 +217,7 @@ def marshal_candidate_add(request):
 
 
 class CandidateEdit(DashboardUpdateView):
-    @verify_position(['Marshal', 'Vice President', 'President', 'Adviser'])
+    @verify_position(['marshal', 'vice-president', 'president', 'adviser'])
     def get(self, request, *args, **kwargs):
         return super(CandidateEdit, self).get(request, *args, **kwargs)
 
@@ -228,7 +228,7 @@ class CandidateEdit(DashboardUpdateView):
 
 
 class CandidateDelete(DashboardDeleteView):
-    @verify_position(['Marshal', 'Vice President', 'President', 'Adviser'])
+    @verify_position(['marshal', 'vice-president', 'president', 'adviser'])
     def get(self, request, *args, **kwargs):
         return super(CandidateDelete, self).get(request, *args, **kwargs)
 

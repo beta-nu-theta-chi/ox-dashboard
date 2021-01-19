@@ -45,8 +45,7 @@ urlpatterns = [
     url(r'^committee/(?P<pk>\d+)/delete/$', views.CommitteeDelete.as_view(), name="committee_delete"),
     url(r'^committee/event/(?P<event_id>[0-9]+)/$', views.committee_event, name="committee_event"),
     url(r'^committee/event/(?P<pk>\d+)/edit/$', views.CommitteeEventEdit.as_view(), name="committee_event_edit"),
-    url(r'^(?P<position>\D+)/committee/event/add/$', views.committee_event_add, name="committee_event_add"),
-    url(r'^committee/event/(?P<pk>\d+)/delete/$', views.CommitteeEventDelete.as_view(), name="committee_event_delete"),
+    url(r'^committee/(?P<position_slug>\D+)/event/add/$', views.committee_event_add, name="committee_event_add"),
 
     # Brother URL section
     url(r'^brother/$', views.brother_view, name="brother"),
@@ -87,8 +86,6 @@ urlpatterns = [
 
     # Vice President Health and Safety URL Section
     url(r'^vphs/$', views.vphs, name="vphs"),
-    url(r'^vphs/hs_event/add/$', views.health_and_safety_event_add,
-        name="health_and_safety_event_add"),
     url(r'^vphs/hs_event/(?P<event_id>[0-9]+)/$', views.health_and_safety_event, name="health_safety_event"),
 
     url(r'^treasurer/', views.treasurer, name="treasurer"),
@@ -106,12 +103,8 @@ urlpatterns = [
     url(r'^secretary/brother/(?P<pk>\d+)/delete/$', views.SecretaryBrotherDelete.as_view(),
         name="secretary_brother_delete"),
     url(r'^secretary/brother/add/$', views.secretary_brother_add, name="secretary_brother_add"),
-    url(r'^event/(?P<pk>\d+)/delete/$', views.EventDelete.as_view(), name="event_delete"),
-    url(r'^event/(?P<pk>\d+)/edit/$', views.EventEdit.as_view(), name="event_edit"),
     url(r'^secretary/event/(?P<event_id>[0-9]+)/view/$', views.secretary_event_view, name="secretary_event_view"),
     url(r'^secretary/event/(?P<event_id>[0-9]+)/$', views.secretary_event, name="secretary_event"),
-    url(r'^(?P<position_slug>\D+)/excuse/(?P<excuse_id>[0-9]+)/$', views.excuse, name="excuse"),
-    url(r'^(?P<position_slug>\D+)/excuse/(?P<excuse_id>[0-9]+)/quick_accept/$', views.excuse_quick_accept, name="excuse_quick_accept"),
     url(r'^secretary/excuses', views.secretary_all_excuses, name="secretary_excuses"),
     url(r'^secretary/agenda/$', views.secretary_agenda, name="secretary_agenda"),
 
@@ -138,10 +131,11 @@ urlpatterns = [
         name="recruitment_c_pnm_edit"),
     url(r'^recruitment-chair/pnm/add/$', views.recruitment_c_pnm_add, name="recruitment_c_pnm_add"),
     url(r'^recruitment-chair/pnm/(?P<pk>\d+)/delete/$', views.PnmDelete.as_view(), name="recruitment_c_pnm_delete"),
-
     url(r'^recruitment-chair/pnm/all_pnms.csv$', views.all_pnm_csv, name="all_pnm_csv"),
 
-    url(r'^(?P<position_slug>\D+)/event/add/$', views.event_add, name="event_add"),
+    url(r'^(?P<position_slug>\D+)/excuse/(?P<excuse_id>[0-9]+)/$', views.excuse, name="excuse"),
+    url(r'^(?P<position_slug>\D+)/excuse/(?P<excuse_id>[0-9]+)/quick_accept/$', views.excuse_quick_accept,
+      name="excuse_quick_accept"),
 
     # Scholarship Chair URL Section
     url(r'^scholarship-chair/$', views.scholarship_c, name="scholarship_c"),
@@ -163,6 +157,10 @@ urlpatterns = [
     url(r'^philanthropy-chair/$', views.philanthropy_c, name="philanthropy_c"),
     url(r'^philanthropy-chair/event/(?P<event_id>[0-9]+)/$', views.philanthropy_c_event,
         name="philanthropy_c_event"),
+
+    url(r'^(?P<position_slug>\D+)/event/add/$', views.event_add, name="event_add"),
+    url(r'^event/(?P<pk>\d+)/delete/$', views.EventDelete.as_view(), name="event_delete"),
+    url(r'^event/(?P<pk>\d+)/edit/$', views.EventEdit.as_view(), name="event_edit"),
 
     url(r'^detail-manager/$', views.detail_m, name="detail_m"),
     url(r'^detail-manager/supplies-request/$', views.supplies_request, name='supplies_request'),

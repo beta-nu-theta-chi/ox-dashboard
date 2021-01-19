@@ -83,20 +83,20 @@
         {% endif %}
         <div class="panel-body">
             <form action="" method="post" enctype="multipart/form-data">
-                <table class="table table-condensed">
+                <table class="table table-responsive">
                     {% csrf_token %}
-                    {% for field in form %}
-                    {% if forloop.counter == 1 %}
+                    {% for field in form.visible_fields %}
+                    {% if forloop.first %}
                     <thead>
                         <tr>
-                            <td>{{ field | append_ast_if_req }}</td>
+                            <td><b>{{ field | append_ast_if_req }}</b></td>
                             <td>{{ field }}</td>
                         </tr>
                     </thead>
                     <tbody>
                     {% else %}
                         <tr>
-                            <td>{{ field | append_ast_if_req }}</td>
+                            <td><b>{{ field | append_ast_if_req }}</b></td>
                             <td>{{ field }}</td>
                         </tr>
                     {% endif %}

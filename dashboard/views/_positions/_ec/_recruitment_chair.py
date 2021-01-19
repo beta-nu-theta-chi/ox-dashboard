@@ -2,7 +2,6 @@ from django.conf import settings
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
-from django.utils.text import slugify
 
 import csv
 import datetime
@@ -36,7 +35,7 @@ from dashboard.utils import (
 from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
 
 
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+@verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
 def recruitment_c(request):
     """ Renders Recruitment chair page with events for the current and following semester """
     events = RecruitmentEvent.objects.all()
@@ -52,11 +51,9 @@ def recruitment_c(request):
 
     potential_new_members = PotentialNewMember.objects.all()
 
-    committee_meetings, context = committee_meeting_panel('Recruitment Chair')
+    committee_meetings, context = committee_meeting_panel('recruitment-chair')
 
     context.update({
-        'position': 'Recruitment Chair',
-        'position_slug': 'recruitment-chair', # a slug is just a label containing only letters, numbers, underscores, or hyphens
         'events': semester_events,
         'events_future': semester_events_next,
         'potential_new_members': potential_new_members,
@@ -65,7 +62,7 @@ def recruitment_c(request):
     return render(request, 'recruitment-chair/recruitment-chair.html', context)
 
 
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+@verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
 def recruitment_c_all_excuses(request):
     """ Renders Excuse archive"""
     excuses = Excuse.objects.exclude(status='0').filter(event__in=RecruitmentEvent.objects.all()).order_by('brother__last_name', 'event__date')
@@ -95,7 +92,7 @@ def all_pnm_csv(request):
     return response
 
 
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+@verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
 def recruitment_c_pnm(request, pnm_id):
     """ Renders PNM view for recruitment chair """
     pnm = PotentialNewMember.objects.get(pk=pnm_id)
@@ -114,7 +111,7 @@ def recruitment_c_pnm(request, pnm_id):
     return render(request, 'potential-new-member.html', context)
 
 
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+@verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
 def recruitment_c_pnm_add(request):
     """ Renders the recruitment chair way of adding PNMs """
     form = PotentialNewMemberForm(request.POST or None)
@@ -132,7 +129,7 @@ def recruitment_c_pnm_add(request):
 
 
 class PnmDelete(DashboardDeleteView):
-    @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+    @verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
     def get(self, request, *args, **kwargs):
         return super(PnmDelete, self).get(request, *args, **kwargs)
 
@@ -142,7 +139,7 @@ class PnmDelete(DashboardDeleteView):
 
 
 class PnmEdit(DashboardUpdateView):
-    @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+    @verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
     def get(self, request, *args, **kwargs):
         return super(PnmEdit, self).get(request, *args, **kwargs)
 
@@ -152,7 +149,7 @@ class PnmEdit(DashboardUpdateView):
     form_class = PotentialNewMemberForm
 
 
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+@verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
 def recruitment_c_event(request, event_id):
     """ Renders the recruitment chair way of view RecruitmentEvents """
     event = RecruitmentEvent.objects.get(pk=event_id)
@@ -196,7 +193,7 @@ def recruitment_c_event(request, event_id):
     return render(request, "events/recruitment-event.html", context)
 
 
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+@verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
 def recruitment_c_event_add(request):
     """ Renders the recruitment chair way of adding RecruitmentEvents """
     form = RecruitmentEventForm(request.POST or None, initial={'name': 'Recruitment Event'})
@@ -215,14 +212,17 @@ def recruitment_c_event_add(request):
     }
     return render(request, "event-add.html", context)
 
+
 # since recruitment events have additional info that can be edited it needs its own view
 # other event types use EventEdit in views/events.py
 class RecruitmentEventEdit(DashboardUpdateView):
-    @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+    @verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
     def get(self, request, *args, **kwargs):
         return super(RecruitmentEventEdit, self).get(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
+        # each event has a slug field called 'slug' which contains the string for what url you should redirect to
+        # Ex. 'philanthropy-chair' or 'vphs'
         return '/' + self.object.slug
 
     form_class = RecruitmentEventForm
@@ -230,7 +230,7 @@ class RecruitmentEventEdit(DashboardUpdateView):
     model = RecruitmentEvent
 
 
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+@verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
 def recruitment_c_attendance(request):
     """ Renders the secretary view for chapter attendance """
     brothers = Brother.objects.exclude(brother_status='2').order_by('last_name', 'first_name')
@@ -238,6 +238,9 @@ def recruitment_c_attendance(request):
     accepted_excuses = Excuse.objects.filter(event__semester=get_semester(), status='1', event__in=events)
     brother_attendance = []
 
+    # For each brother, appends a tuple to brother_attendance that contains the number of events excused, unexcused,
+    # attended/excuse and events eligible for them to attend. The latter 2 are used to display the
+    # attendance fraction
     for brother in brothers:
         events_eligible_list = events.filter(eligible_attendees=brother)
         events_eligible = events_eligible_list.count()

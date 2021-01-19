@@ -1,6 +1,5 @@
 import datetime
 import os
-from urllib.parse import quote_plus
 
 import django.utils.timezone
 from django.db import models
@@ -252,22 +251,29 @@ class Grade(models.Model):
 def query_positions_with_committee():
     choices = Q()
     for position in (
-        'Vice President of Health and Safety',
-        'Recruitment Chair',
-        'Scholarship Chair',
-        'Philanthropy Chair',
-        'Public Relations Chair',
-        'Alumni Relations Chair',
-        'Membership Development Chair',
-        'Social Chair'
+        'vphs',
+        'recruitment-chair',
+        'scholarship-chair',
+        'philanthropy-chair',
+        'pr-chair',
+        'alumni-relations-chair',
+        'memdev-chair',
+        'social-chair'
     ):
         choices = choices | Q(title=position)
     return choices
 
 
 class Position(models.Model):
+    # This is a list of possible options for each position. The first term is the name of the choice object. A list of
+    # these can be called using PositionChoices.names. The second term is the value of the choices object, a list of
+    # which you can get via PositionChoices.values. The values are written as slugs that serve as the url for each
+    # position's main page. Since the title field gets set to the values options, you can use the title to redirect to
+    # the main page using HTTPResponseRedirect('/' + title). Lastly the values in _() at the end are the labels or human
+    # readable names of the choices. If nothing is set there, the label is automatically set from the name, in title
+    # case with words separated by _. A list of labels can be found using PositionChoices.labels
     class PositionChoices(models.TextChoices):
-        PRESIDENT = 'president'
+        PRESIDENT = 'president',
         VICE_PRESIDENT = 'vice-president'
         VICE_PRESIDENT_OF_HEALTH_AND_SAFETY = 'vphs', _('Vice President of Health and Safety')
         SECRETARY = 'secretary'
@@ -277,10 +283,10 @@ class Position(models.Model):
         SCHOLARSHIP_CHAIR = 'scholarship-chair'
         DETAIL_MANAGER = 'detail-manager'
         PHILANTHROPY_CHAIR = 'philanthropy-chair'
-        PUBLIC_RELATIONS_CHAIR = 'public-relations-chair'
+        PUBLIC_RELATIONS_CHAIR = 'pr-chair'
         SERVICE_CHAIR = 'service-chair'
         ALUMNI_RELATIONS_CHAIR = 'alumni-relations-chair'
-        MEMBERSHIP_DEVELOPMENT_CHAIR = 'membership-development-chair'
+        MEMBERSHIP_DEVELOPMENT_CHAIR = 'memdev-chair'
         SOCIAL_CHAIR = 'social-chair'
         COMMUNITY_STANDARDS_CHAIR = 'community-standards-chair'
         OX_ROAST_CHAIR = 'ox-roast-chair', _('OX Roast Chair')
@@ -305,14 +311,14 @@ class Position(models.Model):
 
     def in_ec(self):
         return self.title in (
-            'President',
-            'Vice President',
-            'Vice President of Health and Safety',
-            'Secretary',
-            'Treasurer',
-            'Marshal',
-            'Recruitment Chair',
-            'Scholarship Chair',
+            'president',
+            'vice-president',
+            'vphs',
+            'secretary',
+            'treasurer',
+            'marshal',
+            'recruitment-chair',
+            'scholarship-chair',
         )
 
     brothers = models.ManyToManyField(Brother)
@@ -321,7 +327,7 @@ class Position(models.Model):
         return ", ".join([str(e) for e in self.brothers.all()])
 
     def __str__(self):
-        return self.title
+        return str(self.PositionChoices(self.title).label)
 
 
 class Report(models.Model):
@@ -467,7 +473,10 @@ class Event(models.Model):
     description = models.TextField(blank=True, null=True)
     minutes = models.URLField(blank=True, null=True)
     mandatory = models.BooleanField(default=True)
-    slug = models.SlugField(blank=True)
+    slug = models.SlugField(blank=True) # a field which stores the url to redirect to after running operations on the event
+
+    def __str__(self):
+        return self.name + " " + str(self.date)
 
 
 class ChapterEvent(Event):
@@ -478,6 +487,8 @@ class ChapterEvent(Event):
     def __init__(self, *args, **kwargs):
         if 'slug' not in kwargs:
             kwargs['slug'] = 'secretary'
+        if 'name' not in kwargs:
+            kwargs['name'] = 'Chapter Event'
         super(ChapterEvent, self).__init__(*args, **kwargs)
 
 
@@ -508,6 +519,8 @@ class ServiceEvent(Event):
     def __init__(self, *args, **kwargs):
         if 'slug' not in kwargs:
             kwargs['slug'] = 'service-chair'
+        if 'name' not in kwargs:
+            kwargs['name'] = 'Service Event'
         super(ServiceEvent, self).__init__(*args, **kwargs)
 
 
@@ -523,6 +536,8 @@ class RecruitmentEvent(Event):
     def __init__(self, *args, **kwargs):
         if 'slug' not in kwargs:
             kwargs['slug'] = 'recruitment-chair'
+        if 'name' not in kwargs:
+            kwargs['name'] = 'Recruitment Event'
         super(RecruitmentEvent, self).__init__(*args, **kwargs)
 
 
@@ -533,6 +548,8 @@ class HealthAndSafetyEvent(Event):
     def __init__(self, *args, **kwargs):
         if 'slug' not in kwargs:
             kwargs['slug'] = 'vphs'
+        if 'name' not in kwargs:
+            kwargs['name'] = 'Sacred Purpose Event'
         super(HealthAndSafetyEvent, self).__init__(*args, **kwargs)
 
 
@@ -543,6 +560,8 @@ class ScholarshipEvent(Event):
     def __init__(self, *args, **kwargs):
         if 'slug' not in kwargs:
             kwargs['slug'] = 'scholarship-chair'
+        if 'name' not in kwargs:
+            kwargs['name'] = 'Scholarship Event'
         super(ScholarshipEvent, self).__init__(*args, **kwargs)
 
 
@@ -589,10 +608,6 @@ class Committee(models.Model):
 
     committee = models.CharField(max_length=2, choices=CommitteeChoices.choices, unique=True, blank=False)
 
-    def url_name(self):
-        committee_names = dict(self.CommitteeChoices.choices)
-        return quote_plus(committee_names[self.committee])
-
     def in_standing(self):
         return self.committee in (x[0] for x in self.STANDING_COMMITTEE_CHOICES)
 
@@ -608,7 +623,7 @@ class Committee(models.Model):
         BIWEEKLY = 14, 'Biweekly'
         MONTHLY = 28, 'Monthly'
 
-    meeting_interval = models.IntegerField(choices=MeetingIntervals.choices, blank=True, null=True)
+    meeting_interval = models.IntegerField(choices=MeetingIntervals.choices)
 
     MEETING_DAY = [
         (0, 'Monday'),
@@ -620,9 +635,9 @@ class Committee(models.Model):
         (6, 'Sunday'),
     ]
 
-    meeting_day = models.IntegerField(choices=MEETING_DAY, blank=True, null=True)
+    meeting_day = models.IntegerField(choices=MEETING_DAY)
 
-    meeting_time = models.TimeField(choices=TimeChoices.choices, blank=True)
+    meeting_time = models.TimeField(choices=TimeChoices.choices)
 
     def __str__(self):
         for x, y in self.CommitteeChoices.choices:
@@ -776,6 +791,6 @@ class PhoneTreeNode(models.Model):
     notified_by = models.ForeignKey(Brother, on_delete=models.PROTECT, null=True, related_name='phone_tree_notified_by') # null is the root (ie president)
 
     def __str__(self):
-        if self.brother.position_set.filter(title='President'):
+        if self.brother.position_set.filter(title='president'):
             return self.brother.first_name + " " + self.brother.last_name
         return self.brother.first_name + " " + self.brother.last_name + " notified by " + self.notified_by.first_name + " " + self.notified_by.last_name

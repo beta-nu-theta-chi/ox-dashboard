@@ -1,6 +1,5 @@
 from django.http import HttpResponseRedirect
-from django.contrib import messages
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.shortcuts import render, redirect
 
 import datetime
@@ -9,11 +8,12 @@ from dashboard.forms import (
     BrotherAttendanceForm,
     EventForm,
     EditBrotherAttendanceForm,
+    CommitteeMeetingForm,
 )
 from dashboard.models import (
     Committee,
     CommitteeMeetingEvent,
-    Position,
+    Position, Event,
 )
 from dashboard.utils import (
     create_recurring_meetings,
@@ -28,7 +28,7 @@ from dashboard.views._dashboard_generic_views import DashboardUpdateView, Dashbo
 
 
 class CommitteeDelete(DashboardDeleteView):
-    @verify_position(['Vice President', 'President', 'Adviser'])
+    @verify_position(['vice-president', 'president', 'adviser'])
     def get(self, request, *args, **kwargs):
         return super(CommitteeDelete, self).get(request, *args, **kwargs)
 
@@ -44,12 +44,7 @@ class CommitteeEdit(DashboardUpdateView):
         return super(CommitteeEdit, self).get(request, *args, **kwargs)
 
     def get_success_url(self):
-        return self.request.GET.get('next')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['next'] = self.request.GET.get('committee')
-        return context
+        return '/' + self.object.chair.title
 
     def form_valid(self, form):
         self.object.meetings.filter(recurring=True).exclude(date__lt=datetime.date.today()+datetime.timedelta(days=1)).delete()
@@ -60,7 +55,7 @@ class CommitteeEdit(DashboardUpdateView):
         return super().form_valid(form)
 
     model = Committee
-    template_name = 'generic-forms/base-form.html'
+    template_name = 'generic-forms/committee-form.html'
     fields = ['meeting_day', 'meeting_time', 'meeting_interval']
 
 
@@ -104,49 +99,41 @@ def committee_event(request, event_id):
     return render(request, "committee-event.html", context)
 
 
-@verify_position(['Public Relations Chair', 'Scholarship Chair', 'Service Chair', 'Philanthropy Chair', 'Alumni Relations Chair', 'Membership Development Chair', 'Social Chair', 'Vice President of Health and Safety', ' Recruitment Chair', 'Vice President', 'President', 'Adviser'])
-def committee_event_add(request, position):
+@verify_position(['pr-chair', 'scholarship-chair', 'service-chair', 'philanthropy-chair', 'alumni-relations-chair', 'memdev-chair', 'social-chair', 'vphs', 'recruitment-chair', 'vice-president', 'president', 'adviser'])
+def committee_event_add(request, position_slug):
     """ Renders the committee meeting add page """
     form = CommitteeMeetingForm(request.POST or None)
+    position = Position.objects.get(title=position_slug)
 
     if request.method == 'POST':
         if form.is_valid():
             instance = form.save(commit=False)
-            committee = Position.objects.get(title=position).committee
+            committee = position.committee
             eligible_attendees = committee.members.order_by('last_name')
             instance.committee = committee
+            instance.name = committee.get_committee_display() + " Committee Meeting"
+            instance.slug = committee.chair.title
             save_event(instance, eligible_attendees)
-            next = request.GET.get('next')
-            return HttpResponseRedirect(next)
+            return HttpResponseRedirect('/' + instance.slug)
 
     context = {
         'title': 'Committee Meeting',
         'form': form,
-        'position': position
+        'position': position,
     }
     return render(request, 'event-add.html', context)
 
 
-class CommitteeEventDelete(DashboardDeleteView):
-    @verify_position(['Recruitment Chair', 'Vice President of Health and Safety', 'Scholarship Chair', 'Philanthropy Chair', 'Alumni Relations Chair', 'Public Relations Chair', 'Membership Development Chair', 'Social Chair', 'Vice President', 'President', 'Adviser'])
-    def get(self, request, *args, **kwargs):
-        return super(CommitteeEventDelete, self).get(request, *args, **kwargs)
-
-    def get_success_url(self):
-        return self.request.GET.get('next')
-
-    model = CommitteeMeetingEvent
-    template_name = 'generic-forms/base-confirm-delete.html'
-
-
 class CommitteeEventEdit(DashboardUpdateView):
-    @verify_position(['Recruitment Chair', 'Vice President of Health and Safety', 'Scholarship Chair', 'Philanthropy Chair', 'Alumni Relations Chair', 'Public Relations Chair', 'Membership Development Chair', 'Social Chair', 'Vice President', 'President', 'Adviser'])
+    @verify_position(['pr-chair', 'scholarship-chair', 'service-chair', 'philanthropy-chair', 'alumni-relations-chair', 'memdev-chair', 'social-chair', 'vphs', 'recruitment-chair', 'vice-president', 'president', 'adviser'])
     def get(self, request, *args, **kwargs):
         return super(CommitteeEventEdit, self).get(request, *args, **kwargs)
 
-    def get_success_url(self):
-        return reverse('dashboard:committee_event', args=[self.object.id])
+    def get_success_url(self, **kwargs):
+        # each event has a slug field called 'slug' which contains the string for what url you should redirect to
+        # Ex. 'philanthropy-chair' or 'vphs'
+        return '/' + self.object.slug
 
-    model = CommitteeMeetingEvent
-    template_name = 'generic-forms/base-form.html'
+    model = Event
+    template_name = 'generic-forms/committee-meeting-form.html'
     form_class = EventForm

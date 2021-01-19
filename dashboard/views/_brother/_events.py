@@ -12,6 +12,7 @@ from  dashboard.models import (
     Excuse
 )
 from dashboard.forms import ExcuseForm
+from dashboard.utils import get_human_readable_model_name
 
 
 def brother_chapter_event(request, event_id, view):
@@ -43,6 +44,7 @@ def brother_chapter_event(request, event_id, view):
         'brother': brother,
         'attended': event.attendees_brothers.filter(pk=brother.pk).exists(),
         'button': 'Submit Excuse',
+        'event_type': get_human_readable_model_name(event)
     }
 
     # if an excuse has been submitted, add the excuse to the context
@@ -88,6 +90,7 @@ def brother_service_event(request, event_id, view):
         'excuse_exists': excuse.exists(),
         'attended': event.attendees_brothers.filter(pk=brother.pk).exists(),
         'button': 'Submit Excuse',
+        'event_type': get_human_readable_model_name(event)
     }
 
     # if an excuse has been submitted, add the excuse to the context
@@ -136,6 +139,7 @@ def brother_philanthropy_event(request, event_id, view):
         'excuse_exists': excuse.exists(),
         'attended': event.attendees_brothers.filter(pk=brother.pk).exists(),
         'button': 'Submit Excuse',
+        'event_type': get_human_readable_model_name(event)
     }
 
     # if an excuse has been submitted, add the excuse to the context
@@ -176,6 +180,7 @@ def brother_recruitment_event(request, event_id, view):
         'excuse_exists': excuse.exists(),
         'attended': event.attendees_brothers.filter(pk=brother.pk).exists(),
         'button': 'Submit Excuse',
+        'event_type': get_human_readable_model_name(event)
     }
 
     # if an excuse has been submitted, add the excuse to the context
@@ -215,6 +220,7 @@ def brother_hs_event(request, event_id, view):
         'brother': brother,
         'attended': event.attendees_brothers.filter(pk=brother.pk).exists(),
         'button': 'Submit Excuse',
+        'event_type': get_human_readable_model_name(event)
     }
 
     # if an excuse has been submitted, add the excuse to the context

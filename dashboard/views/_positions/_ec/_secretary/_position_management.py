@@ -4,12 +4,22 @@ from django.urls import reverse, reverse_lazy
 
 from dashboard.forms import PositionForm
 from dashboard.models import Position
-from dashboard.utils import all_positions, verify_position
+from dashboard.utils import verify_position
 
 from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
 
 
-@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+# EC Positions
+all_positions = [
+    'president', 'vice-president', 'vphs',
+    'secretary', 'treasurer', 'marshal', 'recruitment-chair',
+    'scholarship-chair', 'service-chair', 'philanthropy-chair',
+    'detail-manager', 'alumni-relations-chair',
+    'memdev-chair', 'social-chair', 'pr-chair'
+]
+
+
+@verify_position(['secretary', 'vice-president', 'president', 'adviser'])
 def secretary_positions(request):
     """ Renders all of the positions currently in the chapter """
     # Checking to make sure all of the EC and dashboard required positions are setup
@@ -25,10 +35,10 @@ def secretary_positions(request):
     context = {
         'positions': positions,
     }
-    return render(request, "positions.html", context)
+    return render(request, "secretary/positions.html", context)
 
 
-@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+@verify_position(['secretary', 'vice-president', 'president', 'adviser'])
 def secretary_position_add(request):
     """ Renders the Secretary way of viewing a brother """
     form = PositionForm(request.POST or None)
@@ -47,7 +57,7 @@ def secretary_position_add(request):
 
 
 class PositionEdit(DashboardUpdateView):
-    @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+    @verify_position(['secretary', 'vice-president', 'president', 'adviser'])
     def get(self, request, *args, **kwargs):
         return super(PositionEdit, self).get(request, *args, **kwargs)
 
@@ -58,7 +68,7 @@ class PositionEdit(DashboardUpdateView):
 
 
 class PositionDelete(DashboardDeleteView):
-    @verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+    @verify_position(['secretary', 'vice-president', 'president', 'adviser'])
     def get(self, request, *args, **kwargs):
         return super(PositionDelete, self).get(request, *args, **kwargs)
 

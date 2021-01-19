@@ -13,46 +13,6 @@ from dashboard.views import Position, Brother
 from dashboard.models import Semester, query_positions_with_committee
 import datetime
 
-EC_POSITIONS = [
-    "President",
-    "Vice President",
-    "Vice President of Health and Safety",
-    "Secretary",
-    "Treasurer",
-    "Marshal",
-    "Recruitment Chair",
-    "Scholarship Chair",
-]
-
-NON_EC_POSITIONS = [
-    "Service Chair",
-    "Philanthropy Chair",
-    "Detail Manager",
-    "Public Relations Chair",
-    "Alumni Relations Chair",
-    "Social Chair",
-    "Membership Development Chair",
-    "Community Standards Chair",
-    "OX Roast Chair",
-    "Damage Chair",
-    "Greek Games Chair",
-    "Historian",
-    "First Guard",
-    "Second Guard",
-    "Internal Change Chair",
-    "Standards Board Justice",
-    "Executive Council Member At Large",
-    "House Manager",
-    "Risk Manager",
-    "IFC Rep",
-    "Awards Chair",
-    "Food Steward",
-    "Athletics Chair",
-    "Dashboard Chair",
-    "Adviser",
-]
-
-ALL_POSITIONS = EC_POSITIONS + NON_EC_POSITIONS
 
 def create_django_superuser(username):
     user = User()

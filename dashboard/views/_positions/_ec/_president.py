@@ -24,26 +24,27 @@ from dashboard.utils import (
 )
 
 
-@verify_position(['President', 'Adviser'])
+@verify_position(['president', 'adviser'])
 def president(request):
     """ Renders the President page and all relevant information """
     return render(request, 'president.html', {'semester_picker': SelectSemester()})
 
-@verify_position(['President', 'Adviser'])
+
+@verify_position(['president', 'adviser'])
 def create_phone_tree(request):
     """Creates the new phone tree and redirects to to the phone tree view."""
     # delete the exiting phone tree
     PhoneTreeNode.objects.all().delete()
 
     # Should only ever have 1 of each EC position
-    president = Position.objects.filter(title='President')[0].brothers.all()[0]
-    marshal = Position.objects.filter(title='Marshal')[0].brothers.all()[0]
+    president = Position.objects.filter(title='president')[0].brothers.all()[0]
+    marshal = Position.objects.filter(title='marshal')[0].brothers.all()[0]
 
     # get all the EC brothers that are not the president nor marshal
     standard_ec_brothers = list(
         map(lambda pos : pos.brothers.all()[0],
-            filter(Position.in_ec, Position.objects.exclude(title='President') \
-                                                   .exclude(title='Marshal'))))
+            filter(Position.in_ec, Position.objects.exclude(title='president') \
+                                                   .exclude(title='marshal'))))
 
     all_ec_brothers = standard_ec_brothers + [president, marshal]
 
@@ -139,7 +140,7 @@ def __create_chapter_events(semester):
         ).save())
 
 
-@verify_position(['President', 'Adviser'])
+@verify_position(['president', 'adviser'])
 def cleanup_semester(request):
 
     if request.method == 'POST':

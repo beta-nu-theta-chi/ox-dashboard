@@ -158,7 +158,7 @@ class ExcuseForm(forms.ModelForm):
     def clean(self):
         description = self.cleaned_data.get('description', None)
         if description == "I will not be attending because" or description in EMPTY_VALUES:
-            self._errors['description'] = self.error_class(['"Please write a description"'])
+            self._errors['description'] = self.error_class(["Please write a description"])
 
 
 class ExcuseResponseForm(forms.ModelForm):
@@ -271,7 +271,7 @@ class SuppliesForm(forms.ModelForm):
 
 
 class MABEditCandidateForm(forms.Form):
-    candidate = forms.ModelChoiceField(queryset=Brother.objects.filter(brother_status='0'), required=True)
+    candidate = forms.ModelChoiceField(queryset=Brother.objects.filter(brother_status='0'), required=True, help_text="Choose the candidate whose Meet a Brothers you would like to update!")
 
 
 class MeetABrotherEditForm(forms.Form):
@@ -380,6 +380,11 @@ class CommitteeCreateForm(forms.ModelForm):
     class Meta:
         model = Committee
         fields = ['committee', 'chair', 'meeting_interval', 'meeting_time', 'meeting_day']
+        widgets = {'chair': forms.HiddenInput()}
+
+    def __init__(self, *args, **kwargs):
+        super(CommitteeCreateForm, self).__init__(*args, **kwargs)
+        self.fields['chair'].required = False
 
 
 class CommitteeForm(forms.Form):

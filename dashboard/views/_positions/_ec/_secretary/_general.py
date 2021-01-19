@@ -12,7 +12,7 @@ from dashboard.models import ChapterEvent, Excuse, RecruitmentEvent, Position
 from dashboard.utils import get_semester, verify_position
 
 
-@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+@verify_position(['secretary', 'vice-president', 'president', 'adviser'])
 def secretary(request):
     """ Renders the secretary page giving access to excuses and ChapterEvents """
     excuses = Excuse.objects.filter(event__semester=get_semester(), status='0')\
