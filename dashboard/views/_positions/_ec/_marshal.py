@@ -1,13 +1,11 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 
 import datetime
 import random
 
 from dashboard.forms import (
-    BrotherForm,
-    BrotherEditForm,
     MABEditCandidateForm,
     MeetABrotherEditForm,
     MeetABrotherForm,
@@ -17,14 +15,12 @@ from dashboard.models import (
     ChapterEvent,
     Excuse,
     MeetABrother,
-    User,
+    Position,
 )
 from dashboard.utils import forms_is_valid, get_semester, verify_position
 
-from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
 
-
-@verify_position(['marshal', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.MARSHAL, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def marshal(request):
     """ Renders the marshal page listing all the candidates and relevant information to them """
     candidates = Brother.objects.filter(brother_status='0').order_by("last_name", "first_name")
@@ -72,7 +68,7 @@ def marshal(request):
         if 'submit' in request.POST:
             if forms_is_valid(mab_form_list):
                 for counter, form in enumerate(mab_form_list):
-                    instance = form.cleaned_data
+                    instance = form.clean()
                     if instance['assigned_brother1']:
                         mab1 = MeetABrother(candidate=candidates[counter], brother=instance['assigned_brother1'])
                         mab1.save()
@@ -86,7 +82,7 @@ def marshal(request):
                 random1 = []
                 random2 = []
                 for form in mab_form_list:
-                    instance = form.cleaned_data
+                    instance = form.clean()
                     if instance['randomize']:
                         queryset1 = form.fields['assigned_brother1'].queryset
                         queryset2 = queryset1
@@ -113,6 +109,7 @@ def marshal(request):
         'candidates': candidates,
         'candidate_attendance': candidate_attendance,
         'mab_form_list': mab_form_list,
+        'position': Position.objects.get(title=Position.PositionChoices.MARSHAL)
     }
     return render(request, 'marshal/marshal.html', context)
 
@@ -153,7 +150,7 @@ def marshal_mab_edit(request):
         if 'submit' in request.POST:
             if forms_is_valid(mab_form_list):
                 for counter, form in enumerate(mab_form_list):
-                    instance = form.cleaned_data
+                    instance = form.clean()
                     if instance['update'] is True: #the user checked yes on this pairing of meet a brother, meaning we need to create a new one if it doesn't yet exist
                         mab, created = MeetABrother.objects.get_or_create(candidate=candidate, brother=brothers[counter], defaults={'completed':True, 'week':arbitrary_date_before_time})
                         if created: #if a new meet a brother is created we need to save it
@@ -166,6 +163,8 @@ def marshal_mab_edit(request):
                             continue
                     else:
                         pass # instance['update'] is null
+                request.session.pop('candidate', None)
+                return HttpResponseRedirect(reverse('dashboard:marshal'))
         if 'check_all' in request.POST:
             request.session['check_all'] = True
             return HttpResponseRedirect(reverse('dashboard:marshal_mab_edit'))
@@ -178,60 +177,3 @@ def marshal_mab_edit(request):
     }
 
     return render(request, 'marshal/mab-edit.html', context)
-
-
-@verify_position(['marshal', 'vice-president', 'president', 'adviser'])
-def marshal_candidate(request, brother_id):
-    """ Renders the marshal page to view candidate info """
-    brother = Brother.objects.get(pk=brother_id)
-    context = {
-        'brother': brother,
-        'position': 'Marshal',
-    }
-    return render(request, "brother-view.html", context)
-
-
-@verify_position(['marshal', 'vice-president', 'president', 'adviser'])
-def marshal_candidate_add(request):
-    """ Renders the Marshal way of viewing a candidate """
-    form = BrotherForm(request.POST or None)
-
-    if request.method == 'POST':
-        if form.is_valid():
-            instance = form.cleaned_data
-            user = User.objects.create_user(instance['case_ID'], instance['case_ID'] + "@case.edu",
-                                            instance['password'])
-            user.last_name = instance['last_name']
-            user.save()
-
-            brother = form.save(commit=False)
-            brother.user = user
-            brother.save()
-            return HttpResponseRedirect(reverse('dashboard:marshal'))
-
-    context = {
-        'title': 'Add New Candidate',
-        'form': form,
-    }
-    return render(request, 'model-add.html', context)
-
-
-class CandidateEdit(DashboardUpdateView):
-    @verify_position(['marshal', 'vice-president', 'president', 'adviser'])
-    def get(self, request, *args, **kwargs):
-        return super(CandidateEdit, self).get(request, *args, **kwargs)
-
-    model = Brother
-    template_name = 'generic-forms/base-form.html'
-    success_url = reverse_lazy('dashboard:marshal')
-    form_class = BrotherEditForm
-
-
-class CandidateDelete(DashboardDeleteView):
-    @verify_position(['marshal', 'vice-president', 'president', 'adviser'])
-    def get(self, request, *args, **kwargs):
-        return super(CandidateDelete, self).get(request, *args, **kwargs)
-
-    model = Brother
-    template_name = 'generic-forms/base-confirm-delete.html'
-    success_url = reverse_lazy('dashboard:marshal')

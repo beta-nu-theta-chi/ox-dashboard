@@ -4,11 +4,11 @@ from django.urls import reverse, reverse_lazy
 from django.utils.text import slugify
 
 from dashboard.forms import ExcuseResponseForm
-from dashboard.models import Excuse, RecruitmentEvent
+from dashboard.models import Excuse, RecruitmentEvent, Position
 from dashboard.utils import verify_position
 
 
-@verify_position(['recruitment-chair', 'secretary', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.SECRETARY, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def excuse(request, position_slug, excuse_id):
     """ Renders Excuse response form """
     # since this view can be accessed from multiple different pages,in order to redirect back to those pages,
@@ -42,13 +42,13 @@ def excuse_quick_accept(request, position_slug, excuse_id):
     return HttpResponseRedirect('/' + position_slug)
 
 
-@verify_position(['secretary', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.SECRETARY, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def secretary_all_excuses(request):
     """ Renders Excuse archive """
     excuses = Excuse.objects.exclude(status='0').exclude(event__in=RecruitmentEvent.objects.all()).order_by('brother__last_name', 'event__date')
 
     context = {
         'excuses': excuses,
-        'position': 'Secretary',
+        'position': Position.objects.get(title=Position.PositionChoices.SECRETARY),
     }
     return render(request, 'excuses-archive.html', context)

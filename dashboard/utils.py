@@ -5,7 +5,13 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.core.handlers.wsgi import WSGIRequest
 
-from .forms import BrotherAttendanceForm, ChapterEventForm, ServiceEventForm, HealthAndSafetyEventForm, PhilanthropyEventForm
+from .forms import (
+    BrotherAttendanceForm,
+    ChapterEventForm,
+    ServiceEventForm,
+    HealthAndSafetyEventForm,
+    PhilanthropyEventForm,
+)
 from .models import *
 
 
@@ -254,6 +260,13 @@ def attendance_list(request, event):
     checkbox field to determine the attendance of the brother at the event with a label set to the brother's name
     prefix=counter ensures that in the html, the forms have different id's
 
+    :param HttpRequest request:
+        the request object for the view the resulting form list will be a part of
+    :param Event event:
+        the event object to create an attendance list for
+    :returns:
+        the list of brothers eligible to attend this event and the list of attendance forms, both listed in the same order
+    :rtype: list[brothers], list[BrotherAttendanceForm]
     """
     brothers = event.eligible_attendees.all()
     brother_form_list = []
@@ -476,7 +489,7 @@ def mark_attendance_list(brother_form_list, brothers, event):
 
     """
     for counter, form in enumerate(brother_form_list):
-        instance = form.cleaned_data
+        instance = form.clean()
         if instance['present'] is True:
             event.attendees_brothers.add(brothers[counter])
             event.save()
@@ -513,6 +526,19 @@ def save_event(instance, eligible_attendees):
 
 
 def get_human_readable_model_name(object):
+    """When given any object, returns the human readable name of its class/model
+
+    :param str position:
+        the string holding the title of the position, written as its related slug
+
+    :param HttpRequest request:
+        the request object for the view the resulting form will be a part of
+
+    :returns:
+        the form related to position
+    :rtype: Form
+
+    """
     was_last_upper = True
     end_string = ''
     for char in object.__class__.__name__:
@@ -529,12 +555,24 @@ def get_human_readable_model_name(object):
     return end_string
 
 
-# a dictionary holding the different position options and returning the corresponding edit form
 def get_form_from_position(position, request):
+    """Using the title of the position, return the event form related to that position
+
+    :param str position:
+        the string holding the title of the position, written as its related slug
+
+    :param HttpRequest request:
+        the request object for the view the resulting form will be a part of
+
+    :returns:
+        the form related to position
+    :rtype: Form
+
+    """
     form_dict = {
-        'philanthropy-chair': PhilanthropyEventForm(request.POST or None, initial={'name': 'Philanthropy Event'}),
-        'secretary': ChapterEventForm(request.POST or None, initial={'name': 'Chapter Event'}),
-        'service-chair': ServiceEventForm(request.POST or None, initial={'name': 'Service Event'}),
-        'vphs': HealthAndSafetyEventForm(request.POST or None, initial={'name': 'Sacred Purpose Event'}),
+        Position.PositionChoices.PHILANTHROPY_CHAIR: PhilanthropyEventForm(request.POST or None, initial={'name': 'Philanthropy Event'}),
+        Position.PositionChoices.SECRETARY: ChapterEventForm(request.POST or None, initial={'name': 'Chapter Event'}),
+        Position.PositionChoices.SERVICE_CHAIR: ServiceEventForm(request.POST or None, initial={'name': 'Service Event'}),
+        Position.PositionChoices.VICE_PRESIDENT_OF_HEALTH_AND_SAFETY: HealthAndSafetyEventForm(request.POST or None, initial={'name': 'Sacred Purpose Event'}),
     }
     return form_dict[position]

@@ -15,7 +15,7 @@ from dashboard.views._dashboard_generic_views import DashboardDeleteView
 
 
 def classes(request, department=None, number=None, brother=None):
-    if request.user.brother in Position.objects.get(title='scholarship-chair').brothers.all():
+    if request.user.brother in Position.objects.get(title=Position.PositionChoices.SCHOLARSHIP_CHAIR).brothers.all():
         view = "scholarship"
     else:
         view = ""
@@ -87,7 +87,7 @@ def classes_add(request):
 
 
 class ClassesDelete(DashboardDeleteView):
-    @verify_position(['scholarship-chair', 'president', 'adviser'])
+    @verify_position([Position.PositionChoices.SCHOLARSHIP_CHAIR, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
     def get(self, request, *args, **kwargs):
         return super(ClassesDelete, self).get(request, *args, **kwargs)
 

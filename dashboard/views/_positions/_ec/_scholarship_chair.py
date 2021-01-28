@@ -7,7 +7,7 @@ from dashboard.forms import (
 )
 from dashboard.models import (
     Brother,
-    ScholarshipReport,
+    ScholarshipReport, Position,
 )
 from dashboard.utils import (
     committee_meeting_panel,
@@ -16,10 +16,10 @@ from dashboard.utils import (
     verify_position,
 )
 
-from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+from dashboard.views._dashboard_generic_views import DashboardUpdateView
 
 
-@verify_position(['scholarship-chair', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.SCHOLARSHIP_CHAIR, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def scholarship_c(request):
     """ Renders the Scholarship page listing all brother gpas """
 
@@ -37,7 +37,7 @@ def scholarship_c(request):
 
     brother_plans = zip(brothers, plans)
 
-    committee_meetings, context = committee_meeting_panel('scholarship-chair')
+    committee_meetings, context = committee_meeting_panel(Position.PositionChoices.SCHOLARSHIP_CHAIR)
 
     context.update({
         'brother_plans': brother_plans,
@@ -45,20 +45,20 @@ def scholarship_c(request):
     return render(request, "scholarship-chair/scholarship-chair.html", context)
 
 
-@verify_position(['scholarship-chair', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.SCHOLARSHIP_CHAIR, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def scholarship_c_plan(request, plan_id):
     """Renders Scholarship Plan page for the Scholarship Chair"""
     plan = ScholarshipReport.objects.get(pk=plan_id)
 
     context = {
-        'type': 'scholarship-chair',
+        'type': Position.PositionChoices.SCHOLARSHIP_CHAIR,
         'plan': plan,
     }
 
     return render(request, 'scholarship-chair/scholarship-report.html', context)
 
 
-@verify_position(['scholarship-chair', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.SCHOLARSHIP_CHAIR, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def scholarship_c_gpa(request):
     """Renders Scholarship Gpa update page for the Scholarship Chair"""
     plans = ScholarshipReport.objects.filter(semester=get_semester()).order_by("brother__last_name")
@@ -74,7 +74,7 @@ def scholarship_c_gpa(request):
     if request.method == 'POST':
         if forms_is_valid(form_list):
             for counter, form in enumerate(form_list):
-                instance = form.cleaned_data
+                instance = form.clean()
                 plan = plans[counter]
                 plan.cumulative_gpa = instance['cum_GPA']
                 plan.past_semester_gpa = instance['past_GPA']
@@ -89,7 +89,7 @@ def scholarship_c_gpa(request):
 
 
 class ScholarshipReportEdit(DashboardUpdateView):
-    @verify_position(['scholarship-chair', 'president', 'adviser'])
+    @verify_position([Position.PositionChoices.SCHOLARSHIP_CHAIR, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
     def get(self, request, *args, **kwargs):
         return super(ScholarshipReportEdit, self).get(request, *args, **kwargs)
 

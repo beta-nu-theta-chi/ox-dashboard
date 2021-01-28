@@ -2,16 +2,16 @@ from django.shortcuts import render
 
 import datetime
 
-from dashboard.models import Brother, RecruitmentEvent, Event, Excuse
+from dashboard.models import Brother, RecruitmentEvent, Event, Excuse, Position
 from dashboard.utils import verify_position, get_semester
 
 
-@verify_position(['secretary', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.SECRETARY, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def secretary_attendance(request):
     """ Renders the secretary view for chapter attendance """
     brothers = Brother.objects.exclude(brother_status='2').order_by('last_name', 'first_name')
     events = Event.objects.filter(semester=get_semester(), mandatory=True, date__lt=datetime.date.today())\
-        .exclude(pk__in=RecruitmentEvent.objects.all().values_list('pk', flat=True))
+        .exclude(pk__in=RecruitmentEvent.objects.all())
     accepted_excuses = Excuse.objects.filter(event__semester=get_semester(), status='1', event__in=events)
     brother_attendance = []
 
@@ -35,7 +35,7 @@ def secretary_attendance(request):
 
     context = {
         'brother_attendance': brother_attendance,
-        'position': 'Secretary'
+        'position': Position.objects.get(title=Position.PositionChoices.SECRETARY),
     }
 
     return render(request, 'attendance.html', context)

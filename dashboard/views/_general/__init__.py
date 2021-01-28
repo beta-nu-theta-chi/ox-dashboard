@@ -8,4 +8,3 @@ from dashboard.views._general._meet_a_brother import *
 from dashboard.views._general._minecraft import *
 from dashboard.views._general._phone_tree import *
 from dashboard.views._general._report import *
-from dashboard.views._dashboard_generic_views import *

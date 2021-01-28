@@ -15,6 +15,7 @@ from dashboard.models import (
     Position,
     Semester,
     TimeChoices,
+    ec_positions,
 )
 from dashboard.utils import (
     create_node_with_children,
@@ -24,32 +25,30 @@ from dashboard.utils import (
 )
 
 
-@verify_position(['president', 'adviser'])
+@verify_position([Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def president(request):
     """ Renders the President page and all relevant information """
     return render(request, 'president.html', {'semester_picker': SelectSemester()})
 
 
-@verify_position(['president', 'adviser'])
+@verify_position([Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def create_phone_tree(request):
     """Creates the new phone tree and redirects to to the phone tree view."""
     # delete the exiting phone tree
     PhoneTreeNode.objects.all().delete()
 
     # Should only ever have 1 of each EC position
-    president = Position.objects.filter(title='president')[0].brothers.all()[0]
-    marshal = Position.objects.filter(title='marshal')[0].brothers.all()[0]
+    president = Brother.objects.filter(position_title=Position.PositionChoices.PRESIDENT)[0]
+    marshal = Brother.objects.filter(position_title=Position.PositionChoices.MARSHAL)[0]
 
     # get all the EC brothers that are not the president nor marshal
-    standard_ec_brothers = list(
-        map(lambda pos : pos.brothers.all()[0],
-            filter(Position.in_ec, Position.objects.exclude(title='president') \
-                                                   .exclude(title='marshal'))))
+    standard_ec_brothers = Brother.objects.\
+        filter(position__title__in=[x for x in ec_positions if x not in
+                                    [Position.PositionChoices.PRESIDENT, Position.PositionChoices.MARSHAL]])
 
     all_ec_brothers = standard_ec_brothers + [president, marshal]
 
-    actives = Brother.objects.filter(brother_status='1') \
-                             .exclude(user__in=list(map(lambda bro : bro.user, all_ec_brothers)))
+    non_ec_actives = Brother.objects.filter(brother_status='1').exclude(pk__in=all_ec_brothers)
 
     candidates = Brother.objects.filter(brother_status='0')
 
@@ -59,8 +58,8 @@ def create_phone_tree(request):
     create_node_with_children(marshal, president, candidates)
 
     actives_index = 0
-    num_non_ec = len(actives)
-    num_standard_ec = len(standard_ec_brothers)
+    num_non_ec = non_ec_actives.count()
+    num_standard_ec = standard_ec_brothers.count
     actives_per_ec_member = int(num_non_ec / num_standard_ec)
     remainder_actives = num_non_ec % num_standard_ec
 
@@ -75,7 +74,7 @@ def create_phone_tree(request):
             actives_to_assign = actives_per_ec_member
 
         # get the brothers to be assigned to the current ec_member
-        assigned_actives = actives[actives_index:actives_index + actives_to_assign]
+        assigned_actives = non_ec_actives[actives_index:actives_index + actives_to_assign]
         actives_index = actives_index + actives_to_assign
 
         # assign the brothers to the current ec_member
@@ -140,7 +139,7 @@ def __create_chapter_events(semester):
         ).save())
 
 
-@verify_position(['president', 'adviser'])
+@verify_position([Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def cleanup_semester(request):
 
     if request.method == 'POST':

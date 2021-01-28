@@ -250,16 +250,7 @@ class Grade(models.Model):
 
 def query_positions_with_committee():
     choices = Q()
-    for position in (
-        'vphs',
-        'recruitment-chair',
-        'scholarship-chair',
-        'philanthropy-chair',
-        'pr-chair',
-        'alumni-relations-chair',
-        'memdev-chair',
-        'social-chair'
-    ):
+    for position in committee_chairs:
         choices = choices | Q(title=position)
     return choices
 
@@ -311,14 +302,7 @@ class Position(models.Model):
 
     def in_ec(self):
         return self.title in (
-            'president',
-            'vice-president',
-            'vphs',
-            'secretary',
-            'treasurer',
-            'marshal',
-            'recruitment-chair',
-            'scholarship-chair',
+            ec_positions
         )
 
     brothers = models.ManyToManyField(Brother)
@@ -328,6 +312,38 @@ class Position(models.Model):
 
     def __str__(self):
         return str(self.PositionChoices(self.title).label)
+
+
+ec_positions = (
+    Position.PositionChoices.PRESIDENT,
+    Position.PositionChoices.VICE_PRESIDENT,
+    Position.PositionChoices.VICE_PRESIDENT_OF_HEALTH_AND_SAFETY,
+    Position.PositionChoices.SECRETARY,
+    Position.PositionChoices.TREASURER,
+    Position.PositionChoices.MARSHAL,
+    Position.PositionChoices.RECRUITMENT_CHAIR,
+    Position.PositionChoices.SCHOLARSHIP_CHAIR,
+)
+
+
+committee_chairs = (
+    Position.PositionChoices.VICE_PRESIDENT_OF_HEALTH_AND_SAFETY,
+    Position.PositionChoices.RECRUITMENT_CHAIR,
+    Position.PositionChoices.SCHOLARSHIP_CHAIR,
+    Position.PositionChoices.PHILANTHROPY_CHAIR,
+    Position.PositionChoices.PUBLIC_RELATIONS_CHAIR,
+    Position.PositionChoices.ALUMNI_RELATIONS_CHAIR,
+    Position.PositionChoices.MEMBERSHIP_DEVELOPMENT_CHAIR,
+    Position.PositionChoices.SOCIAL_CHAIR
+)
+
+event_chairs = (
+    Position.PositionChoices.VICE_PRESIDENT_OF_HEALTH_AND_SAFETY,
+    Position.PositionChoices.SECRETARY,
+    Position.PositionChoices.RECRUITMENT_CHAIR,
+    Position.PositionChoices.PHILANTHROPY_CHAIR,
+    Position.PositionChoices.SERVICE_CHAIR,
+)
 
 
 class Report(models.Model):
@@ -479,16 +495,20 @@ class Event(models.Model):
         return self.name + " " + str(self.date)
 
 
+def set_event_kwarg_defaults(kwargs, slug, name):
+    if 'slug' not in kwargs:
+        kwargs['slug'] = slug
+    if 'name' not in kwargs:
+        kwargs['name'] = name
+
+
 class ChapterEvent(Event):
 
     def __str__(self):
         return "Chapter Event - " + str(self.date)
 
     def __init__(self, *args, **kwargs):
-        if 'slug' not in kwargs:
-            kwargs['slug'] = 'secretary'
-        if 'name' not in kwargs:
-            kwargs['name'] = 'Chapter Event'
+        set_event_kwarg_defaults(kwargs, Position.PositionChoices.SECRETARY, 'Chapter Event')
         super(ChapterEvent, self).__init__(*args, **kwargs)
 
 
@@ -501,10 +521,7 @@ class PhilanthropyEvent(Event):
         return "Philanthropy Event - " + str(self.date)
 
     def __init__(self, *args, **kwargs):
-        if 'slug' not in kwargs:
-            kwargs['slug'] = 'philanthropy-chair'
-        if 'name' not in kwargs:
-            kwargs['name'] = 'Philanthropy Event'
+        set_event_kwarg_defaults(kwargs, Position.PositionChoices.PHILANTHROPY_CHAIR, 'Philanthropy Event')
         super(PhilanthropyEvent, self).__init__(*args, **kwargs)
 
 
@@ -517,10 +534,7 @@ class ServiceEvent(Event):
         return "Service Event - " + str(self.date)
 
     def __init__(self, *args, **kwargs):
-        if 'slug' not in kwargs:
-            kwargs['slug'] = 'service-chair'
-        if 'name' not in kwargs:
-            kwargs['name'] = 'Service Event'
+        set_event_kwarg_defaults(kwargs, Position.PositionChoices.SERVICE_CHAIR, 'Service Event')
         super(ServiceEvent, self).__init__(*args, **kwargs)
 
 
@@ -534,10 +548,7 @@ class RecruitmentEvent(Event):
         return "Recruitment Event - " + str(self.date)
 
     def __init__(self, *args, **kwargs):
-        if 'slug' not in kwargs:
-            kwargs['slug'] = 'recruitment-chair'
-        if 'name' not in kwargs:
-            kwargs['name'] = 'Recruitment Event'
+        set_event_kwarg_defaults(kwargs, Position.PositionChoices.RECRUITMENT_CHAIR, 'Recruitment Event')
         super(RecruitmentEvent, self).__init__(*args, **kwargs)
 
 
@@ -546,10 +557,7 @@ class HealthAndSafetyEvent(Event):
         return "Health and Safety Event - " + str(self.date)
 
     def __init__(self, *args, **kwargs):
-        if 'slug' not in kwargs:
-            kwargs['slug'] = 'vphs'
-        if 'name' not in kwargs:
-            kwargs['name'] = 'Sacred Purpose Event'
+        set_event_kwarg_defaults(kwargs, Position.PositionChoices.VICE_PRESIDENT_OF_HEALTH_AND_SAFETY, 'Sacred Purpose Event')
         super(HealthAndSafetyEvent, self).__init__(*args, **kwargs)
 
 
@@ -558,10 +566,7 @@ class ScholarshipEvent(Event):
         return "Scholarship Event - " + str(self.date)
 
     def __init__(self, *args, **kwargs):
-        if 'slug' not in kwargs:
-            kwargs['slug'] = 'scholarship-chair'
-        if 'name' not in kwargs:
-            kwargs['name'] = 'Scholarship Event'
+        set_event_kwarg_defaults(kwargs, Position.PositionChoices.SCHOLARSHIP_CHAIR, 'Scholarship Event')
         super(ScholarshipEvent, self).__init__(*args, **kwargs)
 
 
@@ -640,10 +645,7 @@ class Committee(models.Model):
     meeting_time = models.TimeField(choices=TimeChoices.choices)
 
     def __str__(self):
-        for x, y in self.CommitteeChoices.choices:
-            if x == self.committee:
-                return y + " Committee"
-        return self.committee
+        return self.CommitteeChoices(self.committee).label
 
 
 class CommitteeMeetingEvent(Event):
@@ -791,6 +793,6 @@ class PhoneTreeNode(models.Model):
     notified_by = models.ForeignKey(Brother, on_delete=models.PROTECT, null=True, related_name='phone_tree_notified_by') # null is the root (ie president)
 
     def __str__(self):
-        if self.brother.position_set.filter(title='president'):
+        if self.brother.position_set.filter(title=Position.PositionChoices.PRESIDENT):
             return self.brother.first_name + " " + self.brother.last_name
         return self.brother.first_name + " " + self.brother.last_name + " notified by " + self.notified_by.first_name + " " + self.notified_by.last_name

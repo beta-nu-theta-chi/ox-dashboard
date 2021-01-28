@@ -2,7 +2,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
 from dashboard.forms import EventForm
-from dashboard.models import Event, Brother, Position
+from dashboard.models import Event, Brother, Position, event_chairs
 from dashboard.utils import (
     save_event,
     verify_position,
@@ -11,7 +11,7 @@ from dashboard.utils import (
 from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
 
 
-@verify_position(['philanthropy-chair', 'service-chair', 'secretary', 'vphs', 'president', 'adviser'])
+@verify_position(event_chairs + (Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER))
 def event_add(request, position_slug):
     # since this view can be accessed from multiple different pages, in order to redirect back to those pages,
     # pass in a slug for the position doing a redirect on the slug should redirect back to the position's page
@@ -34,7 +34,8 @@ def event_add(request, position_slug):
 
 
 class EventEdit(DashboardUpdateView):
-    @verify_position(['philanthropy-chair', 'service-chair', 'secretary', 'vphs', 'president', 'adviser'])
+    @verify_position(event_chairs + (Position.PositionChoices.VICE_PRESIDENT,
+                                         Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER))
     def get(self, request, *args, **kwargs):
         return super(EventEdit, self).get(request, *args, **kwargs)
 
@@ -49,7 +50,8 @@ class EventEdit(DashboardUpdateView):
 
 
 class EventDelete(DashboardDeleteView):
-    @verify_position(['philanthropy-chair', 'service-chair', 'recruitment-chair', 'secretary', 'vphs', 'president', 'adviser'])
+    @verify_position(event_chairs + (Position.PositionChoices.VICE_PRESIDENT,
+                                         Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER))
     def get(self, request, *args, **kwargs):
         return super(EventDelete, self).get(request, *args, **kwargs)
 

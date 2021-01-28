@@ -16,7 +16,7 @@ from dashboard.models import (
     Brother,
     Excuse,
     PotentialNewMember,
-    RecruitmentEvent,
+    RecruitmentEvent, Position,
 )
 from dashboard.utils import (
     attendance_list,
@@ -35,7 +35,7 @@ from dashboard.utils import (
 from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
 
 
-@verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def recruitment_c(request):
     """ Renders Recruitment chair page with events for the current and following semester """
     events = RecruitmentEvent.objects.all()
@@ -51,7 +51,7 @@ def recruitment_c(request):
 
     potential_new_members = PotentialNewMember.objects.all()
 
-    committee_meetings, context = committee_meeting_panel('recruitment-chair')
+    committee_meetings, context = committee_meeting_panel(Position.PositionChoices.RECRUITMENT_CHAIR)
 
     context.update({
         'events': semester_events,
@@ -62,14 +62,14 @@ def recruitment_c(request):
     return render(request, 'recruitment-chair/recruitment-chair.html', context)
 
 
-@verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def recruitment_c_all_excuses(request):
     """ Renders Excuse archive"""
     excuses = Excuse.objects.exclude(status='0').filter(event__in=RecruitmentEvent.objects.all()).order_by('brother__last_name', 'event__date')
 
     context = {
         'excuses': excuses,
-        'position': 'Recruitment Chair',
+        'position': Position.objects.get(title=Position.PositionChoices.RECRUITMENT_CHAIR),
     }
     return render(request, 'excuses-archive.html', context)
 
@@ -92,7 +92,7 @@ def all_pnm_csv(request):
     return response
 
 
-@verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def recruitment_c_pnm(request, pnm_id):
     """ Renders PNM view for recruitment chair """
     pnm = PotentialNewMember.objects.get(pk=pnm_id)
@@ -111,7 +111,7 @@ def recruitment_c_pnm(request, pnm_id):
     return render(request, 'potential-new-member.html', context)
 
 
-@verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def recruitment_c_pnm_add(request):
     """ Renders the recruitment chair way of adding PNMs """
     form = PotentialNewMemberForm(request.POST or None)
@@ -129,7 +129,7 @@ def recruitment_c_pnm_add(request):
 
 
 class PnmDelete(DashboardDeleteView):
-    @verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
+    @verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
     def get(self, request, *args, **kwargs):
         return super(PnmDelete, self).get(request, *args, **kwargs)
 
@@ -139,7 +139,7 @@ class PnmDelete(DashboardDeleteView):
 
 
 class PnmEdit(DashboardUpdateView):
-    @verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
+    @verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
     def get(self, request, *args, **kwargs):
         return super(PnmEdit, self).get(request, *args, **kwargs)
 
@@ -149,7 +149,7 @@ class PnmEdit(DashboardUpdateView):
     form_class = PotentialNewMemberForm
 
 
-@verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def recruitment_c_event(request, event_id):
     """ Renders the recruitment chair way of view RecruitmentEvents """
     event = RecruitmentEvent.objects.get(pk=event_id)
@@ -176,7 +176,7 @@ def recruitment_c_event(request, event_id):
                 mark_attendance_list(pnm_form_list, pnms, event)
         if "edit" in request.POST:
             if form.is_valid():
-                instance = form.cleaned_data
+                instance = form.clean()
                 update_eligible_brothers(instance, event)
         return redirect(request.path_info, kwargs={'event_id': event_id})
 
@@ -193,7 +193,7 @@ def recruitment_c_event(request, event_id):
     return render(request, "events/recruitment-event.html", context)
 
 
-@verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def recruitment_c_event_add(request):
     """ Renders the recruitment chair way of adding RecruitmentEvents """
     form = RecruitmentEventForm(request.POST or None, initial={'name': 'Recruitment Event'})
@@ -207,7 +207,7 @@ def recruitment_c_event_add(request):
             return HttpResponseRedirect(reverse('dashboard:recruitment_c'))
 
     context = {
-        'position': 'Recruitment Chair',
+        'position': Position.objects.get(title=Position.PositionChoices.RECRUITMENT_CHAIR),
         'form': form,
     }
     return render(request, "event-add.html", context)
@@ -216,7 +216,7 @@ def recruitment_c_event_add(request):
 # since recruitment events have additional info that can be edited it needs its own view
 # other event types use EventEdit in views/events.py
 class RecruitmentEventEdit(DashboardUpdateView):
-    @verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
+    @verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
     def get(self, request, *args, **kwargs):
         return super(RecruitmentEventEdit, self).get(request, *args, **kwargs)
 
@@ -230,7 +230,7 @@ class RecruitmentEventEdit(DashboardUpdateView):
     model = RecruitmentEvent
 
 
-@verify_position(['recruitment-chair', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def recruitment_c_attendance(request):
     """ Renders the secretary view for chapter attendance """
     brothers = Brother.objects.exclude(brother_status='2').order_by('last_name', 'first_name')
@@ -258,7 +258,7 @@ def recruitment_c_attendance(request):
 
     context = {
         'brother_attendance': brother_attendance,
-        'position': 'Recruitment Chair'
+        'position': Position.objects.get(title=Position.PositionChoices.RECRUITMENT_CHAIR),
     }
 
     return render(request, 'attendance.html', context)

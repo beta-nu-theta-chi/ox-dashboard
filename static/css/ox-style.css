@@ -124,7 +124,7 @@ textarea {
 
 .marshalmeetabrother {
     display: grid;
-    grid-template-columns: 3fr 1fr 2fr 2fr 3fr;
+    grid-template-columns: 2fr 1fr 2fr 2fr 3fr 1fr;
     gap: 5px 5px;
     align-items:center;
 }

@@ -5,4 +5,3 @@ from dashboard.views._brother._general import *
 from dashboard.views._brother._media import *
 from dashboard.views._brother._pnm import *
 from dashboard.views._brother._service import *
-from dashboard.views._dashboard_generic_views import *

@@ -10,7 +10,7 @@ from dashboard.forms import (
 from dashboard.models import (
     Brother,
     ServiceEvent,
-    ServiceSubmission,
+    ServiceSubmission, Position,
 )
 from dashboard.utils import (
     attendance_list,
@@ -23,7 +23,7 @@ from dashboard.utils import (
 )
 
 
-@verify_position(['service-chair', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.SERVICE_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def service_c(request):
     """ Renders the service chair page with service submissions """
     events = ServiceEvent.objects.filter(semester=get_semester())
@@ -31,6 +31,8 @@ def service_c(request):
 
     submissions_submitted = ServiceSubmission.objects.filter(semester=get_semester(), status='1').order_by(
         "date")
+
+    position = Position.objects.get(title=Position.PositionChoices.SERVICE_CHAIR)
 
     hours_pending = 0
     for submission in submissions_pending:
@@ -49,13 +51,13 @@ def service_c(request):
         'hours_pending': hours_pending,
         'submissions_pending': submissions_pending,
         'submissions_submitted': submissions_submitted,
-        'position': 'Service Chair',
-        'position_slug': 'service-chair', # a slug is just a label containing only letters, numbers, underscores, or hyphens
+        'position': position,
+        'position_slug': position.title, # a slug is just a label containing only letters, numbers, underscores, or hyphens
     }
     return render(request, 'service-chair/service-chair.html', context)
 
 
-@verify_position(['service-chair', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.SERVICE_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def service_c_event(request, event_id):
     """ Renders the service chair way of adding ServiceEvent """
     event = ServiceEvent.objects.get(pk=event_id)
@@ -68,7 +70,7 @@ def service_c_event(request, event_id):
             mark_attendance_list(brother_form_list, brothers, event)
         if "edit" in request.POST:
             if form.is_valid():
-                instance = form.cleaned_data
+                instance = form.clean()
                 update_eligible_brothers(instance, event)
         return redirect(request.path_info, kwargs={'event_id': event_id})
 
@@ -83,7 +85,7 @@ def service_c_event(request, event_id):
     return render(request, 'events/service-event.html', context)
 
 
-@verify_position(['service-chair', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.SERVICE_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def service_c_submission_response(request, submission_id):
     """ Renders the service chair way of responding to submissions """
     submission = ServiceSubmission.objects.get(pk=submission_id)
@@ -91,7 +93,7 @@ def service_c_submission_response(request, submission_id):
 
     if request.method == 'POST':
         if form.is_valid():
-            instance = form.cleaned_data
+            instance = form.clean()
             submission.status = instance['status']
             submission.save()
             return HttpResponseRedirect(reverse('dashboard:service_c'))
@@ -105,7 +107,7 @@ def service_c_submission_response(request, submission_id):
     return render(request, 'service-chair/service-submission.html', context)
 
 
-@verify_position(['service-chair', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.SERVICE_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def service_c_event_add(request):
     """ Renders the service chair way of adding ServiceEvent """
     form = ServiceEventForm(request.POST or None, initial={'name': 'Service Event'})
@@ -119,14 +121,14 @@ def service_c_event_add(request):
             return HttpResponseRedirect(reverse('dashboard:service_c'))
 
     context = {
-        'position': 'Service Chair',
+        'position': Position.PositionChoices.SERVICE_CHAIR.label,
         'form': form,
     }
 
     return render(request, 'event-add.html', context)
 
 
-@verify_position(['service-chair', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.SERVICE_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def service_c_hours(request):
     """ Renders the service chair way of viewing total service hours by brothers """
     brothers = Brother.objects.exclude(brother_status='2').order_by("last_name", "first_name")
@@ -151,7 +153,7 @@ def service_c_hours(request):
     brother_hours_list = zip(brothers, approved_hours_list, pending_hours_list)
 
     context = {
-        'position': 'Service Chair',
+        'position': Position.PositionChoices.SERVICE_CHAIR.label,
         'brother_hours_list': brother_hours_list,
     }
 

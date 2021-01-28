@@ -21,7 +21,7 @@ from dashboard.utils import (
 )
 
 
-@verify_position(['vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def vice_president(request):
     """ Renders the Vice President page and all relevant information, primarily committee related """
     committee_meetings = CommitteeMeetingEvent.objects.filter(semester=get_semester())\
@@ -29,7 +29,7 @@ def vice_president(request):
     committees = Committee.objects.all()
 
     context = {
-        'position': 'Vice President',
+        'position': Position.objects.get(title=Position.PositionChoices.VICE_PRESIDENT),
         'committees': committees,
         'committee_meetings': committee_meetings,
     }
@@ -37,7 +37,7 @@ def vice_president(request):
     return render(request, 'vice-president/vice-president.html', context)
 
 
-@verify_position(['vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def vice_president_committee_assignments(request):
     """Renders Committee assignment update page for the Vice President"""
     form_list = []
@@ -55,7 +55,7 @@ def vice_president_committee_assignments(request):
         if forms_is_valid(form_list):
             meeting_map = {}
             for counter, form in enumerate(form_list):
-                instance = form.cleaned_data
+                instance = form.clean()
                 # since the form was created in the same order that the brothers are ordered in you can just use
                 # counter to get the brother associated with the form
                 brother = brothers[counter]
@@ -114,13 +114,13 @@ def vice_president_committee_assignments(request):
     return render(request, 'committee-assignment.html', context)
 
 
-@verify_position(['vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 @transaction.atomic
 def in_house(request):
     """Allows the VP to select who's living in the house"""
 
     form = InHouseForm(request.POST or None)
-    position = Position.objects.get(title='vice-president')
+    position = Position.objects.get(title=Position.PositionChoices.VICE_PRESIDENT)
 
     if request.method == 'POST':
         if form.is_valid():

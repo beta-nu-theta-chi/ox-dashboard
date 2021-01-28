@@ -48,7 +48,7 @@ def __create_brother_if_possible(semester, brother_status, first_name, last_name
 
 def create_mass_entry_brothers(request, mass_entry_form):
     if mass_entry_form.is_valid():
-        data = mass_entry_form.cleaned_data
+        data = mass_entry_form.clean()
         brother_data = data["brothers"].split("\n")
         semester = data["semester"]
         brother_status = data["brother_status"]
@@ -64,7 +64,7 @@ def staged_mass_entry_brothers(mass_entry_form):
     brothers = []
     mass_entry_form.fields['brothers'].widget.attrs['readonly'] = True
     if mass_entry_form.is_valid():
-        data = mass_entry_form.cleaned_data
+        data = mass_entry_form.clean()
         brother_data = data["brothers"].split("\n")
 
         for brother in brother_data:

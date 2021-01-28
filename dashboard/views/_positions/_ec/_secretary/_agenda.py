@@ -6,7 +6,7 @@ from dashboard.models import Brother, Position, Report
 from dashboard.utils import verify_position
 
 
-@verify_position(['secretary', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.SECRETARY, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def secretary_agenda(request):
     c_reports = Report.objects.filter(is_officer=False).order_by('brother')
     communications = []

@@ -13,7 +13,7 @@ from dashboard.forms import (
 from dashboard.models import (
     Committee,
     CommitteeMeetingEvent,
-    Position, Event,
+    Position, Event, committee_chairs,
 )
 from dashboard.utils import (
     create_recurring_meetings,
@@ -28,7 +28,7 @@ from dashboard.views._dashboard_generic_views import DashboardUpdateView, Dashbo
 
 
 class CommitteeDelete(DashboardDeleteView):
-    @verify_position(['vice-president', 'president', 'adviser'])
+    @verify_position([Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
     def get(self, request, *args, **kwargs):
         return super(CommitteeDelete, self).get(request, *args, **kwargs)
 
@@ -50,7 +50,7 @@ class CommitteeEdit(DashboardUpdateView):
         self.object.meetings.filter(recurring=True).exclude(date__lt=datetime.date.today()+datetime.timedelta(days=1)).delete()
         committee = self.object.committee
         form.save()
-        instance = form.cleaned_data
+        instance = form.clean()
         create_recurring_meetings(instance, committee)
         return super().form_valid(form)
 
@@ -85,7 +85,7 @@ def committee_event(request, event_id):
                 mark_attendance_list(brother_form_list, brothers, event)
         if "edit" in request.POST:
             if form.is_valid():
-                instance = form.cleaned_data
+                instance = form.clean()
                 update_eligible_brothers(instance, event)
         return redirect(request.path_info, kwargs={'event_id': event_id})
 
@@ -99,7 +99,7 @@ def committee_event(request, event_id):
     return render(request, "committee-event.html", context)
 
 
-@verify_position(['pr-chair', 'scholarship-chair', 'service-chair', 'philanthropy-chair', 'alumni-relations-chair', 'memdev-chair', 'social-chair', 'vphs', 'recruitment-chair', 'vice-president', 'president', 'adviser'])
+@verify_position(committee_chairs+ (Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER))
 def committee_event_add(request, position_slug):
     """ Renders the committee meeting add page """
     form = CommitteeMeetingForm(request.POST or None)
@@ -125,7 +125,7 @@ def committee_event_add(request, position_slug):
 
 
 class CommitteeEventEdit(DashboardUpdateView):
-    @verify_position(['pr-chair', 'scholarship-chair', 'service-chair', 'philanthropy-chair', 'alumni-relations-chair', 'memdev-chair', 'social-chair', 'vphs', 'recruitment-chair', 'vice-president', 'president', 'adviser'])
+    @verify_position(committee_chairs + (Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER))
     def get(self, request, *args, **kwargs):
         return super(CommitteeEventEdit, self).get(request, *args, **kwargs)
 

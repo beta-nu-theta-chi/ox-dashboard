@@ -52,8 +52,11 @@ class BrotherForm(forms.ModelForm):
     def clean(self):
         password = self.cleaned_data.get('password', None)
         password2 = self.cleaned_data.get('password2', None)
+        case_id = self.cleaned_data.get('case_ID', None)
         if password != password2:
             self._errors['password2'] = self.error_class(['Please make sure your passwords match'])
+        if User.objects.get(username=case_id):
+            self._errors['case_ID'] = self.error_class(['User with this case ID already exists, please contact administrator for assistance'])
         return self.cleaned_data
 
 
@@ -62,7 +65,7 @@ class BrotherEditForm(forms.ModelForm):
         model = Brother
         fields = [
             'first_name', 'last_name', 'pronouns', 'roster_number', 'semester_joined',
-            'semester_graduating', 'school_status', 'brother_status', 'case_ID', 'major', 'minor',
+            'semester_graduating', 'school_status', 'brother_status', 'major', 'minor',
             'birthday', 'hometown', 't_shirt_size', 'phone_number',
             'room_number', 'address', 'emergency_contact',
             'emergency_contact_phone_number',
@@ -158,7 +161,7 @@ class ExcuseForm(forms.ModelForm):
     def clean(self):
         description = self.cleaned_data.get('description', None)
         if description == "I will not be attending because" or description in EMPTY_VALUES:
-            self._errors['description'] = self.error_class(["Please write a description"])
+            self._errors['description'] = self.error_class(['Please write a description'])
 
 
 class ExcuseResponseForm(forms.ModelForm):
@@ -241,6 +244,10 @@ class ServiceEventForm(EventForm):
 class CommitteeMeetingForm(EventForm):
     class Meta(EventForm.Meta):
         model = CommitteeMeetingEvent
+        fields = ['mandatory', 'date', 'start_time', 'end_time', 'description']
+        widgets = {
+            'date': SelectDateWidget()
+        }
 
 
 class ServiceSubmissionForm(forms.ModelForm):
@@ -300,6 +307,13 @@ class MeetABrotherForm(forms.Form):
 
         if candidate:
             self.fields['randomize'].label = candidate
+
+    def clean(self):
+        assigned_brother1 = self.cleaned_data.get('assigned_brother1', None)
+        assigned_brother2 = self.cleaned_data.get('assigned_brother2', None)
+        if assigned_brother1 == assigned_brother2:
+            self._errors['assigned_brother2'] = self.error_class(['Cannot assign the same brother twice'])
+        return self.cleaned_data
 
 
 class EditBrotherAttendanceForm(forms.Form):

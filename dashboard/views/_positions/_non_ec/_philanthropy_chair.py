@@ -4,7 +4,7 @@ from dashboard.forms import (
     EditBrotherAttendanceForm,
 )
 from dashboard.models import (
-    PhilanthropyEvent,
+    PhilanthropyEvent, Position,
 )
 from dashboard.utils import (
     attendance_list,
@@ -18,11 +18,11 @@ from dashboard.utils import (
 )
 
 
-@verify_position(['philanthropy-chair', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.PHILANTHROPY_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def philanthropy_c(request):
     """ Renders the philanthropy chair's RSVP page for different events """
     events = PhilanthropyEvent.objects.filter(semester=get_semester())
-    committee_meetings, context = committee_meeting_panel('philanthropy-chair')
+    committee_meetings, context = committee_meeting_panel(Position.PositionChoices.PHILANTHROPY_CHAIR)
 
     context.update({
         'events': events,
@@ -31,7 +31,7 @@ def philanthropy_c(request):
     return render(request, 'philanthropy-chair.html', context)
 
 
-@verify_position(['philanthropy-chair', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.PHILANTHROPY_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def philanthropy_c_event(request, event_id):
     """ Renders the philanthropy event view """
     event = PhilanthropyEvent.objects.get(pk=event_id)
@@ -46,7 +46,7 @@ def philanthropy_c_event(request, event_id):
                 mark_attendance_list(brother_form_list, brothers, event)
         if "edit" in request.POST:
             if form.is_valid():
-                instance = form.cleaned_data
+                instance = form.clean()
                 update_eligible_brothers(instance, event)
         return redirect(request.path_info, kwargs={'event_id': event_id})
 

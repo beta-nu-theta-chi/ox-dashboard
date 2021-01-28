@@ -9,22 +9,12 @@ from dashboard.utils import verify_position
 from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
 
 
-# EC Positions
-all_positions = [
-    'president', 'vice-president', 'vphs',
-    'secretary', 'treasurer', 'marshal', 'recruitment-chair',
-    'scholarship-chair', 'service-chair', 'philanthropy-chair',
-    'detail-manager', 'alumni-relations-chair',
-    'memdev-chair', 'social-chair', 'pr-chair'
-]
-
-
-@verify_position(['secretary', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.SECRETARY, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def secretary_positions(request):
     """ Renders all of the positions currently in the chapter """
     # Checking to make sure all of the EC and dashboard required positions are setup
     if request.method == 'POST':
-        for position in all_positions:
+        for position in Position.PositionChoices.values:
             if not Position.objects.filter(title=position).exists():
                 new_position = Position(title=position)
                 new_position.save()
@@ -38,7 +28,7 @@ def secretary_positions(request):
     return render(request, "secretary/positions.html", context)
 
 
-@verify_position(['secretary', 'vice-president', 'president', 'adviser'])
+@verify_position([Position.PositionChoices.SECRETARY, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def secretary_position_add(request):
     """ Renders the Secretary way of viewing a brother """
     form = PositionForm(request.POST or None)
@@ -57,7 +47,7 @@ def secretary_position_add(request):
 
 
 class PositionEdit(DashboardUpdateView):
-    @verify_position(['secretary', 'vice-president', 'president', 'adviser'])
+    @verify_position([Position.PositionChoices.SECRETARY, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
     def get(self, request, *args, **kwargs):
         return super(PositionEdit, self).get(request, *args, **kwargs)
 
@@ -68,7 +58,7 @@ class PositionEdit(DashboardUpdateView):
 
 
 class PositionDelete(DashboardDeleteView):
-    @verify_position(['secretary', 'vice-president', 'president', 'adviser'])
+    @verify_position([Position.PositionChoices.SECRETARY, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
     def get(self, request, *args, **kwargs):
         return super(PositionDelete, self).get(request, *args, **kwargs)
 

@@ -6,7 +6,7 @@
 {% block content %}
     <!-- Main component for a primary marketing message or call to action -->
     <div class="jumbotron">
-        <h1>Marshal</h1>
+        <h1>{{ position }}</h1>
     </div>
     <div class="panel panel-default">
         <div class="panel-heading">Candidates</div>
@@ -22,16 +22,16 @@
                 <tbody>
                 {% for candidate in candidates %}
                     <tr>
-                        <td><a href={% url 'dashboard:marshal_candidate' candidate.id %}>{{ candidate }}</a></td>
+                        <td><a href={% url 'dashboard:ec_brother_view' position.title candidate.id %}>{{ candidate }}</a></td>
                         <td><a class="btn btn-default"
-                               href={% url 'dashboard:marshal_candidate_edit' candidate.id %}>+</a></td>
+                               href={% url 'dashboard:ec_brother_edit' position.title candidate.id %}>+</a></td>
                         <td><a class="btn btn-danger"
-                               href={% url 'dashboard:marshal_candidate_delete' candidate.id %}>X</a></td>
+                               href={% url 'dashboard:brother_delete' position.title candidate.id %}>X</a></td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
-            <a class="btn btn-success" href={% url 'dashboard:marshal_candidate_add' %} role="button">Add Candidate</a>
+            <a class="btn btn-success" href={% url 'dashboard:brother_add' position.title %} role="button">Add Candidate</a>
         </div>
     </div>
     <div class="panel panel-default">
@@ -79,8 +79,10 @@
                                 <div>{{ field.label_tag }}</div>
                             {% elif forloop.last %}
                                 <div style="grid-column: 4/5;">{{ field }}</div>
+                                <div>{{ field.errors }}</div>
                             {% else %}
                                 <div>{{ field }}</div>
+                                <div>{{ field.errors }}</div>
                             {% endif %}
                         {% endfor %}
                         <div class="marshalmabgrayline"></div>
