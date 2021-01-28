@@ -5,7 +5,7 @@ from django.shortcuts import render
 from dashboard.models import MediaAccount, OnlineMedia
 from dashboard.forms import MediaAccountForm, MediaForm
 
-from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+from dashboard.views._dashboard_generic_views import DashboardDeleteView
 
 
 def media_account_add(request):

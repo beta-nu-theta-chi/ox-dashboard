@@ -1,6 +1,7 @@
 from django.views.generic.edit import UpdateView, DeleteView
 
 
+# a generic class based view used for edit forms for models. Adds the model name to the context under the name 'model'
 class DashboardUpdateView(UpdateView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
@@ -22,5 +23,6 @@ class DashboardUpdateView(UpdateView):
         return context
 
 
+# this is a placeholder to make global changes to the delete view easier
 class DashboardDeleteView(DeleteView):
     pass

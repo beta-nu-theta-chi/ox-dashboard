@@ -30,7 +30,7 @@ from dashboard.utils import (
     verify_brother
 )
 
-from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+from dashboard.views._dashboard_generic_views import DashboardUpdateView
 
 
 def brother_view(request):
