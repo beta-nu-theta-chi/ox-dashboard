@@ -528,15 +528,12 @@ def save_event(instance, eligible_attendees):
 def get_human_readable_model_name(object):
     """When given any object, returns the human readable name of its class/model
 
-    :param str position:
-        the string holding the title of the position, written as its related slug
-
-    :param HttpRequest request:
-        the request object for the view the resulting form will be a part of
+    :param Class object:
+        any object of any type to have its human readable name returned
 
     :returns:
-        the form related to position
-    :rtype: Form
+        end_string
+    :rtype: string
 
     """
     was_last_upper = True

@@ -15,7 +15,7 @@ from dashboard.models import (
     Position,
     Semester,
     TimeChoices,
-    ec_positions,
+    EC_POSITIONS,
 )
 from dashboard.utils import (
     create_node_with_children,
@@ -43,7 +43,7 @@ def create_phone_tree(request):
 
     # get all the EC brothers that are not the president nor marshal
     standard_ec_brothers = Brother.objects.\
-        filter(position__title__in=[x for x in ec_positions if x not in
+        filter(position__title__in=[x for x in EC_POSITIONS if x not in
                                     [Position.PositionChoices.PRESIDENT, Position.PositionChoices.MARSHAL]])
 
     all_ec_brothers = standard_ec_brothers + [president, marshal]

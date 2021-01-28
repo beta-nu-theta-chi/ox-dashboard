@@ -13,7 +13,7 @@ from dashboard.forms import (
 from dashboard.models import (
     Committee,
     CommitteeMeetingEvent,
-    Position, Event, committee_chairs,
+    Position, Event, COMMITTEE_CHAIRS,
 )
 from dashboard.utils import (
     create_recurring_meetings,
@@ -99,7 +99,7 @@ def committee_event(request, event_id):
     return render(request, "committee-event.html", context)
 
 
-@verify_position(committee_chairs+ (Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER))
+@verify_position(COMMITTEE_CHAIRS + (Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER))
 def committee_event_add(request, position_slug):
     """ Renders the committee meeting add page """
     form = CommitteeMeetingForm(request.POST or None)
@@ -125,7 +125,7 @@ def committee_event_add(request, position_slug):
 
 
 class CommitteeEventEdit(DashboardUpdateView):
-    @verify_position(committee_chairs + (Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER))
+    @verify_position(COMMITTEE_CHAIRS + (Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER))
     def get(self, request, *args, **kwargs):
         return super(CommitteeEventEdit, self).get(request, *args, **kwargs)
 

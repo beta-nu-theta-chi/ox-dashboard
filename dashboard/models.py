@@ -250,7 +250,7 @@ class Grade(models.Model):
 
 def query_positions_with_committee():
     choices = Q()
-    for position in committee_chairs:
+    for position in COMMITTEE_CHAIRS:
         choices = choices | Q(title=position)
     return choices
 
@@ -302,7 +302,7 @@ class Position(models.Model):
 
     def in_ec(self):
         return self.title in (
-            ec_positions
+            EC_POSITIONS
         )
 
     brothers = models.ManyToManyField(Brother)
@@ -314,7 +314,7 @@ class Position(models.Model):
         return str(self.PositionChoices(self.title).label)
 
 
-ec_positions = (
+EC_POSITIONS = (
     Position.PositionChoices.PRESIDENT,
     Position.PositionChoices.VICE_PRESIDENT,
     Position.PositionChoices.VICE_PRESIDENT_OF_HEALTH_AND_SAFETY,
@@ -326,7 +326,7 @@ ec_positions = (
 )
 
 
-committee_chairs = (
+COMMITTEE_CHAIRS = (
     Position.PositionChoices.VICE_PRESIDENT_OF_HEALTH_AND_SAFETY,
     Position.PositionChoices.RECRUITMENT_CHAIR,
     Position.PositionChoices.SCHOLARSHIP_CHAIR,
@@ -337,7 +337,7 @@ committee_chairs = (
     Position.PositionChoices.SOCIAL_CHAIR
 )
 
-event_chairs = (
+EVENT_CHAIRS = (
     Position.PositionChoices.VICE_PRESIDENT_OF_HEALTH_AND_SAFETY,
     Position.PositionChoices.SECRETARY,
     Position.PositionChoices.RECRUITMENT_CHAIR,

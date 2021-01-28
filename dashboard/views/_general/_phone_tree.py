@@ -3,8 +3,9 @@ from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
-from dashboard.models import Position
+from dashboard.models import Position, EC_POSITIONS
 from dashboard.utils import notifies
+
 
 def emergency_phone_tree_view(request):
     """ Renders the brother page of current user showing all standard brother information """
@@ -12,7 +13,7 @@ def emergency_phone_tree_view(request):
         messages.error(request, "Brother needs to be logged in before viewing brother portal")
         return HttpResponseRedirect(reverse('dashboard:home'))
 
-    ec_positions = filter(Position.in_ec, Position.objects.all())
+    ec_positions = Position.objects.filter(title__in=EC_POSITIONS)
 
     phone_tree = []
     for position in ec_positions:
