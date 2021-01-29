@@ -1,33 +1,27 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
-
-import datetime
 
 from dashboard.forms import (
     GPAForm,
-    StudyTableEventForm,
 )
 from dashboard.models import (
     Brother,
-    ScholarshipReport,
-    Semester,
-    StudyTableEvent,
+    ScholarshipReport, Position,
 )
 from dashboard.utils import (
-    attendance_list,
     committee_meeting_panel,
     forms_is_valid,
-    get_season_from,
     get_semester,
     verify_position,
 )
 
-@verify_position(['Scholarship Chair', 'President', 'Adviser'])
+from dashboard.views._dashboard_generic_views import DashboardUpdateView
+
+
+@verify_position([Position.PositionChoices.SCHOLARSHIP_CHAIR, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def scholarship_c(request):
-    """ Renders the Scholarship page listing all brother gpas and study table attendance """
-    events = StudyTableEvent.objects.filter(semester=get_semester()).order_by("date")
+    """ Renders the Scholarship page listing all brother gpas """
 
     brothers = Brother.objects.exclude(brother_status='2').order_by("last_name", "first_name")
     plans = []
@@ -43,109 +37,28 @@ def scholarship_c(request):
 
     brother_plans = zip(brothers, plans)
 
-    committee_meetings, context = committee_meeting_panel('Scholarship Chair')
+    committee_meetings, context = committee_meeting_panel(Position.PositionChoices.SCHOLARSHIP_CHAIR)
 
     context.update({
-        'position': 'Scholarship Chair',
-        'events': events,
         'brother_plans': brother_plans,
     })
-    return render(request, "scholarship-chair.html", context)
+    return render(request, "scholarship-chair/scholarship-chair.html", context)
 
 
-@verify_position(['Scholarship Chair', 'President', 'Adviser'])
-def study_table_event(request, event_id):
-    """ Renders the scholarship chair way of view StudyTables """
-    event = StudyTableEvent.objects.get(pk=event_id)
-    brothers, brother_form_list = attendance_list(request, event)
-
-    if request.method == 'POST':
-        if forms_is_valid(brother_form_list):
-            for counter, form in enumerate(brother_form_list):
-                instance = form.cleaned_data
-                if instance['present'] is True:
-                    event.attendees_brothers.add(brothers[counter])
-                    event.save()
-                if instance['present'] is False:
-                    event.attendees_brothers.remove(brothers[counter])
-                    event.save()
-            return HttpResponseRedirect(reverse('dashboard:scholarship_c'))
-
-    context = {
-        'type': 'attendance',
-        'brother_form_list': brother_form_list,
-        'event': event,
-    }
-    return render(request, "studytable-event.html", context)
-
-
-@verify_position(['Scholarship Chair', 'President', 'Adviser'])
-def scholarship_c_event_add(request):
-    """ Renders the scholarship chair way of adding StudyTableEvents """
-    form = StudyTableEventForm(request.POST or None, initial={'name': 'Scholarship Event'})
-
-    if request.method == 'POST':
-        if form.is_valid():
-            # TODO: add google calendar event adding
-            instance = form.save(commit=False)
-            semester, _ = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
-                   year=instance.date.year)
-            instance.semester = semester
-            instance.save()
-            instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
-            instance.save()
-            return HttpResponseRedirect(reverse('dashboard:scholarship_c'))
-
-    context = {
-        'position': 'Scholarship Chair',
-        'form': form,
-    }
-    return render(request, "event-add.html", context)
-
-
-class StudyEventDelete(DeleteView):
-    @verify_position(['Scholarship Chair', 'President', 'Adviser'])
-    def get(self, request, *args, **kwargs):
-        return super(StudyEventDelete, self).get(request, *args, **kwargs)
-
-    model = StudyTableEvent
-    template_name = 'dashboard/base_confirm_delete.html'
-    success_url = reverse_lazy('dashboard:scholarship_c')
-
-
-class StudyEventEdit(UpdateView):
-    @verify_position(['Scholarship Chair', 'President', 'Adviser'])
-    def get(self, request, *args, **kwargs):
-        return super(StudyEventEdit, self).get(request, *args, **kwargs)
-
-    model = StudyTableEvent
-    success_url = reverse_lazy('dashboard:scholarship_c')
-    form_class = StudyTableEventForm
-
-
-@verify_position(['Scholarship Chair', 'President', 'Adviser'])
+@verify_position([Position.PositionChoices.SCHOLARSHIP_CHAIR, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def scholarship_c_plan(request, plan_id):
     """Renders Scholarship Plan page for the Scholarship Chair"""
     plan = ScholarshipReport.objects.get(pk=plan_id)
-    events = StudyTableEvent.objects.filter(semester=get_semester()).exclude(date__gt=datetime.date.today())
-    study_tables_attended = 0
-    study_tables_count = len(events)
-
-    for event in events:
-        if event.attendees_brothers.filter(id=plan.brother.id).exists():
-            study_tables_attended += 1
 
     context = {
-        'type': 'scholarship-chair',
+        'type': Position.PositionChoices.SCHOLARSHIP_CHAIR,
         'plan': plan,
-        'study_tables_count': study_tables_count,
-        'study_tables_attended': study_tables_attended,
     }
 
-    return render(request, 'scholarship-report.html', context)
+    return render(request, 'scholarship-chair/scholarship-report.html', context)
 
 
-@verify_position(['Scholarship Chair', 'President', 'Adviser'])
+@verify_position([Position.PositionChoices.SCHOLARSHIP_CHAIR, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def scholarship_c_gpa(request):
     """Renders Scholarship Gpa update page for the Scholarship Chair"""
     plans = ScholarshipReport.objects.filter(semester=get_semester()).order_by("brother__last_name")
@@ -161,7 +74,7 @@ def scholarship_c_gpa(request):
     if request.method == 'POST':
         if forms_is_valid(form_list):
             for counter, form in enumerate(form_list):
-                instance = form.cleaned_data
+                instance = form.clean()
                 plan = plans[counter]
                 plan.cumulative_gpa = instance['cum_GPA']
                 plan.past_semester_gpa = instance['past_GPA']
@@ -172,14 +85,15 @@ def scholarship_c_gpa(request):
         'form_plans': form_plans,
     }
 
-    return render(request, 'scholarship-gpa.html', context)
+    return render(request, 'scholarship-chair/scholarship-gpa.html', context)
 
 
-class ScholarshipReportEdit(UpdateView):
-    @verify_position(['Scholarship Chair', 'President', 'Adviser'])
+class ScholarshipReportEdit(DashboardUpdateView):
+    @verify_position([Position.PositionChoices.SCHOLARSHIP_CHAIR, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
     def get(self, request, *args, **kwargs):
         return super(ScholarshipReportEdit, self).get(request, *args, **kwargs)
 
     model = ScholarshipReport
+    template_name = 'generic-forms/base-form.html'
     success_url = reverse_lazy('dashboard:scholarship_c')
     fields = ['cumulative_gpa', 'past_semester_gpa', 'scholarship_plan', 'active']

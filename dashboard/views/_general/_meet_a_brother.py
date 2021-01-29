@@ -5,6 +5,7 @@ import datetime
 
 from dashboard.models import MeetABrother, Brother, OnlineMedia
 
+
 def meet_a_brother(request):
     start_date = datetime.datetime(2000, 1, 1)
     candidates = Brother.objects.filter(brother_status=0)
@@ -21,4 +22,4 @@ def meet_a_brother(request):
         'discord': discord,
     }
 
-    return render(request, 'meet-a-brother.html', context)
+    return render(request, 'general/meet-a-brother.html', context)

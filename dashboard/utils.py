@@ -5,26 +5,15 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.core.handlers.wsgi import WSGIRequest
 
-from .forms import BrotherAttendanceForm
+from .forms import (
+    BrotherAttendanceForm,
+    ChapterEventForm,
+    ServiceEventForm,
+    HealthAndSafetyEventForm,
+    PhilanthropyEventForm,
+)
 from .models import *
 
-import requests
-import re
-
-# EC Positions
-all_positions = [
-    'President', 'Vice President', 'Vice President of Health and Safety',
-    'Secretary', 'Treasurer', 'Marshal', 'Recruitment Chair',
-    'Scholarship Chair', 'Service Chair', 'Philanthropy Chair',
-    'Detail Manager', 'Alumni Relations Chair',
-    'Membership Development Chair', 'Social Chair', 'Public Relations Chair'
-]
-
-has_committee = [
-    'Vice President of Health and Safety', 'Recruitment Chair',
-    'Scholarship Chair', 'Philanthropy Chair', 'Alumni Relations Chair',
-    'Membership Development Chair', 'Social Chair', 'Public Relations Chair'
-]
 
 # Toggle dependant on whether you want position verification
 # if os.environ.get('DEBUG'):
@@ -92,7 +81,7 @@ def verify_position(positions):
     def verify_decorator(f):
         def error(request):
             e = "Access denied. Only %s may access this page" % ", ".join(
-                positions
+                [y for x, y in Position.PositionChoices.choices if x in positions]
             )
             messages.error(request, e)
             return HttpResponseRedirect(reverse('dashboard:home'))
@@ -129,6 +118,7 @@ def committee_meeting_panel(position_name):
     context = {
         'committee_meetings': committee_meetings,
         'position': position,
+        'position_slug': position_name, # a slug is just a label containing only letters, numbers, underscores, or hyphens
         'committee': committee,
     }
 
@@ -270,6 +260,13 @@ def attendance_list(request, event):
     checkbox field to determine the attendance of the brother at the event with a label set to the brother's name
     prefix=counter ensures that in the html, the forms have different id's
 
+    :param HttpRequest request:
+        the request object for the view the resulting form list will be a part of
+    :param Event event:
+        the event object to create an attendance list for
+    :returns:
+        the list of brothers eligible to attend this event and the list of attendance forms, both listed in the same order
+    :rtype: list[brothers], list[BrotherAttendanceForm]
     """
     brothers = event.eligible_attendees.all()
     brother_form_list = []
@@ -394,6 +391,8 @@ def create_committee_event(date, semester, meeting_time, committee_object):
                                   committee=committee_object, recurring=True)
     event.save()
     event.eligible_attendees.set(committee_object.members.order_by('last_name'))
+    event.name = event.committee.get_committee_display() + " Committee Meeting"
+    event.slug = event.committee.chair.title
     event.save()
 
 
@@ -434,6 +433,7 @@ def notified_by(brother):
     node = PhoneTreeNode.objects.filter(brother=brother)
     return node[0].notified_by if len(node) > 0 else None
 
+
 def create_attendance_list(events, excuses_pending, excuses_approved, brother):
     """zips together a list of tuples where the first element is each event and the second is the brother's
     status regarding the event. If the event hasn't occurred, the status is blank, if it's not a mandatory
@@ -458,7 +458,7 @@ def create_attendance_list(events, excuses_pending, excuses_approved, brother):
     """
     attendance = []
     for event in events:
-        if int(event.date.strftime("%s")) > int(datetime.datetime.now().strftime("%s")):
+        if event.date >= datetime.date.today():
             attendance.append('')
         elif not event.mandatory:
             attendance.append('Not Mandatory')
@@ -489,7 +489,7 @@ def mark_attendance_list(brother_form_list, brothers, event):
 
     """
     for counter, form in enumerate(brother_form_list):
-        instance = form.cleaned_data
+        instance = form.clean()
         if instance['present'] is True:
             event.attendees_brothers.add(brothers[counter])
             event.save()
@@ -523,3 +523,53 @@ def save_event(instance, eligible_attendees):
     # you must save the instance into the database as a row in the table before you can set the manytomany field
     instance.eligible_attendees.set(eligible_attendees)
     instance.save()
+
+
+def get_human_readable_model_name(object):
+    """When given any object, returns the human readable name of its class/model
+
+    :param Class object:
+        any object of any type to have its human readable name returned
+
+    :returns:
+        end_string
+    :rtype: string
+
+    """
+    was_last_upper = True
+    end_string = ''
+    for char in object.__class__.__name__:
+        if char.isupper():
+            if not was_last_upper:
+                end_string += ' ' + char
+            else:
+                end_string += char
+            was_last_upper = True
+        else:
+            was_last_upper = False
+            end_string += char
+
+    return end_string
+
+
+def get_form_from_position(position, request):
+    """Using the title of the position, return the event form related to that position
+
+    :param str position:
+        the string holding the title of the position, written as its related slug
+
+    :param HttpRequest request:
+        the request object for the view the resulting form will be a part of
+
+    :returns:
+        the form related to position
+    :rtype: Form
+
+    """
+    form_dict = {
+        Position.PositionChoices.PHILANTHROPY_CHAIR: PhilanthropyEventForm(request.POST or None, initial={'name': 'Philanthropy Event'}),
+        Position.PositionChoices.SECRETARY: ChapterEventForm(request.POST or None, initial={'name': 'Chapter Event'}),
+        Position.PositionChoices.SERVICE_CHAIR: ServiceEventForm(request.POST or None, initial={'name': 'Service Event'}),
+        Position.PositionChoices.VICE_PRESIDENT_OF_HEALTH_AND_SAFETY: HealthAndSafetyEventForm(request.POST or None, initial={'name': 'Sacred Purpose Event'}),
+    }
+    return form_dict[position]

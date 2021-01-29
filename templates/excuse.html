@@ -3,6 +3,8 @@
 {% block dropdown %}
 {% endblock %}
 
+{% load custom_tag %}
+
 {% block content %}
     <!-- Main component for a primary marketing message or call to action -->
     <div class="jumbotron">
@@ -67,7 +69,6 @@
                 </div>
                 <div class=" col-lg-2 "></div>
             </div>
-
         </div>
         {% if type == "response" %}
             <div class="panel panel-default">
@@ -84,7 +85,7 @@
                         <table style="vertical-align:middle" class="table table-responsive">
                             {% for field in form %}
                                 <tr>
-                                    <td>{{ field.label_tag }}</td>
+                                    <td>{{ field | append_ast_if_req}}</td>
                                     <td>{{ field }}</td>
                                     <td>{{ field.errors }}</td>
                                 </tr>

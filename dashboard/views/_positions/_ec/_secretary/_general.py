@@ -8,14 +8,18 @@ from dashboard.views._positions._ec._secretary._mass_entry import (
     staged_mass_entry_brothers,
 )
 
-from dashboard.models import ChapterEvent, Excuse, RecruitmentEvent
+from dashboard.models import ChapterEvent, Excuse, RecruitmentEvent, Position
 from dashboard.utils import get_semester, verify_position
 
-@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+
+@verify_position([Position.PositionChoices.SECRETARY, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def secretary(request):
     """ Renders the secretary page giving access to excuses and ChapterEvents """
-    excuses = Excuse.objects.filter(event__semester=get_semester(), status='0').exclude(event__in=RecruitmentEvent.objects.all()).order_by("date_submitted", "event__date")
+    excuses = Excuse.objects.filter(event__semester=get_semester(), status='0')\
+        .exclude(event__in=RecruitmentEvent.objects.all()).order_by("date_submitted", "event__date")
     events = ChapterEvent.objects.filter(semester=get_semester()).order_by("start_time").order_by("date")
+
+    position = Position.objects.get(title=Position.PositionChoices.SECRETARY)
 
     brothers = []
 
@@ -44,5 +48,8 @@ def secretary(request):
         'mass_entry_form': mass_entry_form,
         'is_entry': is_entry, # TODO change to have post stuff
         'brothers': brothers,
+        'position': position,
+        'position_slug': position.title, # a slug is just a label containing only letters, numbers, underscores, or hyphens
+
     }
-    return render(request, 'secretary.html', context)
+    return render(request, 'secretary/secretary.html', context)

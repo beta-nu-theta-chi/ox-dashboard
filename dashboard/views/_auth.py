@@ -38,7 +38,7 @@ def change_password(request):
 
     if request.method == 'POST':
         if form.is_valid():
-            instance = form.cleaned_data
+            instance = form.clean()
             user = auth.authenticate(
                 username=request.user.username,
                 password=instance['old_password']

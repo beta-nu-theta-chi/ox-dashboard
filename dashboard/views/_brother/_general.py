@@ -1,12 +1,13 @@
+import datetime
+
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
 
-from  dashboard.models import (
+from dashboard.models import (
     ChapterEvent,
     ServiceEvent,
     PhilanthropyEvent,
@@ -29,6 +30,8 @@ from dashboard.utils import (
     verify_brother
 )
 
+from dashboard.views._dashboard_generic_views import DashboardUpdateView
+
 
 def brother_view(request):
     """ Renders the brother page of current user showing all standard brother information """
@@ -36,11 +39,12 @@ def brother_view(request):
         messages.error(request, "Brother needs to be logged in before viewing brother portal")
         return HttpResponseRedirect(reverse('dashboard:home'))
     brother = request.user.brother
-    hs_events = HealthAndSafetyEvent.objects.filter(semester=get_semester()).order_by("date")
-    chapter_events = ChapterEvent.objects.filter(semester=get_semester()).order_by("date")
+    semester = get_semester()
+    hs_events = HealthAndSafetyEvent.objects.filter(semester=semester, eligible_attendees=brother).order_by("date")
+    chapter_events = ChapterEvent.objects.filter(semester=semester, eligible_attendees=brother).order_by("date")
 
     # creates lists of events that were pending and approved for the current brother
-    excuses = Excuse.objects.filter(brother=brother, event__semester=get_semester()).order_by("event__date")
+    excuses = Excuse.objects.filter(brother=brother, event__semester=semester).order_by("event__date")
     excuses_pending = excuses.filter(status='0').values_list('event', flat=True)
     excuses_approved = excuses.filter(status='1').values_list('event', flat=True)
 
@@ -62,33 +66,27 @@ def brother_view(request):
     hs_attendance = create_attendance_list(hs_events, excuses_pending, excuses_approved, brother)
 
     current_season = get_season()
-    if current_season == '0':
-        recruitment_events = RecruitmentEvent.objects.filter(semester__season='0', semester__year=get_year()) \
-            .order_by("date")
-        recruitment_events_next = RecruitmentEvent.objects.filter(semester__season='2', semester__year=get_year()) \
-            .order_by("date")
-    else:
-        recruitment_events = RecruitmentEvent.objects.filter(semester__season='2', semester__year=get_year()) \
-            .order_by("date")
-        recruitment_events_next = RecruitmentEvent.objects.filter(semester__season='0', semester__year=get_year()) \
-            .order_by("date")
+    recruitment_events = RecruitmentEvent.objects.filter(semester__season=current_season, semester__year=get_year(),
+                                                                eligible_attendees=brother).order_by("date")
+    recruitment_events_next = RecruitmentEvent.objects.filter(semester__year=get_year(), eligible_attendees=brother)\
+        .exclude(semester__season=current_season).order_by("date")
     recruitment_attendance = create_attendance_list(recruitment_events, excuses_pending, excuses_approved, brother)
 
     pnms = PotentialNewMember.objects.filter(Q(primary_contact=brother) |
                                              Q(secondary_contact=brother) |
                                              Q(tertiary_contact=brother)).order_by("last_name", "first_name")
 
-    service_events = ServiceEvent.objects.filter(semester=get_semester()).order_by("date")
+    service_events = ServiceEvent.objects.filter(semester=semester, eligible_attendees=brother).order_by("date")
     service_attendance = create_attendance_list(service_events, excuses_pending, excuses_approved, brother)
 
     # Service submissions
-    submissions_pending = ServiceSubmission.objects.filter(brother=brother, semester=get_semester(),
+    submissions_pending = ServiceSubmission.objects.filter(brother=brother, semester=semester,
                                                            status='0').order_by("date")
-    submissions_submitted = ServiceSubmission.objects.filter(brother=brother, semester=get_semester(),
+    submissions_submitted = ServiceSubmission.objects.filter(brother=brother, semester=semester,
                                                              status='1').order_by("date")
-    submissions_approved = ServiceSubmission.objects.filter(brother=brother, semester=get_semester(),
+    submissions_approved = ServiceSubmission.objects.filter(brother=brother, semester=semester,
                                                             status='2').order_by("date")
-    submissions_denied = ServiceSubmission.objects.filter(brother=brother, semester=get_semester(),
+    submissions_denied = ServiceSubmission.objects.filter(brother=brother, semester=semester,
                                                           status='3').order_by("date")
     hours_pending = 0
     for submission in submissions_pending:
@@ -100,7 +98,7 @@ def brother_view(request):
     for submission in submissions_approved:
         hours_approved += submission.hours
 
-    philanthropy_events = PhilanthropyEvent.objects.filter(semester=get_semester()) \
+    philanthropy_events = PhilanthropyEvent.objects.filter(semester=semester, eligible_attendees=brother) \
         .order_by("start_time").order_by("date")
 
     philanthropy_attendance = create_attendance_list(philanthropy_events, excuses_pending, excuses_approved, brother)
@@ -129,7 +127,6 @@ def brother_view(request):
             mabro.save()
         return HttpResponseRedirect(reverse('dashboard:brother'))
 
-
     context = {
         'brother': brother,
         'chapter_attendance': chapter_attendance,
@@ -157,7 +154,7 @@ def brother_view(request):
     return render(request, "brother.html", context)
 
 
-class BrotherEdit(UpdateView):
+class BrotherEdit(DashboardUpdateView):
     def get(self, request, *args, **kwargs):
         brother = Brother.objects.get(pk=self.kwargs['pk'])
         if not verify_brother(brother, request.user):
@@ -166,5 +163,6 @@ class BrotherEdit(UpdateView):
         return super(BrotherEdit, self).get(request, *args, **kwargs)
 
     model = Brother
+    template_name = 'generic-forms/base-form.html'
     success_url = reverse_lazy('dashboard:brother')
     form_class = BrotherEditForm

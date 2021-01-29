@@ -39,7 +39,7 @@ class BrotherForm(forms.ModelForm):
     class Meta:
         model = Brother
         fields = [
-            'first_name', 'last_name', 'roster_number', 'semester_joined', 'semester_graduating',
+            'first_name', 'last_name', 'pronouns', 'roster_number', 'semester_joined', 'semester_graduating',
             'school_status', 'brother_status', 'case_ID', 'major', 'minor',
             'birthday', 'hometown', 't_shirt_size', 'phone_number',
             'room_number', 'address', 'emergency_contact',
@@ -49,13 +49,23 @@ class BrotherForm(forms.ModelForm):
             'birthday': SelectDateWidget(years=YEAR_RANGE),
         }
 
+    def clean(self):
+        password = self.cleaned_data.get('password', None)
+        password2 = self.cleaned_data.get('password2', None)
+        case_id = self.cleaned_data.get('case_ID', None)
+        if password != password2:
+            self._errors['password2'] = self.error_class(['Please make sure your passwords match'])
+        if User.objects.get(username=case_id):
+            self._errors['case_ID'] = self.error_class(['User with this case ID already exists, please contact administrator for assistance'])
+        return self.cleaned_data
+
 
 class BrotherEditForm(forms.ModelForm):
     class Meta:
         model = Brother
         fields = [
             'first_name', 'last_name', 'pronouns', 'roster_number', 'semester_joined',
-            'semester_graduating', 'school_status', 'brother_status', 'case_ID', 'major', 'minor',
+            'semester_graduating', 'school_status', 'brother_status', 'major', 'minor',
             'birthday', 'hometown', 't_shirt_size', 'phone_number',
             'room_number', 'address', 'emergency_contact',
             'emergency_contact_phone_number',
@@ -151,7 +161,7 @@ class ExcuseForm(forms.ModelForm):
     def clean(self):
         description = self.cleaned_data.get('description', None)
         if description == "I will not be attending because" or description in EMPTY_VALUES:
-            self._errors['description'] = self.error_class(['"Please write a description"'])
+            self._errors['description'] = self.error_class(['Please write a description'])
 
 
 class ExcuseResponseForm(forms.ModelForm):
@@ -199,11 +209,6 @@ class EventForm(forms.ModelForm):
         return self.cleaned_data
 
 
-class StudyTableEventForm(EventForm):
-    class Meta(EventForm.Meta):
-        model = StudyTableEvent
-
-
 class ScholarshipEventForm(EventForm):
     class Meta(EventForm.Meta):
         model = ScholarshipEvent
@@ -239,6 +244,10 @@ class ServiceEventForm(EventForm):
 class CommitteeMeetingForm(EventForm):
     class Meta(EventForm.Meta):
         model = CommitteeMeetingEvent
+        fields = ['mandatory', 'date', 'start_time', 'end_time', 'description']
+        widgets = {
+            'date': SelectDateWidget()
+        }
 
 
 class ServiceSubmissionForm(forms.ModelForm):
@@ -249,25 +258,17 @@ class ServiceSubmissionForm(forms.ModelForm):
             'date': SelectDateWidget(),
         }
 
+    def clean(self):
+        hours = self.cleaned_data.get('hours', None)
+        if hours == 0:
+            self._errors['hours'] = self.error_class(['Cannot submit 0 hours of service'])
+        return self.cleaned_data
+
 
 class ServiceSubmissionResponseForm(forms.ModelForm):
     class Meta:
         model = ServiceSubmission
         fields = ['status']
-
-
-class CandidateEditForm(forms.ModelForm):
-    class Meta:
-        model = Brother
-        fields = ['first_name', 'last_name', 'roster_number', 'semester_joined',
-                  'school_status', 'brother_status', 'major', 'minor', 't_shirt_size',
-                  'case_ID', 'birthday', 'hometown', 'phone_number',
-                  'emergency_contact_phone_number', 'emergency_contact', 'room_number',
-                  'address'
-        ]
-        widgets = {
-            'birthday': SelectDateWidget(years=YEAR_RANGE),
-        }
 
 
 class SuppliesForm(forms.ModelForm):
@@ -277,7 +278,7 @@ class SuppliesForm(forms.ModelForm):
 
 
 class MABEditCandidateForm(forms.Form):
-    candidate = forms.ModelChoiceField(queryset=Brother.objects.filter(brother_status='0'), required=True)
+    candidate = forms.ModelChoiceField(queryset=Brother.objects.filter(brother_status='0'), required=True, help_text="Choose the candidate whose Meet a Brothers you would like to update!")
 
 
 class MeetABrotherEditForm(forms.Form):
@@ -288,7 +289,8 @@ class MeetABrotherEditForm(forms.Form):
         exists = kwargs.pop('mab_exists', "")
         super(MeetABrotherEditForm, self).__init__(*args, **kwargs)
 
-        #sets the label for each form as the brother the form relates to and sets the initial for the checkbox to whether or not the meet a brother exists
+        # sets the label for each form as the brother the form relates to and sets the initial for the checkbox
+        # to whether or not the meet a brother exists
         if brother:
             self.fields['update'].label = brother.first_name + ' ' + brother.last_name
             self.fields['update'].initial = exists
@@ -305,6 +307,13 @@ class MeetABrotherForm(forms.Form):
 
         if candidate:
             self.fields['randomize'].label = candidate
+
+    def clean(self):
+        assigned_brother1 = self.cleaned_data.get('assigned_brother1', None)
+        assigned_brother2 = self.cleaned_data.get('assigned_brother2', None)
+        if assigned_brother1 == assigned_brother2:
+            self._errors['assigned_brother2'] = self.error_class(['Cannot assign the same brother twice'])
+        return self.cleaned_data
 
 
 class EditBrotherAttendanceForm(forms.Form):
@@ -385,6 +394,11 @@ class CommitteeCreateForm(forms.ModelForm):
     class Meta:
         model = Committee
         fields = ['committee', 'chair', 'meeting_interval', 'meeting_time', 'meeting_day']
+        widgets = {'chair': forms.HiddenInput()}
+
+    def __init__(self, *args, **kwargs):
+        super(CommitteeCreateForm, self).__init__(*args, **kwargs)
+        self.fields['chair'].required = False
 
 
 class CommitteeForm(forms.Form):

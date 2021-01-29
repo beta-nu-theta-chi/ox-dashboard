@@ -3,6 +3,8 @@
 {% block dropdown %}
 {% endblock %}
 
+{% load custom_tag %}
+
 {% block content %}
     <!-- Main component for a primary marketing message or call to action -->
     <div class="jumbotron">
@@ -28,11 +30,11 @@
                         {% if not forloop.first %}
                             <div class="grayline"></div>
                         {% endif %}
-                        <div class="modellabel">{{ field.label_tag }}</div>
+                        <div class="modellabel">{{ field | append_ast_if_req }}</div>
                         <div>{{ field }}</div>
                         <div style="grid-column: 6/7;">{{ field.errors }}</div>
                     {% endfor %}
-                    <div class="modellabel"><input class="btn btn-default" type="submit" value="Add Event"/></div>
+                    <div class="modellabel"><input class="btn btn-success" type="submit" value="Add Event"/></div>
             </form>
         </div>
     </div>

@@ -6,6 +6,7 @@ from django.shortcuts import render
 
 from  dashboard.models import Brother
 
+
 @login_required
 def contact_list(request):
     if not request.user.is_authenticated:  # brother auth check
@@ -18,4 +19,4 @@ def contact_list(request):
     context = {
         'brothers': brothers,
     }
-    return render(request, 'contact-list.html', context)
+    return render(request, 'general/contact-info-list.html', context)

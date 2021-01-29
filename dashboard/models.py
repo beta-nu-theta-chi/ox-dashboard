@@ -1,6 +1,5 @@
 import datetime
 import os
-from urllib.parse import quote_plus
 
 import django.utils.timezone
 from django.db import models
@@ -143,10 +142,20 @@ class Brother(models.Model):
 
     # returns the brother's attendance fraction for the associated event
     def get_attendance(self, event_type):
+        month = datetime.datetime.now().month
+        year = datetime.datetime.now().year
+        if month <= 5:
+            season = '0'
+        elif month <= 7:
+            season = '1'
+        else:
+            season = '2'
+        semester, _ = Semester.objects.get_or_create(season=season, year=year)
         return "%s / %s" % (
-        event_type.objects.filter(mandatory=True, attendees_brothers=self).count() + event_type.objects.filter(
-            mandatory=True, excuse__status=1).count(),
-        event_type.objects.filter(mandatory=True, eligible_attendees=self, date__lte=datetime.datetime.now()).count())
+            event_type.objects.filter(semester=semester, mandatory=True, attendees_brothers=self).count() + event_type.objects.filter(
+                semester=semester, mandatory=True, excuse__status=1).count(),
+            event_type.objects.filter(semester=semester, mandatory=True, eligible_attendees=self, date__lt=datetime.datetime.now()).count()
+        )
 
     def get_chapter_attendance(self):
         return self.get_attendance(ChapterEvent)
@@ -162,6 +171,7 @@ class Brother(models.Model):
 
     def get_service_attendance(self):
         return self.get_attendance(ServiceEvent)
+
 
 class MeetABrother(models.Model):
     brother = models.ForeignKey(Brother, on_delete=models.CASCADE, related_name='brother_mab')
@@ -212,6 +222,9 @@ class Classes(models.Model):
     def ordered_brother_set(self):
         return self.brothers.order_by('last_name', 'first_name')
 
+    class Meta:
+        verbose_name_plural = "Classes"
+
     def __str__(self):
         return "%s" % self.department + " " + str(self.number)
 
@@ -237,68 +250,59 @@ class Grade(models.Model):
 
 def query_positions_with_committee():
     choices = Q()
-    for position in (
-        'Vice President of Health and Safety',
-        'Recruitment Chair',
-        'Scholarship Chair',
-        'Philanthropy Chair',
-        'Public Relations Chair',
-        'Alumni Relations Chair',
-        'Membership Development Chair',
-        'Social Chair'
-    ):
+    for position in COMMITTEE_CHAIRS:
         choices = choices | Q(title=position)
     return choices
 
 
 class Position(models.Model):
+    # This is a list of possible options for each position. The first term is the name of the choice object. A list of
+    # these can be called using PositionChoices.names. The second term is the value of the choices object, a list of
+    # which you can get via PositionChoices.values. The values are written as slugs that serve as the url for each
+    # position's main page. Since the title field gets set to the values options, you can use the title to redirect to
+    # the main page using HTTPResponseRedirect('/' + title). Lastly the values in _() at the end are the labels or human
+    # readable names of the choices. If nothing is set there, the label is automatically set from the name, in title
+    # case with words separated by _. A list of labels can be found using PositionChoices.labels
     class PositionChoices(models.TextChoices):
-        PRESIDENT = 'President'
-        VICE_PRESIDENT = 'Vice President'
-        VICE_PRESIDENT_OF_HEALTH_AND_SAFETY = 'Vice President of Health and Safety', _('Vice President of Health and Safety')
-        SECRETARY = 'Secretary'
-        TREASURER = 'Treasurer'
-        MARSHAL = 'Marshal'
-        RECRUITMENT_CHAIR = 'Recruitment Chair'
-        SCHOLARSHIP_CHAIR = 'Scholarship Chair'
-        DETAIL_MANAGER = 'Detail Manager'
-        PHILANTHROPY_CHAIR = 'Philanthropy Chair'
-        PUBLIC_RELATIONS_CHAIR = 'Public Relations Chair'
-        SERVICE_CHAIR = 'Service Chair'
-        ALUMNI_RELATIONS_CHAIR = 'Alumni Relations Chair'
-        MEMBERSHIP_DEVELOPMENT_CHAIR = 'Membership Development Chair'
-        SOCIAL_CHAIR = 'Social Chair'
-        COMMUNITY_STANDARDS_CHAIR = 'Community Standards Chair'
-        OX_ROAST_CHAIR = 'OX Roast Chair', _('OX Roast Chair')
-        DAMAGE_CHAIR = 'Damage Chair'
-        GREEK_GAMES_CHAIR = 'Greek Games Chair'
-        HISTORIAN = 'Historian'
-        FIRST_GUARD = 'First Guard'
-        SECOND_GUARD = 'Second Guard'
-        INTERNAL_CHANGE_CHAIR = 'Internal Change Chair'
-        STANDARDS_BOARD_JUSTICE = 'Standards Board Justice'
-        EXECUTIVE_COUNCIL_MEMBER_AT_LARGE = 'Executive Council Member At Large'
-        HOUSE_MANAGER = 'House Manager'
-        RISK_MANAGER = 'Risk Manager'
-        IFC_REP = 'IFC Rep', _('IFC Rep')
-        AWARDS_CHAIR = 'Awards Chair'
-        FOOD_STEWARD = 'Food Steward'
-        ATHLETICS_CHAIR = 'Athletics Chair'
-        DASHBOARD_CHAIR = 'Dashboard Chair'
-        ADVISER = 'Adviser'
+        PRESIDENT = 'president',
+        VICE_PRESIDENT = 'vice-president'
+        VICE_PRESIDENT_OF_HEALTH_AND_SAFETY = 'vphs', _('Vice President of Health and Safety')
+        SECRETARY = 'secretary'
+        TREASURER = 'treasurer'
+        MARSHAL = 'marshal'
+        RECRUITMENT_CHAIR = 'recruitment-chair'
+        SCHOLARSHIP_CHAIR = 'scholarship-chair'
+        DETAIL_MANAGER = 'detail-manager'
+        PHILANTHROPY_CHAIR = 'philanthropy-chair'
+        PUBLIC_RELATIONS_CHAIR = 'pr-chair'
+        SERVICE_CHAIR = 'service-chair'
+        ALUMNI_RELATIONS_CHAIR = 'alumni-relations-chair'
+        MEMBERSHIP_DEVELOPMENT_CHAIR = 'memdev-chair'
+        SOCIAL_CHAIR = 'social-chair'
+        COMMUNITY_STANDARDS_CHAIR = 'community-standards-chair'
+        OX_ROAST_CHAIR = 'ox-roast-chair', _('OX Roast Chair')
+        DAMAGE_CHAIR = 'damage-chair'
+        GREEK_GAMES_CHAIR = 'greek-games-chair'
+        HISTORIAN = 'historian'
+        FIRST_GUARD = 'first-guard'
+        SECOND_GUARD = 'second-guard'
+        INTERNAL_CHANGE_CHAIR = 'internal-change-chair'
+        STANDARDS_BOARD_JUSTICE = 'standards-board-justice'
+        EXECUTIVE_COUNCIL_MEMBER_AT_LARGE = 'executive-council-member-at-large'
+        HOUSE_MANAGER = 'house-manager'
+        RISK_MANAGER = 'risk-manager'
+        IFC_REP = 'ifc-rep', _('IFC Rep')
+        AWARDS_CHAIR = 'awards-chair'
+        FOOD_STEWARD = 'food-steward'
+        ATHLETICS_CHAIR = 'athletics-chair'
+        DASHBOARD_CHAIR = 'dashboard-chair'
+        ADVISER = 'adviser'
 
     title = models.CharField(max_length=45, choices=PositionChoices.choices, unique=True, blank=False)
 
     def in_ec(self):
         return self.title in (
-            'President',
-            'Vice President',
-            'Vice President of Health and Safety',
-            'Secretary',
-            'Treasurer',
-            'Marshal',
-            'Recruitment Chair',
-            'Scholarship Chair',
+            EC_POSITIONS
         )
 
     brothers = models.ManyToManyField(Brother)
@@ -307,7 +311,39 @@ class Position(models.Model):
         return ", ".join([str(e) for e in self.brothers.all()])
 
     def __str__(self):
-        return self.title
+        return str(self.PositionChoices(self.title).label)
+
+
+EC_POSITIONS = (
+    Position.PositionChoices.PRESIDENT,
+    Position.PositionChoices.VICE_PRESIDENT,
+    Position.PositionChoices.VICE_PRESIDENT_OF_HEALTH_AND_SAFETY,
+    Position.PositionChoices.SECRETARY,
+    Position.PositionChoices.TREASURER,
+    Position.PositionChoices.MARSHAL,
+    Position.PositionChoices.RECRUITMENT_CHAIR,
+    Position.PositionChoices.SCHOLARSHIP_CHAIR,
+)
+
+
+COMMITTEE_CHAIRS = (
+    Position.PositionChoices.VICE_PRESIDENT_OF_HEALTH_AND_SAFETY,
+    Position.PositionChoices.RECRUITMENT_CHAIR,
+    Position.PositionChoices.SCHOLARSHIP_CHAIR,
+    Position.PositionChoices.PHILANTHROPY_CHAIR,
+    Position.PositionChoices.PUBLIC_RELATIONS_CHAIR,
+    Position.PositionChoices.ALUMNI_RELATIONS_CHAIR,
+    Position.PositionChoices.MEMBERSHIP_DEVELOPMENT_CHAIR,
+    Position.PositionChoices.SOCIAL_CHAIR
+)
+
+EVENT_CHAIRS = (
+    Position.PositionChoices.VICE_PRESIDENT_OF_HEALTH_AND_SAFETY,
+    Position.PositionChoices.SECRETARY,
+    Position.PositionChoices.RECRUITMENT_CHAIR,
+    Position.PositionChoices.PHILANTHROPY_CHAIR,
+    Position.PositionChoices.SERVICE_CHAIR,
+)
 
 
 class Report(models.Model):
@@ -440,7 +476,6 @@ class TimeChoices(datetime.time, models.Choices):
 
 class Event(models.Model):
 
-
     name = models.CharField(max_length=200, default="Event")
     date = models.DateField(default=django.utils.timezone.now)
     all_day = models.BooleanField(default=False)
@@ -454,12 +489,27 @@ class Event(models.Model):
     description = models.TextField(blank=True, null=True)
     minutes = models.URLField(blank=True, null=True)
     mandatory = models.BooleanField(default=True)
+    slug = models.SlugField(blank=True) # a field which stores the url to redirect to after running operations on the event
+
+    def __str__(self):
+        return self.name + " " + str(self.date)
+
+
+def set_event_kwarg_defaults(kwargs, slug, name):
+    if 'slug' not in kwargs:
+        kwargs['slug'] = slug
+    if 'name' not in kwargs:
+        kwargs['name'] = name
 
 
 class ChapterEvent(Event):
 
     def __str__(self):
         return "Chapter Event - " + str(self.date)
+
+    def __init__(self, *args, **kwargs):
+        set_event_kwarg_defaults(kwargs, Position.PositionChoices.SECRETARY, 'Chapter Event')
+        super(ChapterEvent, self).__init__(*args, **kwargs)
 
 
 class PhilanthropyEvent(Event):
@@ -470,6 +520,10 @@ class PhilanthropyEvent(Event):
     def __str__(self):
         return "Philanthropy Event - " + str(self.date)
 
+    def __init__(self, *args, **kwargs):
+        set_event_kwarg_defaults(kwargs, Position.PositionChoices.PHILANTHROPY_CHAIR, 'Philanthropy Event')
+        super(PhilanthropyEvent, self).__init__(*args, **kwargs)
+
 
 class ServiceEvent(Event):
     rsvp_brothers = models.ManyToManyField(
@@ -478,6 +532,10 @@ class ServiceEvent(Event):
 
     def __str__(self):
         return "Service Event - " + str(self.date)
+
+    def __init__(self, *args, **kwargs):
+        set_event_kwarg_defaults(kwargs, Position.PositionChoices.SERVICE_CHAIR, 'Service Event')
+        super(ServiceEvent, self).__init__(*args, **kwargs)
 
 
 class RecruitmentEvent(Event):
@@ -489,20 +547,27 @@ class RecruitmentEvent(Event):
     def __str__(self):
         return "Recruitment Event - " + str(self.date)
 
+    def __init__(self, *args, **kwargs):
+        set_event_kwarg_defaults(kwargs, Position.PositionChoices.RECRUITMENT_CHAIR, 'Recruitment Event')
+        super(RecruitmentEvent, self).__init__(*args, **kwargs)
+
 
 class HealthAndSafetyEvent(Event):
     def __str__(self):
         return "Health and Safety Event - " + str(self.date)
+
+    def __init__(self, *args, **kwargs):
+        set_event_kwarg_defaults(kwargs, Position.PositionChoices.VICE_PRESIDENT_OF_HEALTH_AND_SAFETY, 'Sacred Purpose Event')
+        super(HealthAndSafetyEvent, self).__init__(*args, **kwargs)
 
 
 class ScholarshipEvent(Event):
     def __str__(self):
         return "Scholarship Event - " + str(self.date)
 
-
-class StudyTableEvent(Event):
-    def __str__(self):
-        return "Study Tables - %s" % self.date
+    def __init__(self, *args, **kwargs):
+        set_event_kwarg_defaults(kwargs, Position.PositionChoices.SCHOLARSHIP_CHAIR, 'Scholarship Event')
+        super(ScholarshipEvent, self).__init__(*args, **kwargs)
 
 
 def get_standing_committees(brother):
@@ -548,10 +613,6 @@ class Committee(models.Model):
 
     committee = models.CharField(max_length=2, choices=CommitteeChoices.choices, unique=True, blank=False)
 
-    def url_name(self):
-        committee_names = dict(self.CommitteeChoices.choices)
-        return quote_plus(committee_names[self.committee])
-
     def in_standing(self):
         return self.committee in (x[0] for x in self.STANDING_COMMITTEE_CHOICES)
 
@@ -567,7 +628,7 @@ class Committee(models.Model):
         BIWEEKLY = 14, 'Biweekly'
         MONTHLY = 28, 'Monthly'
 
-    meeting_interval = models.IntegerField(choices=MeetingIntervals.choices, blank=True, null=True)
+    meeting_interval = models.IntegerField(choices=MeetingIntervals.choices)
 
     MEETING_DAY = [
         (0, 'Monday'),
@@ -579,15 +640,12 @@ class Committee(models.Model):
         (6, 'Sunday'),
     ]
 
-    meeting_day = models.IntegerField(choices=MEETING_DAY, blank=True, null=True)
+    meeting_day = models.IntegerField(choices=MEETING_DAY)
 
-    meeting_time = models.TimeField(choices=TimeChoices.choices, blank=True)
+    meeting_time = models.TimeField(choices=TimeChoices.choices)
 
     def __str__(self):
-        for x, y in self.CommitteeChoices.choices:
-            if x == self.committee:
-                return y + " Committee"
-        return self.committee
+        return self.CommitteeChoices(self.committee).label
 
 
 class CommitteeMeetingEvent(Event):
@@ -735,6 +793,6 @@ class PhoneTreeNode(models.Model):
     notified_by = models.ForeignKey(Brother, on_delete=models.PROTECT, null=True, related_name='phone_tree_notified_by') # null is the root (ie president)
 
     def __str__(self):
-        if self.brother.position_set.filter(title='President'):
+        if self.brother.position_set.filter(title=Position.PositionChoices.PRESIDENT):
             return self.brother.first_name + " " + self.brother.last_name
         return self.brother.first_name + " " + self.brother.last_name + " notified by " + self.notified_by.first_name + " " + self.notified_by.last_name

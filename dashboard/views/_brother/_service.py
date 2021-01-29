@@ -2,11 +2,13 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
 
 from dashboard.forms import ServiceSubmissionForm
 from dashboard.models import ServiceSubmission
 from dashboard.utils import verify_brother, get_semester
+
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
 
 def brother_service_submission(request, submission_id):
     """ Renders the Brother page for viewing a service submission"""
@@ -21,7 +23,7 @@ def brother_service_submission(request, submission_id):
         'submission': submission,
     }
 
-    return render(request, 'service-submission.html', context)
+    return render(request, 'service-chair/service-submission.html', context)
 
 
 def brother_service_submission_add(request):
@@ -49,7 +51,7 @@ def brother_service_submission_add(request):
     return render(request, 'model-add.html', context)
 
 
-class ServiceSubmissionDelete(DeleteView):
+class ServiceSubmissionDelete(DashboardDeleteView):
     def get(self, request, *args, **kwargs):
         submission = ServiceSubmission.objects.get(pk=self.kwargs['pk'])
         brother = submission.brother
@@ -58,12 +60,12 @@ class ServiceSubmissionDelete(DeleteView):
             return HttpResponseRedirect(reverse('dashboard:home'))
         return super(ServiceSubmissionDelete, self).get(request, *args, **kwargs)
 
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
     model = ServiceSubmission
     success_url = reverse_lazy('dashboard:brother')
 
 
-class ServiceSubmissionEdit(UpdateView):
+class ServiceSubmissionEdit(DashboardUpdateView):
     def get(self, request, *args, **kwargs):
         submission = ServiceSubmission.objects.get(pk=self.kwargs['pk'])
         brother = submission.brother
@@ -73,6 +75,7 @@ class ServiceSubmissionEdit(UpdateView):
         return super(ServiceSubmissionEdit, self).get(request, *args, **kwargs)
 
     model = ServiceSubmission
+    template_name = 'generic-forms/base-form.html'
     success_url = reverse_lazy('dashboard:brother')
     form_class = ServiceSubmissionForm
 

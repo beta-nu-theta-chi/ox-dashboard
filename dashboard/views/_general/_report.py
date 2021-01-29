@@ -2,20 +2,22 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import render
-from django.views.generic.edit import UpdateView, DeleteView
 
 from dashboard.models import Position, Report
 from dashboard.forms import ReportForm
 from dashboard.utils import verify_brother
 
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
+
 def create_report(request):
     brother = request.user.brother
-    positions = brother.position_set.exclude(title__in=['Adviser'])
+    positions = brother.position_set.exclude(title__in=[Position.PositionChoices.ADVISER])
 
     form = ReportForm(request.POST or None)
 
-    if Position.objects.get(title='Secretary') in positions:
-        form.fields["position"].queryset = Position.objects.exclude(title__in=['Adviser'])
+    if Position.objects.get(title=Position.PositionChoices.SECRETARY) in positions:
+        form.fields["position"].queryset = Position.objects.exclude(title__in=[Position.PositionChoices.ADVISER])
     else:
         form.fields["position"].queryset = positions
 
@@ -24,7 +26,7 @@ def create_report(request):
             instance = form.save(commit=False)
             instance.brother = brother
             instance.save()
-            if Position.objects.get(title='Secretary') in positions:
+            if Position.objects.get(title=Position.PositionChoices.SECRETARY) in positions:
                 return HttpResponseRedirect(reverse('dashboard:secretary_agenda'))
             else:
                 return HttpResponseRedirect(reverse('dashboard:brother'))
@@ -38,7 +40,7 @@ def create_report(request):
     return render(request, "model-add.html", context)
 
 
-class DeleteReport(DeleteView):
+class DeleteReport(DashboardDeleteView):
     def get(self, request, *args, **kwargs):
         report = Report.objects.get(pk=self.kwargs['pk'])
         brother = report.brother
@@ -51,10 +53,10 @@ class DeleteReport(DeleteView):
         return self.request.GET.get('next')
 
     model = Report
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
 
 
-class EditReport(UpdateView):
+class EditReport(DashboardUpdateView):
     def get(self, request, *args, **kwargs):
         report = Report.objects.get(pk=self.kwargs['pk'])
         brother = report.brother
@@ -65,10 +67,10 @@ class EditReport(UpdateView):
 
     def get_form(self):
         form = super().get_form()
-        form.fields["position"].queryset = Report.objects.get(pk=self.kwargs['pk']).brother.position_set.exclude(title__in=['Adviser'])
+        form.fields["position"].queryset = Report.objects.get(pk=self.kwargs['pk']).brother.position_set.exclude(title__in=[Position.PositionChoices.ADVISER])
         return form
 
-
     model = Report
+    template_name = 'generic-forms/base-form.html'
     success_url = reverse_lazy('dashboard:brother')
     fields = ['position', 'information']

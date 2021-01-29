@@ -1,10 +1,12 @@
 from django.urls import reverse, reverse_lazy
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.views.generic.edit import DeleteView
 
 from dashboard.models import MediaAccount, OnlineMedia
 from dashboard.forms import MediaAccountForm, MediaForm
+
+from dashboard.views._dashboard_generic_views import DashboardDeleteView
+
 
 def media_account_add(request):
 
@@ -30,12 +32,12 @@ def media_account_add(request):
     return render(request, 'brother-info-add.html', context)
 
 
-class MediaAccountDelete(DeleteView):
+class MediaAccountDelete(DashboardDeleteView):
     def get(self, request, *args, **kwargs):
         return super(MediaAccountDelete, self).get(request, *args, **kwargs)
 
     model = MediaAccount
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
     success_url = reverse_lazy('dashboard:brother')
 
 

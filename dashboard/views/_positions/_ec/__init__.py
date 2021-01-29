@@ -6,3 +6,4 @@ from dashboard.views._positions._ec._secretary import *
 from dashboard.views._positions._ec._treasurer import *
 from dashboard.views._positions._ec._vice_president import *
 from dashboard.views._positions._ec._vphs import *
+from dashboard.views._positions._ec._add_brother import *

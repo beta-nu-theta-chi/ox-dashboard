@@ -2,7 +2,6 @@ from django.conf import settings
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
 
 import csv
 import datetime
@@ -17,28 +16,31 @@ from dashboard.models import (
     Brother,
     Excuse,
     PotentialNewMember,
-    RecruitmentEvent,
-    Semester
+    RecruitmentEvent, Position,
 )
 from dashboard.utils import (
     attendance_list,
     committee_meeting_panel,
     forms_is_valid,
-    get_season_from,
     get_season,
     get_semester,
     get_year,
     mark_attendance_list,
     update_eligible_brothers,
     verify_position,
+    get_human_readable_model_name,
+    save_event,
 )
 
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
+
+@verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def recruitment_c(request):
     """ Renders Recruitment chair page with events for the current and following semester """
     events = RecruitmentEvent.objects.all()
     excuses = Excuse.objects.filter(event__semester=get_semester(), status='0',
-        event__in=events).order_by("date_submitted", "event__date")
+                                    event__in=events).order_by("date_submitted", "event__date")
     current_season = get_season()
     if current_season == '0':
         semester_events = RecruitmentEvent.objects.filter(semester__season='0', semester__year=get_year())
@@ -49,28 +51,27 @@ def recruitment_c(request):
 
     potential_new_members = PotentialNewMember.objects.all()
 
-    committee_meetings, context = committee_meeting_panel('Recruitment Chair')
+    committee_meetings, context = committee_meeting_panel(Position.PositionChoices.RECRUITMENT_CHAIR)
 
     context.update({
-        'position': 'Recruitment Chair',
         'events': semester_events,
         'events_future': semester_events_next,
         'potential_new_members': potential_new_members,
         'excuses': excuses,
     })
-    return render(request, 'recruitment-chair.html', context)
+    return render(request, 'recruitment-chair/recruitment-chair.html', context)
 
 
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+@verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def recruitment_c_all_excuses(request):
     """ Renders Excuse archive"""
     excuses = Excuse.objects.exclude(status='0').filter(event__in=RecruitmentEvent.objects.all()).order_by('brother__last_name', 'event__date')
 
     context = {
         'excuses': excuses,
-        'position': 'Recruitment Chair',
+        'position': Position.objects.get(title=Position.PositionChoices.RECRUITMENT_CHAIR),
     }
-    return render(request, 'excuses_archive.html', context)
+    return render(request, 'excuses-archive.html', context)
 
 
 def all_pnm_csv(request):
@@ -91,31 +92,7 @@ def all_pnm_csv(request):
     return response
 
 
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
-def recruitment_c_rush_attendance(request):
-    """ Renders Scholarship chair page with rush attendance """
-    brothers = Brother.objects.exclude(brother_status='2').order_by("last_name", "first_name")
-    events = RecruitmentEvent.objects.filter(semester=get_semester(), rush=True) \
-        .exclude(date__gt=datetime.date.today())
-    events_attended_list = []
-
-    for brother in brothers:
-        events_attended = 0
-        for event in events:
-            if event.attendees_brothers.filter(id=brother.id).exists():
-                events_attended += 1
-        events_attended_list.append(events_attended)
-
-    rush_attendance = zip(brothers, events_attended_list)
-
-    context = {
-        'rush_attendance': rush_attendance,
-    }
-
-    return render(request, 'rush_attendance.html', context)
-
-
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+@verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def recruitment_c_pnm(request, pnm_id):
     """ Renders PNM view for recruitment chair """
     pnm = PotentialNewMember.objects.get(pk=pnm_id)
@@ -134,7 +111,7 @@ def recruitment_c_pnm(request, pnm_id):
     return render(request, 'potential-new-member.html', context)
 
 
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+@verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def recruitment_c_pnm_add(request):
     """ Renders the recruitment chair way of adding PNMs """
     form = PotentialNewMemberForm(request.POST or None)
@@ -151,27 +128,28 @@ def recruitment_c_pnm_add(request):
     return render(request, 'model-add.html', context)
 
 
-class PnmDelete(DeleteView):
-    @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+class PnmDelete(DashboardDeleteView):
+    @verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
     def get(self, request, *args, **kwargs):
         return super(PnmDelete, self).get(request, *args, **kwargs)
 
     model = PotentialNewMember
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
     success_url = reverse_lazy('dashboard:recruitment_c')
 
 
-class PnmEdit(UpdateView):
-    @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+class PnmEdit(DashboardUpdateView):
+    @verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
     def get(self, request, *args, **kwargs):
         return super(PnmEdit, self).get(request, *args, **kwargs)
 
     model = PotentialNewMember
+    template_name = 'generic-forms/base-form.html'
     success_url = reverse_lazy('dashboard:recruitment_c')
     form_class = PotentialNewMemberForm
 
 
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+@verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def recruitment_c_event(request, event_id):
     """ Renders the recruitment chair way of view RecruitmentEvents """
     event = RecruitmentEvent.objects.get(pk=event_id)
@@ -198,7 +176,7 @@ def recruitment_c_event(request, event_id):
                 mark_attendance_list(pnm_form_list, pnms, event)
         if "edit" in request.POST:
             if form.is_valid():
-                instance = form.cleaned_data
+                instance = form.clean()
                 update_eligible_brothers(instance, event)
         return redirect(request.path_info, kwargs={'event_id': event_id})
 
@@ -210,11 +188,12 @@ def recruitment_c_event(request, event_id):
         'media_root': settings.MEDIA_ROOT,
         'media_url': settings.MEDIA_URL,
         'form': form,
+        'event_type': get_human_readable_model_name(event),
     }
-    return render(request, "recruitment-event.html", context)
+    return render(request, "events/recruitment-event.html", context)
 
 
-@verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+@verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def recruitment_c_event_add(request):
     """ Renders the recruitment chair way of adding RecruitmentEvents """
     form = RecruitmentEventForm(request.POST or None, initial={'name': 'Recruitment Event'})
@@ -223,36 +202,63 @@ def recruitment_c_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            semester, _ = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
-               year=instance.date.year)
-            instance.semester = semester
-            instance.save()
-            instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
-            instance.save()
+            eligible_attendees = Brother.objects.exclude(brother_status='2').order_by('last_name')
+            save_event(instance, eligible_attendees)
             return HttpResponseRedirect(reverse('dashboard:recruitment_c'))
 
     context = {
-        'position': 'Recruitment Chair',
+        'position': Position.objects.get(title=Position.PositionChoices.RECRUITMENT_CHAIR),
         'form': form,
     }
     return render(request, "event-add.html", context)
 
 
-class RecruitmentEventDelete(DeleteView):
-    @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
-    def get(self, request, *args, **kwargs):
-        return super(RecruitmentEventDelete, self).get(request, *args, **kwargs)
-
-    model = RecruitmentEvent
-    template_name = 'dashboard/base_confirm_delete.html'
-    success_url = reverse_lazy('dashboard:recruitment_c')
-
-
-class RecruitmentEventEdit(UpdateView):
-    @verify_position(['Recruitment Chair', 'Vice President', 'President', 'Adviser'])
+# since recruitment events have additional info that can be edited it needs its own view
+# other event types use EventEdit in views/events.py
+class RecruitmentEventEdit(DashboardUpdateView):
+    @verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
     def get(self, request, *args, **kwargs):
         return super(RecruitmentEventEdit, self).get(request, *args, **kwargs)
 
+    def get_success_url(self, **kwargs):
+        # each event has a slug field called 'slug' which contains the string for what url you should redirect to
+        # Ex. 'philanthropy-chair' or 'vphs'
+        return '/' + self.object.slug
+
     form_class = RecruitmentEventForm
+    template_name = 'generic-forms/base-form.html'
     model = RecruitmentEvent
-    success_url = reverse_lazy('dashboard:recruitment_c')
+
+
+@verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
+def recruitment_c_attendance(request):
+    """ Renders the secretary view for chapter attendance """
+    brothers = Brother.objects.exclude(brother_status='2').order_by('last_name', 'first_name')
+    events = RecruitmentEvent.objects.filter(semester=get_semester(), mandatory=True, date__lt=datetime.date.today())
+    accepted_excuses = Excuse.objects.filter(event__semester=get_semester(), status='1', event__in=events)
+    brother_attendance = []
+
+    # For each brother, appends a tuple to brother_attendance that contains the number of events excused, unexcused,
+    # attended/excuse and events eligible for them to attend. The latter 2 are used to display the
+    # attendance fraction
+    for brother in brothers:
+        events_eligible_list = events.filter(eligible_attendees=brother)
+        events_eligible = events_eligible_list.count()
+        events_attended = 0
+        events_excused = 0
+        events_unexcused = 0
+        for event in events_eligible_list:
+            if event.attendees_brothers.filter(id=brother.id).exists():
+                events_attended += 1
+            elif accepted_excuses.filter(brother=brother, event=event).exists():
+                events_excused += 1
+            else:
+                events_unexcused += 1
+        brother_attendance.append((brother, events_excused, events_unexcused, events_attended+events_excused, events_eligible))
+
+    context = {
+        'brother_attendance': brother_attendance,
+        'position': Position.objects.get(title=Position.PositionChoices.RECRUITMENT_CHAIR),
+    }
+
+    return render(request, 'attendance.html', context)

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block dropdown %}
+{% endblock %}
+
+{% block content %}
+    <!-- Main component for a primary marketing message or call to action -->
+    <div class="jumbotron">
+        <h1>Service Submission</h1>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Service Submission</div>
+        <div class="panel-body">
+             {% if type == "review" %}
+                <a class="btn btn-default" href={% url 'dashboard:brother_service_submission_edit' submission.id %}>Edit Service Submission</a>
+            {% endif %}
+            <table class="table table-event-information">
+                <tbody>
+                    <tr>
+                        <td>
+                            Name:
+                        </td>
+                        <td>
+                            {{ submission.name }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Date:
+                        </td>
+                        <td>
+                            {{ submission.date }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Hours:
+                        </td>
+                        <td>
+                            {{ submission.hours }}
+                        </td>
+                    </tr><tr>
+                        <td>
+                            Date Submitted:
+                        </td>
+                        <td>
+                            {{ submission.date_applied }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Description:
+                        </td>
+                        <td>
+                            {{ submission.description }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if type == "response" %}
+        <div class="panel panel-default">
+            <div class="panel-heading">Service Submission Response</div>
+            {% include "default-form.html" %}
+        </div>
+    {% endif %}
+{% endblock %}

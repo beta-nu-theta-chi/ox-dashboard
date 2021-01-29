@@ -1,30 +1,29 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
-from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
+from django.urls import reverse
 
 from dashboard.forms import (
     EditBrotherAttendanceForm,
-    Semester,
     ServiceEventForm,
     ServiceSubmissionResponseForm,
 )
 from dashboard.models import (
     Brother,
-    Event,
     ServiceEvent,
-    ServiceSubmission,
+    ServiceSubmission, Position,
 )
 from dashboard.utils import (
     attendance_list,
-    get_season_from,
     get_semester,
     mark_attendance_list,
     update_eligible_brothers,
-    verify_position
+    verify_position,
+    save_event,
+    get_human_readable_model_name,
 )
 
-@verify_position(['Service Chair', 'Adviser'])
+
+@verify_position([Position.PositionChoices.SERVICE_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def service_c(request):
     """ Renders the service chair page with service submissions """
     events = ServiceEvent.objects.filter(semester=get_semester())
@@ -32,6 +31,8 @@ def service_c(request):
 
     submissions_submitted = ServiceSubmission.objects.filter(semester=get_semester(), status='1').order_by(
         "date")
+
+    position = Position.objects.get(title=Position.PositionChoices.SERVICE_CHAIR)
 
     hours_pending = 0
     for submission in submissions_pending:
@@ -50,14 +51,16 @@ def service_c(request):
         'hours_pending': hours_pending,
         'submissions_pending': submissions_pending,
         'submissions_submitted': submissions_submitted,
+        'position': position,
+        'position_slug': position.title, # a slug is just a label containing only letters, numbers, underscores, or hyphens
     }
-    return render(request, 'service-chair.html', context)
+    return render(request, 'service-chair/service-chair.html', context)
 
 
-@verify_position(['Service Chair', 'Adviser'])
+@verify_position([Position.PositionChoices.SERVICE_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def service_c_event(request, event_id):
     """ Renders the service chair way of adding ServiceEvent """
-    event = Event.objects.get(pk=event_id)
+    event = ServiceEvent.objects.get(pk=event_id)
     brothers, brother_form_list = attendance_list(request, event)
 
     form = EditBrotherAttendanceForm(request.POST or None, event=event_id)
@@ -67,7 +70,7 @@ def service_c_event(request, event_id):
             mark_attendance_list(brother_form_list, brothers, event)
         if "edit" in request.POST:
             if form.is_valid():
-                instance = form.cleaned_data
+                instance = form.clean()
                 update_eligible_brothers(instance, event)
         return redirect(request.path_info, kwargs={'event_id': event_id})
 
@@ -76,32 +79,13 @@ def service_c_event(request, event_id):
         'brother_form_list': brother_form_list,
         'event': event,
         'form': form,
+        'event_type': get_human_readable_model_name(event),
     }
 
-    return render(request, 'service-event.html', context)
+    return render(request, 'events/service-event.html', context)
 
 
-class ServiceEventDelete(DeleteView):
-    @verify_position(['Service Chair', 'Adviser'])
-    def get(self, request, *args, **kwargs):
-        return super(ServiceEventDelete, self).get(request, *args, **kwargs)
-
-    model = ServiceEvent
-    template_name = 'dashboard/base_confirm_delete.html'
-    success_url = reverse_lazy('dashboard:service_c')
-
-
-class ServiceEventEdit(UpdateView):
-    @verify_position(['Service Chair', 'Adviser'])
-    def get(self, request, *args, **kwargs):
-        return super(ServiceEventEdit, self).get(request, *args, **kwargs)
-
-    model = ServiceEvent
-    success_url = reverse_lazy('dashboard:service_c')
-    form_class = ServiceEventForm
-
-
-@verify_position(['Service Chair', 'Adviser'])
+@verify_position([Position.PositionChoices.SERVICE_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def service_c_submission_response(request, submission_id):
     """ Renders the service chair way of responding to submissions """
     submission = ServiceSubmission.objects.get(pk=submission_id)
@@ -109,7 +93,7 @@ def service_c_submission_response(request, submission_id):
 
     if request.method == 'POST':
         if form.is_valid():
-            instance = form.cleaned_data
+            instance = form.clean()
             submission.status = instance['status']
             submission.save()
             return HttpResponseRedirect(reverse('dashboard:service_c'))
@@ -120,10 +104,10 @@ def service_c_submission_response(request, submission_id):
         'form': form,
     }
 
-    return render(request, 'service-submission.html', context)
+    return render(request, 'service-chair/service-submission.html', context)
 
 
-@verify_position(['Service Chair', 'Adviser'])
+@verify_position([Position.PositionChoices.SERVICE_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def service_c_event_add(request):
     """ Renders the service chair way of adding ServiceEvent """
     form = ServiceEventForm(request.POST or None, initial={'name': 'Service Event'})
@@ -132,23 +116,19 @@ def service_c_event_add(request):
         if form.is_valid():
             # TODO: add google calendar event adding
             instance = form.save(commit=False)
-            semester, _ = Semester.objects.get_or_create(season=get_season_from(instance.date.month),
-                   year=instance.date.year)
-            instance.semester = semester
-            instance.save()
-            instance.eligible_attendees.set(Brother.objects.exclude(brother_status='2').order_by('last_name'))
-            instance.save()
+            eligible_attendees = Brother.objects.exclude(brother_status='2').order_by('last_name')
+            save_event(instance, eligible_attendees)
             return HttpResponseRedirect(reverse('dashboard:service_c'))
 
     context = {
-        'position': 'Service Chair',
+        'position': Position.PositionChoices.SERVICE_CHAIR.label,
         'form': form,
     }
 
     return render(request, 'event-add.html', context)
 
 
-@verify_position(['Service Chair', 'Adviser'])
+@verify_position([Position.PositionChoices.SERVICE_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def service_c_hours(request):
     """ Renders the service chair way of viewing total service hours by brothers """
     brothers = Brother.objects.exclude(brother_status='2').order_by("last_name", "first_name")
@@ -173,8 +153,8 @@ def service_c_hours(request):
     brother_hours_list = zip(brothers, approved_hours_list, pending_hours_list)
 
     context = {
-        'position': 'Service Chair',
+        'position': Position.PositionChoices.SERVICE_CHAIR.label,
         'brother_hours_list': brother_hours_list,
     }
 
-    return render(request, "service-hours-list.html", context)
+    return render(request, "service-chair/service-hours-list.html", context)

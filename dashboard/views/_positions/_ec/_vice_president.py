@@ -9,6 +9,7 @@ from dashboard.models import (
     Brother,
     Committee,
     CommitteeMeetingEvent,
+    Position,
 )
 from dashboard.forms import CommitteeForm, InHouseForm
 from dashboard.utils import (
@@ -19,7 +20,8 @@ from dashboard.utils import (
     verify_position
 )
 
-@verify_position(['Vice President', 'President', 'Adviser'])
+
+@verify_position([Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def vice_president(request):
     """ Renders the Vice President page and all relevant information, primarily committee related """
     committee_meetings = CommitteeMeetingEvent.objects.filter(semester=get_semester())\
@@ -27,15 +29,15 @@ def vice_president(request):
     committees = Committee.objects.all()
 
     context = {
-        'position': 'Vice President',
+        'position': Position.objects.get(title=Position.PositionChoices.VICE_PRESIDENT),
         'committees': committees,
         'committee_meetings': committee_meetings,
     }
 
-    return render(request, 'vice-president.html', context)
+    return render(request, 'vice-president/vice-president.html', context)
 
 
-@verify_position(['Vice President', 'President', 'Adviser'])
+@verify_position([Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def vice_president_committee_assignments(request):
     """Renders Committee assignment update page for the Vice President"""
     form_list = []
@@ -53,7 +55,7 @@ def vice_president_committee_assignments(request):
         if forms_is_valid(form_list):
             meeting_map = {}
             for counter, form in enumerate(form_list):
-                instance = form.cleaned_data
+                instance = form.clean()
                 # since the form was created in the same order that the brothers are ordered in you can just use
                 # counter to get the brother associated with the form
                 brother = brothers[counter]
@@ -89,7 +91,8 @@ def vice_president_committee_assignments(request):
                         if committee in brother_committees:
                             # iterate through all of the committee meetings after now
                             for meeting in Committee.objects.get(committee=committee).meetings.filter(date__gt=datetime.datetime.now(), eligible_attendees=brother):
-                                # same as above but false instead of true is assigned to the brother
+                                # if the meeting hasn't been previously added to the committee_map, adds it
+                                # adds brother: false to the dictionary associated with this meeting
                                 if meeting not in meeting_map:
                                     meeting_map[meeting] = {brother: False}
                                 else:
@@ -101,6 +104,7 @@ def vice_president_committee_assignments(request):
                 remove_list = [brother_face for brother_face, boo in brother_map.items() if boo is False]
                 meeting.eligible_attendees.add(*add_list)
                 meeting.eligible_attendees.remove(*remove_list)
+                meeting.attendees_brothers.remove(*remove_list)
                 meeting.save()
             return HttpResponseRedirect(reverse('dashboard:committee_list'))
     context = {
@@ -109,12 +113,14 @@ def vice_president_committee_assignments(request):
 
     return render(request, 'committee-assignment.html', context)
 
-@verify_position(['Vice President', 'President', 'Adviser'])
+
+@verify_position([Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 @transaction.atomic
 def in_house(request):
     """Allows the VP to select who's living in the house"""
 
     form = InHouseForm(request.POST or None)
+    position = Position.objects.get(title=Position.PositionChoices.VICE_PRESIDENT)
 
     if request.method == 'POST':
         if form.is_valid():
@@ -126,5 +132,8 @@ def in_house(request):
                     b.save()
         return HttpResponseRedirect(reverse('dashboard:vice_president_in_house'))
 
-    context = {'form': form}
-    return render(request, 'in_house.html', context)
+    context = {
+        'form': form,
+        'position': position,
+    }
+    return render(request, 'vice-president/in-house.html', context)

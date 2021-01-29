@@ -2,8 +2,12 @@ from django.shortcuts import render
 
 from dashboard.utils import committee_meeting_panel,verify_position
 
-@verify_position(['Membership Development Chair', 'Vice President', 'President', 'Adviser'])
-def memdev_c(request):
-    committee_meetings, context = committee_meeting_panel('Membership Development Chair')
+from dashboard.models import *
 
-    return render(request, 'memdev-chair.html', context)
+
+@verify_position([Position.PositionChoices.MEMBERSHIP_DEVELOPMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
+def memdev_c(request):
+    committee_meetings, context = committee_meeting_panel(Position.PositionChoices.MEMBERSHIP_DEVELOPMENT_CHAIR)
+    print(query_positions_with_committee())
+
+    return render(request, 'membership-development-chair.html', context)

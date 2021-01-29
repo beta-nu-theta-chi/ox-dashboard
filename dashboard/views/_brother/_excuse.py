@@ -2,10 +2,12 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import UpdateView, DeleteView
 
 from dashboard.models import Excuse
 from dashboard.utils import verify_brother
+
+from dashboard.views._dashboard_generic_views import DashboardUpdateView, DashboardDeleteView
+
 
 def brother_excuse(request, excuse_id):
 
@@ -22,7 +24,7 @@ def brother_excuse(request, excuse_id):
     return render(request, "excuse.html", context)
 
 
-class ExcuseDelete(DeleteView):
+class ExcuseDelete(DashboardDeleteView):
     def get(self, request, *args, **kwargs):
         excuse = Excuse.objects.get(pk=self.kwargs['pk'])
         brother = excuse.brother
@@ -32,11 +34,11 @@ class ExcuseDelete(DeleteView):
         return super(ExcuseDelete, self).get(request, *args, **kwargs)
 
     model = Excuse
-    template_name = 'dashboard/base_confirm_delete.html'
+    template_name = 'generic-forms/base-confirm-delete.html'
     success_url = reverse_lazy('dashboard:brother')
 
 
-class ExcuseEdit(UpdateView):
+class ExcuseEdit(DashboardUpdateView):
     def get(self, request, *args, **kwargs):
         excuse = Excuse.objects.get(pk=self.kwargs['pk'])
         brother = excuse.brother
@@ -46,5 +48,6 @@ class ExcuseEdit(UpdateView):
         return super(ExcuseEdit, self).get(request, *args, **kwargs)
 
     model = Excuse
+    template_name = 'generic-forms/excuse-form.html'
     success_url = reverse_lazy('dashboard:brother')
     fields = ['description']

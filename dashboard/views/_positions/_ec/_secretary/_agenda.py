@@ -5,7 +5,8 @@ from django.urls import reverse
 from dashboard.models import Brother, Position, Report
 from dashboard.utils import verify_position
 
-@verify_position(['Secretary', 'Vice President', 'President', 'Adviser'])
+
+@verify_position([Position.PositionChoices.SECRETARY, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def secretary_agenda(request):
     c_reports = Report.objects.filter(is_officer=False).order_by('brother')
     communications = []
@@ -44,4 +45,4 @@ def secretary_agenda(request):
         'reports': reports,
     }
 
-    return render(request, 'secretary-agenda.html', context)
+    return render(request, 'secretary/agenda.html', context)
