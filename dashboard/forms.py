@@ -323,7 +323,7 @@ class EditBrotherAttendanceForm(forms.Form):
         Accepts event_id to get the current list of eligible_attendees
     
     """
-    brothers_list = Brother.objects.exclude(brother_status='2').order_by('user__last_name', 'user__first_name')
+    brothers_list = Brother.objects.exclude(brother_status='2').order_by('last_name', 'first_name')
     # the default for the queryset is all non-alumni
     add_brothers = forms.ModelMultipleChoiceField(
         queryset=brothers_list,
@@ -347,7 +347,7 @@ class EditBrotherAttendanceForm(forms.Form):
         # if an event was passed in, sets queryset for add_brothers to non-alumni not in the event's eligible_attendees
         # and queryset for remove_brothers to non-alumni that are in the event's eligible_attendees
         if event_id:
-            brothers_list = Brother.objects.exclude(brother_status='2').order_by('user__last_name', 'user__first_name')
+            brothers_list = Brother.objects.exclude(brother_status='2').order_by('last_name', 'first_name')
             eligible_attendees = Event.objects.get(pk=event_id).eligible_attendees.values('pk')
             self.fields['add_brothers'].queryset = brothers_list.exclude(id__in=eligible_attendees)
             self.fields['remove_brothers'].queryset = brothers_list.filter(id__in=eligible_attendees)
@@ -456,13 +456,13 @@ class HouseDetailsSelectForm(forms.Form):
     """Select who does house details"""
     does_details = Brother.objects.filter(
         brother_status='1', in_house=True, does_house_details=True,
-    ).order_by('user__last_name', 'user__first_name')
+    ).order_by('last_name', 'first_name')
     doesnt_do_details = Brother.objects.filter(
         brother_status='1', in_house=True, does_house_details=False,
-    ).order_by('user__last_name', 'user__first_name')
+    ).order_by('last_name', 'first_name')
     not_in_house = Brother.objects.filter(
         brother_status='1', in_house=False
-    ).order_by('user__last_name', 'user__first_name')
+    ).order_by('last_name', 'first_name')
 
     does_details_part = forms.ModelMultipleChoiceField(
         queryset=does_details,
@@ -519,7 +519,7 @@ class SelectDetailGroups(forms.Form):
         super(SelectDetailGroups, self).__init__(*args, **kwargs)
 
         brothers = Brother.objects.filter(does_house_details=True).order_by(
-            'user__last_name', 'user__first_name'
+            'last_name', 'first_name'
         )
         groups = DetailGroup.objects.filter(semester=semester)
 
