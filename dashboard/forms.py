@@ -162,6 +162,7 @@ class ExcuseForm(forms.ModelForm):
         description = self.cleaned_data.get('description', None)
         if description == "I will not be attending because" or description in EMPTY_VALUES:
             self._errors['description'] = self.error_class(['Please write a description'])
+        return self.cleaned_data
 
 
 class ExcuseResponseForm(forms.ModelForm):
@@ -182,6 +183,7 @@ class ExcuseResponseForm(forms.ModelForm):
             self._errors['status'] = self.error_class(["Response message required for denial"])
         if status == "3" and self.excuse.event.mandatory:
             self._errors['status'] = self.error_class(["Event is mandatory cannot mark excuse not mandatory"])
+        return self.cleaned_data
 
 
 class PotentialNewMemberForm(forms.ModelForm):

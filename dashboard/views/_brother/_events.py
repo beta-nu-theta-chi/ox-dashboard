@@ -50,6 +50,8 @@ def brother_chapter_event(request, event_id, view):
     # if an excuse has been submitted, add the excuse to the context
     if excuse.exists():
         context.update({ 'excuse': excuse[0], })
+    elif not excuse.exists():
+        context.update({ 'button_name': 'excuse' })
 
     return render(request, "events/base-event.html", context)
 
@@ -96,6 +98,8 @@ def brother_service_event(request, event_id, view):
     # if an excuse has been submitted, add the excuse to the context
     if excuse.exists():
         context.update({ 'excuse': excuse[0], })
+    elif not excuse.exists():
+        context.update({ 'button_name': 'excuse' })
 
     return render(request, "events/service-event.html", context)
 
@@ -145,6 +149,8 @@ def brother_philanthropy_event(request, event_id, view):
     # if an excuse has been submitted, add the excuse to the context
     if excuse.exists():
         context.update({ 'excuse': excuse[0], })
+    elif not excuse.exists():
+        context.update({ 'button_name': 'excuse' })
 
     return render(request, "events/philanthropy-event.html", context)
 
@@ -186,6 +192,8 @@ def brother_recruitment_event(request, event_id, view):
     # if an excuse has been submitted, add the excuse to the context
     if excuse.exists():
         context.update({ 'excuse': excuse[0], })
+    elif not excuse.exists():
+        context.update({ 'button_name': 'excuse' })
 
     return render(request, "events/recruitment-event.html", context)
 
@@ -226,6 +234,8 @@ def brother_hs_event(request, event_id, view):
     # if an excuse has been submitted, add the excuse to the context
     if excuse.exists():
         context.update({ 'excuse': excuse[0], })
+    elif not excuse.exists():
+        context.update({ 'button_name': 'excuse' })
 
     return render(request, "events/base-event.html", context)
 

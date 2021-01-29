@@ -12,6 +12,6 @@
     <form action="" method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <input type="submit" value={% if button %}"{{ button }}"{% else %}"Submit"{% endif %}/>
+        <input type="submit" name={% if button_name %}"{{ button_name }}"{% else %}"submit"{% endif %} value={% if button %}"{{ button }}"{% else %}"Submit"{% endif %}/>
     </form>
 </div>

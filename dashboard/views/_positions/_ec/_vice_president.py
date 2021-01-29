@@ -130,7 +130,7 @@ def in_house(request):
                 for b in brothers:
                     b.in_house = True
                     b.save()
-        return HttpResponseRedirect(reverse('dashboard:vice_president_in_house'))
+        return HttpResponseRedirect(reverse('dashboard:vice_president'))
 
     context = {
         'form': form,

@@ -13,9 +13,9 @@
                     <form method="post" action="">
                         {% csrf_token %}
                         {% if rsvpd %}
-                            <input type="submit" name='cancel_rsvp' value="Cancel RSVP"/><br><br>
+                            <input type="submit" name="cancel_rsvp" value="Cancel RSVP"/><br><br>
                         {% else %}
-                            <input type="submit" name='rsvp' value="RSVP"/><br><br>
+                            <input type="submit" name="rsvp" value="RSVP"/><br><br>
                         {% endif %}
                     </form>
                 {% endif %}
