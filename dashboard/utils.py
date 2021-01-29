@@ -390,7 +390,6 @@ def create_committee_event(date, semester, meeting_time, committee_object):
     event = CommitteeMeetingEvent(date=date, start_time=meeting_time, semester=semester,
                                   committee=committee_object, recurring=True)
     event.save()
-    event.eligible_attendees.set(committee_object.members.order_by('last_name'))
     event.name = event.committee.get_committee_display() + " Committee Meeting"
     event.slug = event.committee.chair.title
     event.save()
@@ -522,7 +521,6 @@ def save_event(instance, eligible_attendees):
     instance.save()
     # you must save the instance into the database as a row in the table before you can set the manytomany field
     instance.eligible_attendees.set(eligible_attendees)
-    instance.save()
 
 
 def get_human_readable_model_name(object):

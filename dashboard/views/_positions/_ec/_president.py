@@ -95,7 +95,6 @@ def __delete_old_events(semester):
         The reference semester to delete events before it
 
     """
-    current_date = datetime.datetime.now()
     start_date = semester_start_date(semester.season, semester.year)
     old_events = Event.objects.filter(date__lt=start_date)
 
@@ -111,6 +110,18 @@ def __create_unmade_valid_semesters():
                 sem.year = year
                 sem.season = season
                 sem.save()
+
+
+def chapter_event_creator(date, semester):
+    event = ChapterEvent(
+        name="Chapter {}".format(date.date()),
+        date=date,
+        start_time=TimeChoices.T_18_30,  # 6:30 PM
+        end_time=TimeChoices.T_20_30,  # 8:30 PM
+        semester=semester,
+    )
+    event.save()
+    event.eligible_attendees.set(Brother.objects.filter(brother_status__in=['0', '1']))
 
 
 def __create_chapter_events(semester):
@@ -130,13 +141,8 @@ def __create_chapter_events(semester):
         semester_start_date(semester.season, semester.year),
         sunday,
         Committee.MeetingIntervals.WEEKLY,
-        lambda date, semester: ChapterEvent(
-            name="Chapter {}".format(date.date()),
-            date=date,
-            start_time=TimeChoices.T_18_30,  # 6:30 PM
-            end_time=TimeChoices.T_20_30,  # 8:30 PM
-            semester=semester,
-        ).save())
+        chapter_event_creator
+    )
 
 
 @verify_position([Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])

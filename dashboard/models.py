@@ -482,7 +482,7 @@ class Event(models.Model):
     start_time = models.TimeField(default=datetime.time(hour=0, minute=0), choices=TimeChoices.choices)
     end_time = models.TimeField(blank=True, null=True, choices=TimeChoices.choices)
     attendees_brothers = models.ManyToManyField(Brother, blank=True)
-    eligible_attendees = models.ManyToManyField(Brother, blank=True, related_name='+', default=all_actives_and_candidates)
+    eligible_attendees = models.ManyToManyField(Brother, blank=False, related_name='+', default=all_actives_and_candidates)
     semester = models.ForeignKey(
         Semester, on_delete=models.CASCADE, blank=True, null=True
     )
