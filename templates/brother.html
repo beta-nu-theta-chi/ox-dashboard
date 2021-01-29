@@ -356,6 +356,11 @@
                 <div class="brotherevent">
                     <div></div>
                     <div><b>Event:</b></div>
+                    <div><b>Date:</b></div>
+                    <div><b>Attendance:</b></div>
+                    <div></div>
+                    {% for event, attendance in hs_attendance %}
+                    <div class="brothergrayline"></div>
                     <div></div>
                     <div></div>
                     <div><a href={% url 'dashboard:brother_hs_event' type event.id %}>{{ event.name }}</a></div>
