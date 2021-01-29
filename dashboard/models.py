@@ -796,3 +796,4 @@ class PhoneTreeNode(models.Model):
         if self.brother.position_set.filter(title=Position.PositionChoices.PRESIDENT):
             return self.brother.first_name + " " + self.brother.last_name
         return self.brother.first_name + " " + self.brother.last_name + " notified by " + self.notified_by.first_name + " " + self.notified_by.last_name
+

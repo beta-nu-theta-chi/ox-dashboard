@@ -441,7 +441,7 @@ class InHouseForm(forms.Form):
     """Selects brothers living in house"""
     brothers = Brother.objects.filter(
         brother_status='1'
-    ).order_by('user__last_name', 'user__first_name')
+    ).order_by('last_name', 'first_name')
 
     in_house = forms.ModelMultipleChoiceField(
         queryset=brothers,
