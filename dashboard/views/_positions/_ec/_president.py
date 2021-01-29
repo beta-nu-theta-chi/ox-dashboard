@@ -141,7 +141,7 @@ def __create_chapter_events(semester):
         semester_start_date(semester.season, semester.year),
         sunday,
         Committee.MeetingIntervals.WEEKLY,
-        chapter_event_creator
+        chapter_event_creator,
     )
 
 
