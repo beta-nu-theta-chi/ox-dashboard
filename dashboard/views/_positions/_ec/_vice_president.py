@@ -125,11 +125,10 @@ def in_house(request):
     if request.method == 'POST':
         if form.is_valid():
             InHouseForm.brothers.update(in_house=False)
-            for c in ['in_house']:
-                brothers = form.cleaned_data[c]
-                for b in brothers:
-                    b.in_house = True
-                    b.save()
+            brothers = form.cleaned_data['in_house']
+            for b in brothers:
+                b.in_house = True
+                b.save()
         return HttpResponseRedirect(reverse('dashboard:vice_president'))
 
     context = {
