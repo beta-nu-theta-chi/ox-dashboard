@@ -8,6 +8,19 @@
     <a class="btn btn-default" href={% url 'dashboard:recruitment_c_event_edit' event.id %} role="button">Edit event</a>
 {% endblock %}
 
+{% block picture %}
+    <tr>
+        <img src="/media/{{ event.picture }}" alt="" style="align-self: center; display: block; max-width: 100%; max-height: 400px; margin-left: auto; margin-right: auto;">
+    </tr>
+{% endblock %}
+
+{% block location %}
+    <tr>
+        <td>Location</td>
+        <td>{{ event.location }}</td>
+    </tr>
+{% endblock %}
+
 {% block generalattendance %}
     {% if type == 'attendance' %}
         <div class="panel panel-default">

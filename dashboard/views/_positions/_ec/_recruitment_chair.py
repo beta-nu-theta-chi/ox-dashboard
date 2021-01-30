@@ -38,7 +38,7 @@ from dashboard.views._dashboard_generic_views import DashboardUpdateView, Dashbo
 @verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def recruitment_c(request):
     """ Renders Recruitment chair page with events for the current and following semester """
-    events = RecruitmentEvent.objects.all()
+    events = RecruitmentEvent.objects.order_by('date')
     excuses = Excuse.objects.filter(event__semester=get_semester(), status='0',
                                     event__in=events).order_by("date_submitted", "event__date")
     current_season = get_season()

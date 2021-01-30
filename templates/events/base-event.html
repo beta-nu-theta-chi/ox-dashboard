@@ -15,6 +15,7 @@
                 <div class=" col-lg-8 ">
                     <table class="table table-event-information">
                         <tbody>
+                        {% block picture %}{% endblock %}
                         <tr>
                             <td>Name:</td>
                             <td>{{ event.name }}</td>
@@ -41,6 +42,7 @@
                                 <td>{{ event.description }}</td>
                             </tr>
                         {% endif %}
+                        {% block location %}{% endblock %}
                         {% if type == 'brother' %}
                         <tr>
                             <td>Attended?</td>

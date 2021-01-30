@@ -6,6 +6,8 @@
 
 {% block event_url %}{% url 'dashboard:recruitment_c_event' event.id %}{% endblock %}
 
+{% block event_edit %}{% url 'dashboard:recruitment_c_event_edit' event.id %}{% endblock %}
+
 {% block chair %}
     <div class="panel panel-default">
         <div class="panel-heading">Events Next Semester</div>
