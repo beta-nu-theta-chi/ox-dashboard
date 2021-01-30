@@ -38,16 +38,12 @@ from dashboard.views._dashboard_generic_views import DashboardUpdateView, Dashbo
 @verify_position([Position.PositionChoices.RECRUITMENT_CHAIR, Position.PositionChoices.VICE_PRESIDENT, Position.PositionChoices.PRESIDENT, Position.PositionChoices.ADVISER])
 def recruitment_c(request):
     """ Renders Recruitment chair page with events for the current and following semester """
-    events = RecruitmentEvent.objects.order_by('date')
+    events = RecruitmentEvent.objects.filter(semester__year=get_year()).order_by("date")
     excuses = Excuse.objects.filter(event__semester=get_semester(), status='0',
                                     event__in=events).order_by("date_submitted", "event__date")
     current_season = get_season()
-    if current_season == '0':
-        semester_events = RecruitmentEvent.objects.filter(semester__season='0', semester__year=get_year())
-        semester_events_next = RecruitmentEvent.objects.filter(semester__season='2', semester__year=get_year())
-    else:
-        semester_events = RecruitmentEvent.objects.filter(semester__season='2', semester__year=get_year())
-        semester_events_next = RecruitmentEvent.objects.filter(semester__season='0', semester__year=get_year())
+    semester_events = events.filter(semester__season=current_season)
+    semester_events_next = events.exclude(semester__season=current_season)
 
     potential_new_members = PotentialNewMember.objects.all()
 
