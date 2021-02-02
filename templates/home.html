@@ -95,7 +95,7 @@
                 {% for event in recruitment_events %}
                     <div style="grid-column:1/2"></div>
                     {% if forloop.counter|divisibleby:"2" %}
-                        <div><img src="/media/{{ event.picture }}" alt="" style="align-self: center; display: block; max-width: 100%; max-height: 400px; margin-left: auto; margin-right: auto;"></div>
+                        <div class="picture"><img src="/media/{{ event.picture }}" alt="" style="align-self: center; display: block; max-width: 100%; max-height: 400px; margin-left: auto; margin-right: auto;"></div>
                     {% endif %}
                     <div class="homeevent2">
                         <div>Name:</div>
@@ -122,7 +122,7 @@
                         <div>{{ event.description }}</div>
                     </div>
                     {% if not forloop.counter|divisibleby:"2" %}
-                        <div><img src="/media/{{ event.picture }}" alt="" style="align-self: center; display: block; max-width: 100%; max-height: 400px; margin-left: auto; margin-right: auto;"></div>
+                        <div class="picture"><img src="/media/{{ event.picture }}" alt="" style="align-self: center; display: block; max-width: 100%; max-height: 400px; margin-left: auto; margin-right: auto;"></div>
                     {% endif %}
                     {% if not forloop.last %}
                         <div class="blackline"></div>
